@@ -9,7 +9,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { LIMITS } from '@oficiosya/shared';
+import { LIMITS } from '../shared';
 import * as bcrypt from 'bcryptjs';
 import type { User } from '../generated/prisma/client';
 import { AccountStatus, ActiveMode, VerificationPurpose } from '../generated/prisma/enums';

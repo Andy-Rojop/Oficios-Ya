@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { LIMITS } from '@oficiosya/shared';
+import { LIMITS } from '../src/shared';
 import { PrismaClient } from '../src/generated/prisma/client';
 import {
   ActiveMode,

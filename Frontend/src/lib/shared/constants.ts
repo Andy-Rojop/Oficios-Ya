@@ -1,4 +1,4 @@
-/** Límites de negocio compartidos (SRS / RN). */
+/** Límites de negocio compartidos (SRS / RN). Mantener alineado con Backend/src/shared. */
 export const LIMITS = {
   REVIEW_COMMENT_MAX: 500,
   UPLOAD_MAX_MB_DEFAULT: 5,

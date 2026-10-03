@@ -1,3 +1,4 @@
+/** Enums de dominio. Mantener alineado con Frontend/src/lib/shared/enums.ts */
 export enum Role {
   USER = 'USER',
   ADMIN = 'ADMIN',

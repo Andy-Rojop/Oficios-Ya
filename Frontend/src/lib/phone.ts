@@ -1,4 +1,4 @@
-import { GUATEMALA_PHONE_PREFIX } from '@oficiosya/shared';
+import { GUATEMALA_PHONE_PREFIX } from '@/lib/shared';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 /**

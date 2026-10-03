@@ -1,4 +1,4 @@
-import { GUATEMALA_PHONE_COUNTRY } from '@oficiosya/shared';
+import { GUATEMALA_PHONE_COUNTRY } from '../../shared';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 /**

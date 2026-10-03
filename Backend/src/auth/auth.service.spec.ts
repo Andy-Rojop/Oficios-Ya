@@ -1,5 +1,5 @@
 import { ConflictException, HttpException, UnauthorizedException } from '@nestjs/common';
-import { LIMITS } from '@oficiosya/shared';
+import { LIMITS } from '../shared';
 import * as bcrypt from 'bcryptjs';
 import type { OtpService } from '../otp/otp.service';
 import type { PrismaService } from '../prisma/prisma.service';

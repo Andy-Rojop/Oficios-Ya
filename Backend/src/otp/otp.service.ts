@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { LIMITS } from '@oficiosya/shared';
+import { LIMITS } from '../shared';
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import type { EnvConfig } from '../config/env.validation';

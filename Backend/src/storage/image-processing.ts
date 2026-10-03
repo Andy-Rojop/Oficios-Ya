@@ -1,5 +1,5 @@
 import { BadRequestException, PayloadTooLargeException } from '@nestjs/common';
-import { LIMITS } from '@oficiosya/shared';
+import { LIMITS } from '../shared';
 import sharp from 'sharp';
 
 /** Formatos aceptados (RNF-040). */

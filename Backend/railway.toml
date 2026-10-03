@@ -1,15 +1,14 @@
-# Config del servicio API en Railway.
-# En el dashboard: Settings → Config-as-code path = /Backend/railway.toml
-# (o pegá los mismos comandos en Settings → Build / Deploy).
+# Railway: Root Directory = Backend
+# Settings → Config-as-code path = railway.toml
 
 [build]
 builder = "RAILPACK"
-buildCommand = "pnpm --filter @oficiosya/shared build && pnpm --filter @oficiosya/backend run build"
-watchPatterns = ["Backend/**", "packages/shared/**", "pnpm-lock.yaml", "package.json", "pnpm-workspace.yaml"]
+buildCommand = "pnpm install --frozen-lockfile && pnpm run build"
+watchPatterns = ["**"]
 
 [deploy]
-preDeployCommand = ["pnpm --filter @oficiosya/backend exec prisma migrate deploy"]
-startCommand = "pnpm --filter @oficiosya/backend start"
+preDeployCommand = ["pnpm exec prisma migrate deploy"]
+startCommand = "pnpm start"
 healthcheckPath = "/api/v1/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"

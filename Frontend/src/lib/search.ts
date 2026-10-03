@@ -2,7 +2,7 @@ import {
   PriceMode as SharedPriceMode,
   PriceUnit as SharedPriceUnit,
   formatReferencePrice,
-} from '@oficiosya/shared';
+} from '@/lib/shared';
 import { apiFetch } from './api-client';
 import type { Availability, PriceMode, PriceUnit } from './workers';
 

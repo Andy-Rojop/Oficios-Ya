@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { LIMITS } from '@oficiosya/shared';
+import { LIMITS } from '../../shared';
 import { Transform } from 'class-transformer';
 import {
   IsInt,

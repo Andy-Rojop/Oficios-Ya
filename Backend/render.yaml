@@ -1,6 +1,4 @@
-# Blueprint Render — API NestJS siempre activa (plan Starter+; Free duerme y rompe Socket.IO).
-# Dashboard: New → Blueprint → conectar este repo.
-# Tras el primer deploy: pegar secrets en Environment (no versionar .env).
+# Alternativa Render (el stack elegido es Railway). Root Directory = Backend.
 
 services:
   - type: web
@@ -9,17 +7,15 @@ services:
     plan: starter
     region: oregon
     rootDir: .
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @oficiosya/shared build && pnpm --filter @oficiosya/backend exec prisma generate && pnpm --filter @oficiosya/backend exec nest build
-    preDeployCommand: pnpm --filter @oficiosya/backend exec prisma migrate deploy
-    startCommand: pnpm --filter @oficiosya/backend start
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm run build
+    preDeployCommand: pnpm exec prisma migrate deploy
+    startCommand: pnpm start
     healthCheckPath: /api/v1/health
     envVars:
       - key: NODE_VERSION
         value: '22'
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: '4000'
       - key: COOKIE_SAMESITE
         value: none
       - key: COOKIE_DOMAIN

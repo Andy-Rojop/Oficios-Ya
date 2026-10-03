@@ -1,4 +1,4 @@
-import { LIMITS } from '@oficiosya/shared';
+import { LIMITS } from '@/lib/shared';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { apiFetch } from './api-client';

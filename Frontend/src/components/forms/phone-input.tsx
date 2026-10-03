@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { GUATEMALA_PHONE_PREFIX } from '@oficiosya/shared';
+import { GUATEMALA_PHONE_PREFIX } from '@/lib/shared';
 import { inputClassName } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 

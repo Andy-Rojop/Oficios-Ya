@@ -1,0 +1,13 @@
+packages:
+  - '.'
+allowBuilds:
+  prisma: true
+  '@prisma/engines': true
+  esbuild: true
+  '@firebase/util': true
+  protobufjs: true
+  unrs-resolver: true
+  '@parcel/watcher': true
+  '@scarf/scarf': true
+  bcrypt: true
+  sharp: true

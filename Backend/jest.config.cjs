@@ -15,7 +15,6 @@ module.exports = {
   coverageDirectory: './coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
-    '^@oficiosya/shared$': '<rootDir>/../packages/shared/src/index.ts',
     '^@nestjs/config$': '<rootDir>/test/stubs/nestjs-config.stub.ts',
     '^@nestjs/swagger$': '<rootDir>/test/stubs/nestjs-swagger.stub.ts',
     '^firebase-admin/(app|auth)$': '<rootDir>/test/stubs/firebase-admin.stub.ts',

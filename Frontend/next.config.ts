@@ -19,7 +19,6 @@ function supabaseImageHosts(): { protocol: 'https'; hostname: string; pathname: 
 }
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@oficiosya/shared'],
   images: {
     remotePatterns: supabaseImageHosts(),
   },
