@@ -18,7 +18,7 @@
     "experimentalDecorators": true,
     "declaration": false,
     "declarationMap": false,
-    "incremental": true,
+    "incremental": false,
     "strictPropertyInitialization": false,
     "types": ["node", "jest"]
   },
