@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    env:
+      # Prisma generate no necesita una BD viva; placeholders para ConfigModule en build.
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/oficiosya
+      DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/oficiosya
+      FRONTEND_URL: http://localhost:3000
+      COOKIE_DOMAIN: localhost
+      JWT_ACCESS_SECRET: ci-access-secret-min-32-characters!!
+      JWT_REFRESH_SECRET: ci-refresh-secret-min-32-characters!
+      NODE_ENV: test
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+      NEXT_PUBLIC_WS_URL: http://localhost:4000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  # E2E completo necesita Supabase + seed + API viva; se corre en local con `pnpm test:e2e`.
+  # Opcional: habilitar este job cuando existan secrets de staging.
+  e2e:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+          PLAYWRIGHT_API_URL: ${{ secrets.E2E_API_URL }}

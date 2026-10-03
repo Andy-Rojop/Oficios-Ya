@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+.next
+coverage
+Backend/src/generated
+pnpm-lock.yaml
+*.md

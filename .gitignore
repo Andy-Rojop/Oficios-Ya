@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Builds
+dist
+build
+.next
+out
+coverage
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Prisma
+Backend/src/generated
+
+# Logs and caches
+logs
+*.log
+.turbo
+.cache
+.eslintcache
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Test / e2e
+playwright-report
+test-results
+blob-report
+
+# Misc
+*.pem
+.sentryclirc

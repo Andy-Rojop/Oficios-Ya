@@ -1,0 +1,45 @@
+{
+  "name": "oficiosya",
+  "private": true,
+  "version": "0.1.0",
+  "description": "OficiosYa — plataforma de oficios para El Asintal, Retalhuleu",
+  "packageManager": "pnpm@11.15.0",
+  "scripts": {
+    "dev": "pnpm --filter @oficiosya/shared build && pnpm -r --parallel --filter @oficiosya/frontend --filter @oficiosya/backend run dev",
+    "dev:frontend": "pnpm --filter @oficiosya/frontend dev",
+    "dev:backend": "pnpm --filter @oficiosya/backend dev",
+    "build": "pnpm --filter @oficiosya/shared build && pnpm --filter @oficiosya/backend build && pnpm --filter @oficiosya/frontend build",
+    "lint": "pnpm -r --filter @oficiosya/shared --filter @oficiosya/backend --filter @oficiosya/frontend run lint",
+    "typecheck": "pnpm -r --filter @oficiosya/shared --filter @oficiosya/backend --filter @oficiosya/frontend run typecheck",
+    "test": "pnpm -r --filter @oficiosya/shared --filter @oficiosya/backend --filter @oficiosya/frontend run test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml,css}\"",
+    "db:migrate": "pnpm --filter @oficiosya/backend prisma:migrate",
+    "db:seed": "pnpm --filter @oficiosya/backend prisma:seed",
+    "db:generate": "pnpm --filter @oficiosya/backend prisma:generate",
+    "postinstall": "pnpm --filter @oficiosya/shared build",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@playwright/test": "^1.63.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

@@ -1,0 +1,393 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+  MUNICIPAL
+}
+
+enum ActiveMode {
+  CLIENT
+  WORKER
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum VerificationPurpose {
+  REGISTER
+  PASSWORD_RESET
+  PHONE_CHANGE
+}
+
+enum IdentityStatus {
+  NOT_SUBMITTED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum Availability {
+  AVAILABLE
+  BUSY
+  UNAVAILABLE
+}
+
+enum PriceMode {
+  FIXED
+  FROM
+  NEGOTIABLE
+}
+
+enum PriceUnit {
+  JOB
+  HOUR
+  VISIT
+  METER
+}
+
+enum RequestStatus {
+  SENT
+  ACCEPTED
+  REJECTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum QuoteStatus {
+  SENT
+  ACCEPTED
+  REJECTED
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  ADDRESS
+}
+
+enum ReportTarget {
+  USER
+  WORKER_PROFILE
+  SERVICE
+  PORTFOLIO_ITEM
+  CONVERSATION
+  REVIEW
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+model User {
+  id                  String        @id @default(uuid())
+  name                String
+  phone               String        @unique // formato E.164, ej. +50212345678
+  phoneVerifiedAt     DateTime?
+  firebaseUid         String?       @unique
+  email               String?       @unique // opcional
+  emailVerifiedAt     DateTime?
+  passwordHash        String
+  role                Role          @default(USER)
+  activeMode          ActiveMode    @default(CLIENT)
+  status              AccountStatus @default(ACTIVE)
+  zoneId              String?
+  termsAcceptedAt     DateTime?
+  failedLoginAttempts Int           @default(0)
+  lockedUntil         DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  zone                Zone?               @relation(fields: [zoneId], references: [id])
+  workerProfile       WorkerProfile?
+  sessions            Session[]
+  phoneVerifications  PhoneVerification[]
+  clientConversations Conversation[]      @relation("ConversationClient")
+  workerConversations Conversation[]      @relation("ConversationWorker")
+  messagesSent        Message[]
+  blocksMade          Block[]             @relation("Blocker")
+  blocksReceived      Block[]             @relation("Blocked")
+  clientRequests      ServiceRequest[]    @relation("RequestClient")
+  workerRequests      ServiceRequest[]    @relation("RequestWorker")
+  reviewsWritten      Review[]            @relation("ReviewClient")
+  reviewsReceived     Review[]            @relation("ReviewWorker")
+  reportsMade         Report[]
+  auditLogs           AuditLog[]
+  notifications       Notification[]
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String
+  refreshTokenHash String
+  userAgent        String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PhoneVerification {
+  id        String              @id @default(uuid())
+  userId    String?
+  phone     String
+  purpose   VerificationPurpose
+  createdAt DateTime            @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([phone, createdAt])
+}
+
+model Zone {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  type      String // aldea, cantón, caserío, sector...
+  latitude  Decimal? @db.Decimal(9, 6) // centro aproximado, nunca una dirección
+  longitude Decimal? @db.Decimal(9, 6)
+  active    Boolean  @default(true)
+
+  users   User[]
+  workers WorkerZone[]
+}
+
+model Category {
+  id       String          @id @default(uuid())
+  name     String          @unique
+  slug     String          @unique
+  active   Boolean         @default(true)
+  services Service[]
+  profiles WorkerProfile[]
+}
+
+model WorkerProfile {
+  id              String         @id @default(uuid())
+  userId          String         @unique
+  mainCategoryId  String?
+  headline        String // oficio principal visible
+  description     String
+  experienceYears Int?
+  schedule        Json? // horario de atención por día
+  availability    Availability   @default(AVAILABLE)
+  visibleChannels Json? // canales de contacto que el trabajador decide mostrar
+  identityStatus  IdentityStatus @default(NOT_SUBMITTED)
+  dpi             String? // PRIVADO: nunca se expone en respuestas públicas
+  nit             String? // PRIVADO
+  ratingAverage   Decimal        @default(0) @db.Decimal(3, 2)
+  ratingCount     Int            @default(0)
+  completedJobs   Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mainCategory   Category?       @relation(fields: [mainCategoryId], references: [id])
+  zones          WorkerZone[]
+  services       Service[]
+  portfolioItems PortfolioItem[]
+}
+
+model WorkerZone {
+  workerProfileId String
+  zoneId          String
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  zone          Zone          @relation(fields: [zoneId], references: [id])
+
+  @@id([workerProfileId, zoneId])
+}
+
+model Service {
+  id              String    @id @default(uuid())
+  workerProfileId String
+  categoryId      String
+  name            String
+  description     String
+  priceMode       PriceMode
+  priceAmount     Decimal?  @db.Decimal(10, 2) // GTQ; null solo si priceMode = NEGOTIABLE
+  priceUnit       PriceUnit @default(JOB)
+  photos          String[] // rutas en el bucket público
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  workerProfile WorkerProfile    @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  category      Category         @relation(fields: [categoryId], references: [id])
+  requests      ServiceRequest[]
+
+  @@index([categoryId, active])
+  @@index([priceAmount])
+}
+
+model PortfolioItem {
+  id              String   @id @default(uuid())
+  workerProfileId String
+  title           String
+  description     String?
+  imagePath       String
+  createdAt       DateTime @default(now())
+
+  workerProfile WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id            String    @id @default(uuid())
+  clientId      String
+  workerId      String
+  requestId     String?   @unique
+  lastMessageAt DateTime?
+  createdAt     DateTime  @default(now())
+
+  client   User            @relation("ConversationClient", fields: [clientId], references: [id])
+  worker   User            @relation("ConversationWorker", fields: [workerId], references: [id])
+  request  ServiceRequest? @relation(fields: [requestId], references: [id])
+  messages Message[]
+  quotes   Quote[]
+
+  @@unique([clientId, workerId]) // una conversación por par cliente-trabajador, como Messenger
+}
+
+model Message {
+  id             String      @id @default(uuid())
+  conversationId String
+  senderId       String
+  type           MessageType
+  content        String? // texto o dirección escrita con referencias
+  imagePath      String? // bucket PRIVADO
+  latitude       Decimal?    @db.Decimal(9, 6) // solo tipo ADDRESS
+  longitude      Decimal?    @db.Decimal(9, 6)
+  readAt         DateTime?
+  createdAt      DateTime    @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+}
+
+model Block {
+  id        String   @id @default(uuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("Blocker", fields: [blockerId], references: [id])
+  blocked User @relation("Blocked", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
+}
+
+model ServiceRequest {
+  id                String        @id @default(uuid())
+  clientId          String
+  workerId          String
+  serviceId         String?
+  description       String
+  desiredDate       DateTime?
+  urgent            Boolean       @default(false)
+  status            RequestStatus @default(SENT)
+  clientConfirmedAt DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  client       User          @relation("RequestClient", fields: [clientId], references: [id])
+  worker       User          @relation("RequestWorker", fields: [workerId], references: [id])
+  service      Service?      @relation(fields: [serviceId], references: [id])
+  conversation Conversation?
+  quotes       Quote[]
+  review       Review?
+
+  @@index([workerId, status])
+  @@index([clientId, status])
+}
+
+model Quote {
+  id             String      @id @default(uuid())
+  requestId      String?
+  conversationId String
+  amount         Decimal     @db.Decimal(10, 2)
+  scope          String
+  status         QuoteStatus @default(SENT)
+  createdAt      DateTime    @default(now())
+
+  request      ServiceRequest? @relation(fields: [requestId], references: [id])
+  conversation Conversation    @relation(fields: [conversationId], references: [id])
+}
+
+model Review {
+  id          String    @id @default(uuid())
+  requestId   String    @unique // una reseña por solicitud finalizada
+  clientId    String
+  workerId    String
+  rating      Int // 1 a 5
+  comment     String?   @db.VarChar(500)
+  workerReply String?
+  repliedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  request ServiceRequest @relation(fields: [requestId], references: [id])
+  client  User           @relation("ReviewClient", fields: [clientId], references: [id])
+  worker  User           @relation("ReviewWorker", fields: [workerId], references: [id])
+}
+
+model Report {
+  id         String       @id @default(uuid())
+  reporterId String
+  targetType ReportTarget
+  targetId   String
+  reason     String
+  status     ReportStatus @default(OPEN)
+  resolution String?
+  createdAt  DateTime     @default(now())
+  resolvedAt DateTime?
+
+  reporter User @relation(fields: [reporterId], references: [id])
+
+  @@index([status, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([resource, createdAt])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}

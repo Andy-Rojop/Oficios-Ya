@@ -1,0 +1,2 @@
+/** Pipes compartidos */
+export {};

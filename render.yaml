@@ -1,0 +1,50 @@
+# Blueprint Render — API NestJS siempre activa (plan Starter+; Free duerme y rompe Socket.IO).
+# Dashboard: New → Blueprint → conectar este repo.
+# Tras el primer deploy: pegar secrets en Environment (no versionar .env).
+
+services:
+  - type: web
+    name: oficiosya-api
+    runtime: node
+    plan: starter
+    region: oregon
+    rootDir: .
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @oficiosya/shared build && pnpm --filter @oficiosya/backend exec prisma generate && pnpm --filter @oficiosya/backend exec nest build
+    preDeployCommand: pnpm --filter @oficiosya/backend exec prisma migrate deploy
+    startCommand: pnpm --filter @oficiosya/backend start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: '4000'
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: COOKIE_DOMAIN
+        value: ''
+      - key: SUPABASE_PUBLIC_BUCKET
+        value: public-media
+      - key: SUPABASE_PRIVATE_BUCKET
+        value: chat-media
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
