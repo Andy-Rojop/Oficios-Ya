@@ -89,6 +89,7 @@ describe('PublicWorkerProfileDto', () => {
     const dto = PublicWorkerProfileDto.fromEntity(
       buildDirtySource({ phone: true, whatsapp: true, email: true }),
       toUrl,
+      { includeContact: true },
     );
     const json = JSON.stringify(dto);
 
@@ -106,6 +107,7 @@ describe('PublicWorkerProfileDto', () => {
     const dto = PublicWorkerProfileDto.fromEntity(
       buildDirtySource({ phone: false, whatsapp: false, email: false }),
       toUrl,
+      { includeContact: true },
     );
     const json = JSON.stringify(dto);
 
@@ -115,16 +117,30 @@ describe('PublicWorkerProfileDto', () => {
   });
 
   it('oculta el contacto por defecto cuando visibleChannels no está definido', () => {
-    const dto = PublicWorkerProfileDto.fromEntity(buildDirtySource(null), toUrl);
+    const dto = PublicWorkerProfileDto.fromEntity(buildDirtySource(null), toUrl, {
+      includeContact: true,
+    });
     expect(dto.contact).toEqual({ phone: null, whatsapp: null, email: null });
   });
 
-  it('muestra solo los canales elegidos', () => {
+  it('muestra solo los canales elegidos cuando hay sesión', () => {
     const dto = PublicWorkerProfileDto.fromEntity(
       buildDirtySource({ phone: true, whatsapp: false, email: false }),
       toUrl,
+      { includeContact: true },
     );
     expect(dto.contact).toEqual({ phone: '+50255551234', whatsapp: null, email: null });
+  });
+
+  it('nunca expone contacto a invitados aunque el trabajador lo tenga visible', () => {
+    const dto = PublicWorkerProfileDto.fromEntity(
+      buildDirtySource({ phone: true, whatsapp: true, email: true }),
+      toUrl,
+    );
+    const json = JSON.stringify(dto);
+    expect(dto.contact).toEqual({ phone: null, whatsapp: null, email: null });
+    expect(json).not.toContain('+50255551234');
+    expect(json).not.toContain('juan@example.com');
   });
 
   it('solo lista servicios activos y resuelve las URLs de las fotos', () => {

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export const inputClassName =
-  'block h-11 w-full rounded-lg border border-border bg-surface px-3 text-base text-foreground placeholder:text-muted/70 transition-colors focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-red-600';
+  'block h-11 w-full rounded-xl border border-border bg-surface px-3 text-base text-foreground placeholder:text-muted/70 transition-colors focus-visible:border-foreground focus-visible:ring-1 focus-visible:ring-foreground disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-red-600';
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 

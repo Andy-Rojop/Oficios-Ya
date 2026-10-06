@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { getErrorMessage, isUnauthorized, useMe } from '@/lib/auth';
 import {
@@ -11,32 +11,22 @@ import {
   formatDate,
   REQUEST_QUERY_KEYS,
   requestsApi,
-  type RequestRole,
   type ServiceRequestDto,
 } from '@/lib/requests';
-import { cn } from '@/lib/utils';
 import { StatusBadge } from './status-badge';
 
-const TABS: { role: RequestRole; label: string; empty: string }[] = [
-  {
-    role: 'CLIENT',
-    label: 'Como cliente',
-    empty:
-      'Aún no has solicitado ningún servicio. Busca un trabajador y toca «Solicitar servicio» en su perfil.',
-  },
-  {
-    role: 'WORKER',
-    label: 'Como trabajador',
-    empty:
-      'Aún no has recibido solicitudes. Cuando un cliente te pida un servicio, aparecerá aquí.',
-  },
-];
+const EMPTY_CLIENT =
+  'Aún no has solicitado ningún servicio. Buscá un trabajador y tocá «Solicitar servicio» en su perfil.';
+const EMPTY_WORKER =
+  'Aún no has recibido solicitudes. Cuando un cliente te pida un servicio, aparecerá aquí.';
 
-/** Lista de solicitudes del usuario, separada por el rol que cumple en cada una. */
+/**
+ * Lista de solicitudes según el modo activo (cliente o trabajador).
+ * No mezcla ambos roles en la misma vista.
+ */
 export function RequestsView() {
   const router = useRouter();
   const me = useMe();
-  const [tab, setTab] = useState<RequestRole | null>(null);
 
   const requests = useQuery<ServiceRequestDto[], Error>({
     queryKey: REQUEST_QUERY_KEYS.list,
@@ -51,50 +41,28 @@ export function RequestsView() {
     }
   }, [me.error, requests.error, router]);
 
+  const asWorker = me.data?.activeMode === 'WORKER';
   const all = requests.data ?? [];
-  const activeTab: RequestRole = tab ?? (me.data?.activeMode === 'WORKER' ? 'WORKER' : 'CLIENT');
-  const visible = all.filter((request) => request.myRole === activeTab);
-  const emptyText = TABS.find((item) => item.role === activeTab)?.empty ?? '';
+  const visible = all.filter((request) => request.myRole === (asWorker ? 'WORKER' : 'CLIENT'));
+  const emptyText = asWorker ? EMPTY_WORKER : EMPTY_CLIENT;
 
   return (
     <section className="mx-auto w-full max-w-2xl space-y-4">
-      <h1
-        className="text-2xl font-semibold"
-        style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
-      >
-        Solicitudes
-      </h1>
+      <header className="space-y-1">
+        <h1
+          className="text-2xl font-semibold"
+          style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+        >
+          Solicitudes
+        </h1>
+        <p className="text-sm text-muted">
+          {asWorker
+            ? 'Pedidos que te enviaron los clientes.'
+            : 'Servicios que pediste a trabajadores.'}
+        </p>
+      </header>
 
-      <div
-        role="tablist"
-        aria-label="Rol en la solicitud"
-        className="flex gap-1 rounded-xl bg-border/50 p-1"
-      >
-        {TABS.map((item) => {
-          const count = all.filter((request) => request.myRole === item.role).length;
-          const selected = item.role === activeTab;
-          return (
-            <button
-              key={item.role}
-              role="tab"
-              type="button"
-              aria-selected={selected}
-              onClick={() => setTab(item.role)}
-              className={cn(
-                'flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
-                selected
-                  ? 'bg-surface text-foreground shadow-sm'
-                  : 'text-muted hover:text-foreground',
-              )}
-            >
-              {item.label}
-              {count > 0 ? <span className="ml-1.5 text-xs text-muted">({count})</span> : null}
-            </button>
-          );
-        })}
-      </div>
-
-      {requests.isLoading ? (
+      {requests.isLoading || me.isLoading ? (
         <p className="text-muted">Cargando tus solicitudes…</p>
       ) : requests.isError && !isUnauthorized(requests.error) ? (
         <Card className="space-y-3">
@@ -111,11 +79,8 @@ export function RequestsView() {
       ) : visible.length === 0 ? (
         <Card className="space-y-2 text-center">
           <p className="text-sm text-muted">{emptyText}</p>
-          {activeTab === 'CLIENT' ? (
-            <Link
-              href="/buscar"
-              className="inline-block text-sm font-semibold text-brand underline"
-            >
+          {!asWorker ? (
+            <Link href="/buscar" className="inline-block text-sm font-semibold text-brand underline">
               Buscar trabajadores
             </Link>
           ) : null}

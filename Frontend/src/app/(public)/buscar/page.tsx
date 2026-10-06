@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { WorkersMapLazy } from '@/components/map/workers-map-lazy';
 import { SearchFiltersForm } from '@/components/search/search-filters';
-import { SearchLoadMore } from '@/components/search/search-load-more';
-import { SearchWorkerCardView } from '@/components/search/search-worker-card';
+import { SearchMapPanel } from '@/components/search/search-map-panel';
 import { ApiError } from '@/lib/api-client';
 import {
   fetchCatalogCategories,
@@ -63,8 +60,8 @@ export default async function BuscarPage({ searchParams }: PageProps) {
           Buscar trabajadores
         </h1>
         <p className="max-w-2xl text-muted">
-          Filtrá por oficio, zona y precio de referencia. Las ubicaciones del mapa son zonas
-          aproximadas, nunca una dirección exacta.
+          Filtrá por oficio, zona y precio. Usá el mapa para ver quién está cerca del área que
+          elijas. Las ubicaciones son zonas aproximadas, nunca una dirección exacta.
         </p>
       </header>
 
@@ -75,56 +72,12 @@ export default async function BuscarPage({ searchParams }: PageProps) {
         zones={zones}
       />
 
-      {result.error ? (
-        <p
-          role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
-          {result.error}
-        </p>
-      ) : null}
-
-      {!result.error && items.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-surface px-5 py-8 text-center">
-          <p className="font-medium text-foreground">No encontramos resultados con esos filtros.</p>
-          <p className="mt-1 text-sm text-muted">
-            Probá otra categoría, zona o borrá el rango de precio.
-          </p>
-          <Link
-            href="/buscar"
-            className="mt-4 inline-block text-sm font-semibold text-brand hover:underline"
-          >
-            Ver todos
-          </Link>
-        </div>
-      ) : null}
-
-      {items.length > 0 ? (
-        <>
-          <p className="text-sm text-muted">
-            {items.length}
-            {nextCursor ? '+' : ''} resultado{items.length === 1 ? '' : 's'}
-            {filters.q ? ` para “${filters.q}”` : ''}
-          </p>
-
-          <div className="space-y-3">
-            {items.map((worker) => (
-              <SearchWorkerCardView key={worker.id} worker={worker} />
-            ))}
-            <SearchLoadMore filters={filters} initialCursor={nextCursor} />
-          </div>
-
-          <div className="space-y-2 pt-2">
-            <h2
-              className="text-lg font-semibold"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
-            >
-              Zonas en el mapa
-            </h2>
-            <WorkersMapLazy workers={items} />
-          </div>
-        </>
-      ) : null}
+      <SearchMapPanel
+        filters={filters}
+        items={items}
+        nextCursor={nextCursor}
+        error={result.error}
+      />
     </section>
   );
 }

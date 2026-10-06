@@ -243,13 +243,16 @@ export class PublicWorkerProfileDto {
   static fromEntity(
     profile: PublicWorkerProfileSource,
     toPublicUrl: UrlResolver,
+    options: { includeContact?: boolean } = {},
   ): PublicWorkerProfileDto {
     const channels = readStoredVisibleChannels(profile.visibleChannels);
+    const includeContact = options.includeContact === true;
 
     const contact = new PublicContactDto();
-    contact.phone = channels.phone ? profile.user.phone : null;
-    contact.whatsapp = channels.whatsapp ? profile.user.phone : null;
-    contact.email = channels.email ? profile.user.email : null;
+    // Teléfono/correo solo para usuarios autenticados y si el trabajador eligió mostrarlos.
+    contact.phone = includeContact && channels.phone ? profile.user.phone : null;
+    contact.whatsapp = includeContact && channels.whatsapp ? profile.user.phone : null;
+    contact.email = includeContact && channels.email ? profile.user.email : null;
 
     const dto = new PublicWorkerProfileDto();
     dto.id = profile.id;

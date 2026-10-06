@@ -46,7 +46,7 @@ export function FormMessage({
 }) {
   const styles = {
     error: 'border-red-200 bg-red-50 text-red-800',
-    success: 'border-brand/30 bg-brand-soft text-brand-dark',
+    success: 'border-accent/30 bg-accent-soft text-accent-dark',
     info: 'border-border bg-background text-foreground',
   } as const;
 

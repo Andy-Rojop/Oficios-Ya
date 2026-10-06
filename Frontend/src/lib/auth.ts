@@ -101,9 +101,18 @@ export function useSetMe() {
   return (user: UserDto) => queryClient.setQueryData(ME_QUERY_KEY, user);
 }
 
-/** Cierra sesión en el backend. Quien lo use debe vaciar la caché de TanStack Query. */
+/** Cierra sesión, limpia caché y vuelve a la home pública (`/`). */
 export function useLogout() {
-  return useMutation({ mutationFn: logout });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: logout,
+    onSettled: async () => {
+      queryClient.setQueryData(ME_QUERY_KEY, undefined);
+      await queryClient.clear();
+      // Navegación completa: garantiza header de invitado (Buscar / Ingresar / Registrarse).
+      window.location.assign('/');
+    },
+  });
 }
 
 export function isUnauthorized(error: unknown): boolean {

@@ -152,7 +152,7 @@ export function SearchFiltersForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="space-y-4 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5"
+      className="space-y-4 rounded-2xl border border-border bg-surface p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5"
       aria-busy={pending}
     >
       <div className="flex gap-2">

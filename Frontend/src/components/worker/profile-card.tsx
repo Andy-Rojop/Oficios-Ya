@@ -111,7 +111,15 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
 
         <p className="text-sm">
           Estado:{' '}
-          <span className="font-semibold text-brand-dark">
+          <span
+            className={cn(
+              'inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide',
+              profile.identityStatus === 'VERIFIED' && 'bg-foreground text-white',
+              profile.identityStatus === 'PENDING' && 'bg-amber-100 text-amber-900',
+              profile.identityStatus === 'REJECTED' && 'bg-red-100 text-red-800',
+              profile.identityStatus === 'NOT_SUBMITTED' && 'bg-brand-soft text-muted',
+            )}
+          >
             {IDENTITY_STATUS_LABELS[profile.identityStatus]}
           </span>
         </p>
@@ -188,10 +196,10 @@ export function AvailabilityCard({ profile }: { profile: OwnWorkerProfile }) {
   });
 
   return (
-    <Card className="space-y-4">
+    <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
       <div className="space-y-1">
         <CardTitle>Disponibilidad</CardTitle>
-        <CardDescription>Los clientes ven si puedes tomar trabajos ahora.</CardDescription>
+        <CardDescription>Los clientes ven si podés tomar trabajos ahora.</CardDescription>
       </div>
       <div role="radiogroup" aria-label="Disponibilidad" className="grid gap-2 sm:grid-cols-3">
         {AVAILABILITY_OPTIONS.map((option) => {
@@ -207,10 +215,13 @@ export function AvailabilityCard({ profile }: { profile: OwnWorkerProfile }) {
                 if (!selected) mutation.mutate(option);
               }}
               className={cn(
-                'rounded-lg border px-3 py-2.5 text-sm font-semibold transition-colors disabled:opacity-60',
-                selected
-                  ? 'border-brand bg-brand-soft text-brand-dark'
-                  : 'border-border bg-surface hover:bg-brand-soft/60',
+                'rounded-2xl border px-3 py-4 text-sm font-semibold transition disabled:opacity-60',
+                selected && option === 'AVAILABLE' && 'border-accent bg-accent text-white shadow-sm',
+                selected && option === 'BUSY' && 'border-[#b45309] bg-[#b45309] text-white shadow-sm',
+                selected &&
+                  option === 'UNAVAILABLE' &&
+                  'border-brand bg-brand text-white shadow-sm',
+                !selected && 'border-border bg-surface hover:border-brand/20 hover:bg-brand-soft',
               )}
             >
               {AVAILABILITY_LABELS[option]}

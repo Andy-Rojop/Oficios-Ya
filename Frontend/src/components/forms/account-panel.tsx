@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Briefcase, Check, LogOut, Mail, MapPin, Phone, Search, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -28,9 +29,24 @@ import { signOutFirebase } from '@/lib/firebase';
 import { formatPhoneDisplay } from '@/lib/phone';
 import { cn } from '@/lib/utils';
 
-const MODE_OPTIONS: { value: ActiveMode; label: string; description: string }[] = [
-  { value: 'CLIENT', label: 'Cliente', description: 'Busco quién me ayude' },
-  { value: 'WORKER', label: 'Trabajador', description: 'Ofrezco mis servicios' },
+const MODE_OPTIONS: {
+  value: ActiveMode;
+  label: string;
+  description: string;
+  Icon: typeof Search;
+}[] = [
+  {
+    value: 'CLIENT',
+    label: 'Cliente',
+    description: 'Busco quién me ayude',
+    Icon: Search,
+  },
+  {
+    value: 'WORKER',
+    label: 'Trabajador',
+    description: 'Ofrezco mis servicios',
+    Icon: Briefcase,
+  },
 ];
 
 export function AccountPanel() {
@@ -59,13 +75,44 @@ export function AccountPanel() {
     );
   }
 
+  const firstName = user.name.split(' ')[0] ?? 'Usuario';
+
   return (
     <div className="space-y-5">
-      <ProfileCard user={user} />
-      <ModeCard user={user} />
-      <EmailCard user={user} />
-      <PhoneChangeCard />
-      <SessionCard />
+      <section className="relative overflow-hidden rounded-3xl bg-brand px-5 py-7 text-white sm:px-7 sm:py-8 animate-[home-fade-up_0.55s_ease-out_both]">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_15%_20%,rgba(30,58,95,0.55),transparent_45%),radial-gradient(ellipse_at_90%_0%,rgba(255,255,255,0.08),transparent_40%)]"
+          aria-hidden
+        />
+        <div className="relative flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-xl space-y-2">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/90">Mi cuenta</p>
+            <h1
+              className="text-3xl font-semibold tracking-tight sm:text-4xl"
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+            >
+              Hola, {firstName}
+            </h1>
+            <p className="text-sm text-white/75 sm:text-base">
+              Datos de tu cuenta, modo de uso y seguridad de acceso.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-white">
+            <UserRound aria-hidden className="h-3.5 w-3.5" />
+            {user.activeMode === 'WORKER' ? 'Trabajador' : 'Cliente'}
+          </span>
+        </div>
+      </section>
+
+      <div className="animate-[home-fade-up_0.55s_ease-out_0.08s_both] space-y-5">
+        <ProfileCard user={user} />
+        <ModeCard user={user} />
+        <div className="grid gap-5 lg:grid-cols-2">
+          <EmailCard user={user} />
+          <PhoneChangeCard currentPhone={user.phone} />
+        </div>
+        <SessionCard />
+      </div>
     </div>
   );
 }
@@ -74,21 +121,36 @@ function ProfileCard({ user }: { user: UserDto }) {
   const zones = useZones();
   const zone = zones.data?.find((item) => item.id === user.zoneId);
 
-  const rows: [string, string][] = [
-    ['Nombre', user.name],
-    ['Teléfono', formatPhoneDisplay(user.phone)],
-    ['Correo', user.email ?? 'Sin correo'],
-    ['Zona', zone ? zone.name : user.zoneId ? 'Cargando…' : 'Sin zona'],
+  const rows: { label: string; value: string; Icon: typeof Phone }[] = [
+    { label: 'Nombre', value: user.name, Icon: UserRound },
+    { label: 'Teléfono', value: formatPhoneDisplay(user.phone), Icon: Phone },
+    { label: 'Correo', value: user.email ?? 'Sin correo', Icon: Mail },
+    {
+      label: 'Zona',
+      value: zone ? zone.name : user.zoneId ? 'Cargando…' : 'Sin zona',
+      Icon: MapPin,
+    },
   ];
 
   return (
-    <Card className="space-y-4">
-      <CardTitle>Mi perfil</CardTitle>
+    <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
+      <div className="space-y-1">
+        <CardTitle>Mi perfil</CardTitle>
+        <CardDescription>Información principal de tu cuenta en OficiosYa.</CardDescription>
+      </div>
       <dl className="grid gap-3 sm:grid-cols-2">
-        {rows.map(([label, value]) => (
-          <div key={label}>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</dt>
-            <dd className="break-words text-foreground">{value}</dd>
+        {rows.map(({ label, value, Icon }) => (
+          <div
+            key={label}
+            className="flex items-start gap-3 rounded-2xl border border-border bg-accent-soft/60 px-3.5 py-3"
+          >
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-white">
+              <Icon aria-hidden className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</dt>
+              <dd className="break-words font-medium text-foreground">{value}</dd>
+            </div>
           </div>
         ))}
       </dl>
@@ -104,33 +166,50 @@ function ModeCard({ user }: { user: UserDto }) {
   });
 
   return (
-    <Card className="space-y-4">
+    <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
       <div className="space-y-1">
         <CardTitle>Modo de uso</CardTitle>
-        <CardDescription>Cambia entre buscar trabajadores y ofrecer tus servicios.</CardDescription>
+        <CardDescription>
+          Cliente ve Buscar. Trabajador ve el Panel. Podés cambiar cuando quieras.
+        </CardDescription>
       </div>
-      <div role="radiogroup" aria-label="Modo de uso" className="grid grid-cols-2 gap-2">
-        {MODE_OPTIONS.map((option) => {
-          const selected = user.activeMode === option.value;
+      <div role="radiogroup" aria-label="Modo de uso" className="grid gap-3 sm:grid-cols-2">
+        {MODE_OPTIONS.map(({ value, label, description, Icon }) => {
+          const selected = user.activeMode === value;
           return (
             <button
-              key={option.value}
+              key={value}
               type="button"
               role="radio"
               aria-checked={selected}
               disabled={mutation.isPending}
               onClick={() => {
-                if (!selected) mutation.mutate(option.value);
+                if (!selected) mutation.mutate(value);
               }}
               className={cn(
-                'rounded-lg border p-3 text-left transition-colors disabled:opacity-60',
+                'relative flex items-start gap-3 rounded-2xl border-2 bg-surface p-4 text-left transition disabled:opacity-60',
                 selected
-                  ? 'border-brand bg-brand-soft text-brand-dark'
-                  : 'border-border bg-surface hover:bg-brand-soft/60',
+                  ? 'border-accent shadow-[0_6px_20px_rgba(30,58,95,0.12)]'
+                  : 'border-border hover:border-brand/30 hover:bg-brand-soft/60',
               )}
             >
-              <span className="block text-sm font-semibold">{option.label}</span>
-              <span className="block text-xs text-muted">{option.description}</span>
+              {selected ? (
+                <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white">
+                  <Check aria-hidden className="h-3 w-3" strokeWidth={3} />
+                </span>
+              ) : null}
+              <span
+                className={cn(
+                  'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                  selected ? 'bg-accent text-white' : 'bg-brand-soft text-brand',
+                )}
+              >
+                <Icon aria-hidden className="h-5 w-5" />
+              </span>
+              <span className="pr-6">
+                <span className="block text-sm font-semibold text-foreground">{label}</span>
+                <span className="block text-xs text-muted">{description}</span>
+              </span>
             </button>
           );
         })}
@@ -176,7 +255,7 @@ function EmailCard({ user }: { user: UserDto }) {
   });
 
   return (
-    <Card>
+    <Card className="rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         <div className="space-y-1">
           <CardTitle>Correo electrónico</CardTitle>
@@ -187,7 +266,7 @@ function EmailCard({ user }: { user: UserDto }) {
         </FormField>
         {error ? <FormMessage tone="error">{error}</FormMessage> : null}
         {message ? <FormMessage tone="success">{message}</FormMessage> : null}
-        <Button type="submit" variant="outline" disabled={isSubmitting || !isDirty}>
+        <Button type="submit" disabled={isSubmitting || !isDirty}>
           {isSubmitting ? 'Guardando…' : 'Guardar correo'}
         </Button>
       </form>
@@ -201,7 +280,7 @@ const passwordSchema = z.object({
 type PasswordValues = z.infer<typeof passwordSchema>;
 
 /** RF-005: nuevo teléfono verificado por SMS + contraseña actual. */
-function PhoneChangeCard() {
+function PhoneChangeCard({ currentPhone }: { currentPhone: string }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [verification, setVerification] = useState<PhoneVerification | null>(null);
@@ -236,10 +315,13 @@ function PhoneChangeCard() {
   });
 
   return (
-    <Card className="space-y-4">
+    <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
       <div className="space-y-1">
         <CardTitle>Cambiar teléfono</CardTitle>
-        <CardDescription>Verificaremos el número nuevo con un código SMS.</CardDescription>
+        <CardDescription>
+          Actual: <span className="font-medium text-foreground">{formatPhoneDisplay(currentPhone)}</span>
+          . Verificaremos el número nuevo con SMS.
+        </CardDescription>
       </div>
 
       {done ? <FormMessage tone="success">Teléfono actualizado.</FormMessage> : null}
@@ -304,28 +386,20 @@ function PhoneChangeCard() {
 }
 
 function SessionCard() {
-  const router = useRouter();
   const logout = useLogout();
 
   return (
-    <Card className="space-y-4">
-      <div className="space-y-1">
-        <CardTitle>Sesión</CardTitle>
-        <CardDescription>Cierra la sesión en este dispositivo.</CardDescription>
+    <Card className="space-y-4 rounded-3xl border-border shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-1">
+          <CardTitle>Sesión</CardTitle>
+          <CardDescription>Cerrá la sesión en este dispositivo.</CardDescription>
+        </div>
+        <Button variant="outline" disabled={logout.isPending} onClick={() => logout.mutate()}>
+          <LogOut aria-hidden className="h-4 w-4" />
+          {logout.isPending ? 'Cerrando…' : 'Cerrar sesión'}
+        </Button>
       </div>
-      <Button
-        variant="outline"
-        disabled={logout.isPending}
-        onClick={() =>
-          logout.mutate(undefined, {
-            onSettled: () => {
-              router.replace('/ingresar');
-            },
-          })
-        }
-      >
-        {logout.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
-      </Button>
     </Card>
   );
 }

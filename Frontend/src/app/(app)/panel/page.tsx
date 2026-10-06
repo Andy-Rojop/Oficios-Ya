@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: 'Mi panel' };
 
 export default function PanelPage() {
   return (
-    <section className="mx-auto w-full max-w-3xl">
+    <section className="mx-auto w-full max-w-4xl">
       <WorkerDashboard />
     </section>
   );

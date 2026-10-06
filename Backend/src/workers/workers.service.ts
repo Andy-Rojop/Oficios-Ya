@@ -243,8 +243,14 @@ export class WorkersService {
     });
   }
 
-  /** RF-017: perfil público. Solo si el teléfono del usuario está verificado y la cuenta activa. */
-  async getPublicProfile(profileId: string): Promise<PublicWorkerProfileDto> {
+  /**
+   * RF-017: perfil público. Solo si el teléfono del usuario está verificado y la cuenta activa.
+   * El contacto (teléfono/WhatsApp/correo) solo se incluye cuando el visitante está autenticado.
+   */
+  async getPublicProfile(
+    profileId: string,
+    viewer?: AuthenticatedUser | null,
+  ): Promise<PublicWorkerProfileDto> {
     const profile = await this.prisma.workerProfile.findFirst({
       where: {
         id: profileId,
@@ -255,7 +261,9 @@ export class WorkersService {
     if (!profile) {
       throw new NotFoundException('No encontramos este perfil de trabajador');
     }
-    return PublicWorkerProfileDto.fromEntity(profile, (path) => this.storage.getPublicUrl(path));
+    return PublicWorkerProfileDto.fromEntity(profile, (path) => this.storage.getPublicUrl(path), {
+      includeContact: Boolean(viewer),
+    });
   }
 
   /** dpi/nit: únicamente el dueño del perfil o un administrador. */

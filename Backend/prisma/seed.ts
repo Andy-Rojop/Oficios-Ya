@@ -137,9 +137,10 @@ async function main() {
   const workerProfile = await prisma.workerProfile.upsert({
     where: { userId: workerUser.id },
     update: {
-      headline: 'Plomería a domicilio',
+      // Escapes Unicode: evita corrupción de tildes si el seed corre con encoding raro en Windows.
+      headline: 'Plomer\u00eda a domicilio',
       description:
-        'Reparación de fugas, instalación de lavamanos y destape de drenajes. Atención en El Asintal.',
+        'Reparaci\u00f3n de fugas, instalaci\u00f3n de lavamanos y destape de drenajes. Atenci\u00f3n en El Asintal.',
       experienceYears: 8,
       availability: Availability.AVAILABLE,
       mainCategoryId: plomeria.id,
@@ -156,9 +157,9 @@ async function main() {
     },
     create: {
       userId: workerUser.id,
-      headline: 'Plomería a domicilio',
+      headline: 'Plomer\u00eda a domicilio',
       description:
-        'Reparación de fugas, instalación de lavamanos y destape de drenajes. Atención en El Asintal.',
+        'Reparaci\u00f3n de fugas, instalaci\u00f3n de lavamanos y destape de drenajes. Atenci\u00f3n en El Asintal.',
       experienceYears: 8,
       availability: Availability.AVAILABLE,
       mainCategoryId: plomeria.id,

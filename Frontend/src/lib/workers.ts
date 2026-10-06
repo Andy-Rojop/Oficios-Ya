@@ -203,8 +203,8 @@ export const workersApi = {
   deletePortfolioItem: (id: string) =>
     apiFetch<void>(`/workers/me/portfolio/${id}`, { method: 'DELETE' }),
 
-  getPublicProfile: (id: string) =>
-    apiFetch<PublicWorkerProfile>(`/workers/${id}`, { cache: 'no-store' }),
+  getPublicProfile: (id: string, init?: RequestInit) =>
+    apiFetch<PublicWorkerProfile>(`/workers/${id}`, { cache: 'no-store', ...init }),
 };
 
 /** Texto de precio de referencia, p. ej. "Desde Q150 por visita" o "A convenir". */

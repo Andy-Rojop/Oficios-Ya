@@ -1,15 +1,21 @@
 @import 'tailwindcss';
 
+/**
+ * Paleta OficiosYa: tinta pizarra, fondos neutros y acento azul marino.
+ */
 :root {
-  --background: #f4f7f2;
-  --foreground: #14231a;
-  --brand: #1f6b3a;
-  --brand-dark: #154c29;
-  --brand-soft: #dcefda;
-  --muted: #5b6b60;
+  --background: #f0f2f5;
+  --foreground: #1a2332;
+  --brand: #243248;
+  --brand-dark: #162033;
+  --brand-soft: #e6eaf0;
+  --muted: #5f6b72;
   --surface: #ffffff;
-  --border: #d5e0d6;
-  --ring: #2f8f4e;
+  --border: #d5dae3;
+  --ring: #1e3a5f;
+  --accent: #1e3a5f;
+  --accent-dark: #152a45;
+  --accent-soft: #e4ebf3;
 }
 
 @theme inline {
@@ -22,14 +28,18 @@
   --color-surface: var(--surface);
   --color-border: var(--border);
   --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-source-sans);
   --font-display: var(--font-fraunces);
 }
 
 body {
   background:
-    radial-gradient(circle at top left, rgba(31, 107, 58, 0.12), transparent 40%),
-    linear-gradient(180deg, #f7faf6 0%, #eef4ec 100%);
+    radial-gradient(ellipse at top left, rgba(30, 58, 95, 0.08), transparent 42%),
+    radial-gradient(ellipse at top right, rgba(36, 50, 72, 0.05), transparent 38%),
+    linear-gradient(180deg, #f7f8fa 0%, var(--background) 55%, #e8ebf0 100%);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   min-height: 100vh;
@@ -38,4 +48,52 @@ body {
 *:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* Leaflet popups alineados al sistema */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(26, 35, 50, 0.12);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.leaflet-popup-tip {
+  box-shadow: none;
+}
+
+.leaflet-container a {
+  color: var(--foreground);
+}
+
+@keyframes home-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes home-map-drift {
+  from {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[home-fade-up_0\.7s_ease-out_both\],
+  .animate-\[home-fade-up_0\.7s_ease-out_0\.08s_both\],
+  .animate-\[home-fade-up_0\.7s_ease-out_0\.12s_both\],
+  .animate-\[home-fade-up_0\.7s_ease-out_0\.16s_both\],
+  .animate-\[home-fade-up_0\.7s_ease-out_0\.24s_both\],
+  .animate-\[home-fade-up_0\.7s_ease-out_0\.32s_both\],
+  .animate-\[home-map-drift_18s_ease-in-out_infinite_alternate\] {
+    animation: none !important;
+  }
 }

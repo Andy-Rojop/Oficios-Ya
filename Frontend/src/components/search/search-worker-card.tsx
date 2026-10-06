@@ -11,7 +11,7 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
   const extraZones = worker.zones.length > 3 ? ` +${worker.zones.length - 3}` : '';
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition hover:border-brand/40">
+    <article className="overflow-hidden rounded-2xl border border-border bg-surface transition hover:border-foreground/20 hover:shadow-md">
       <Link href={`/trabajador/${worker.id}`} className="flex gap-3 p-3 sm:gap-4 sm:p-4">
         <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-soft sm:h-24 sm:w-24">
           {worker.photoUrl ? (
@@ -31,7 +31,15 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
               </h2>
               <p className="truncate text-sm text-muted">{worker.name}</p>
             </div>
-            <span className="shrink-0 rounded-md bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand-dark">
+            <span
+              className={
+                worker.availability === 'AVAILABLE'
+                  ? 'shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-semibold text-accent-dark'
+                  : worker.availability === 'BUSY'
+                    ? 'shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900'
+                    : 'shrink-0 rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-muted'
+              }
+            >
               {AVAILABILITY_LABELS[worker.availability]}
             </span>
           </div>

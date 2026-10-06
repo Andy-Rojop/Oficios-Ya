@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { ContactButton } from '@/components/chat/contact-button';
 import { RequestServiceButton } from '@/components/requests/request-service-button';
 import { Card, CardTitle } from '@/components/ui/card';
+import { WorkerContactCard } from '@/components/worker/worker-contact-card';
 import { WorkerReviews } from '@/components/worker/worker-reviews';
 import { ApiError } from '@/lib/api-client';
-import { formatPhoneDisplay } from '@/lib/phone';
 import {
   AVAILABILITY_LABELS,
   DAY_KEYS,
@@ -28,7 +29,16 @@ async function loadProfile(id: string): Promise<PublicWorkerProfile> {
     notFound();
   }
   try {
-    return await workersApi.getPublicProfile(id);
+    // Reenvía cookies al API para que, con sesión, el contacto sí viaje en SSR.
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((entry) => `${entry.name}=${entry.value}`)
+      .join('; ');
+    return await workersApi.getPublicProfile(id, {
+      cache: 'no-store',
+      headers: cookieHeader ? { Cookie: cookieHeader } : undefined,
+    });
   } catch (error) {
     if (error instanceof ApiError && (error.statusCode === 404 || error.statusCode === 400)) {
       notFound();
@@ -51,9 +61,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 const AVAILABILITY_STYLES = {
-  AVAILABLE: 'bg-brand-soft text-brand-dark',
+  AVAILABLE: 'bg-accent-soft text-accent-dark',
   BUSY: 'bg-amber-100 text-amber-900',
-  UNAVAILABLE: 'bg-border text-muted',
+  UNAVAILABLE: 'bg-brand-soft text-muted',
 } as const;
 
 export default async function TrabajadorPage({ params }: PageProps) {
@@ -61,8 +71,6 @@ export default async function TrabajadorPage({ params }: PageProps) {
   const profile = await loadProfile(id);
 
   const hasSchedule = profile.schedule !== null;
-  const { phone, whatsapp, email } = profile.contact;
-  const hasContact = Boolean(phone || whatsapp || email);
 
   return (
     <article className="mx-auto w-full max-w-3xl space-y-5">
@@ -220,42 +228,7 @@ export default async function TrabajadorPage({ params }: PageProps) {
 
       <WorkerReviews workerProfileId={profile.id} />
 
-      {hasContact ? (
-        <Card className="space-y-3">
-          <CardTitle>Contacto</CardTitle>
-          <ul className="space-y-2 text-sm">
-            {phone ? (
-              <li>
-                Teléfono:{' '}
-                <a className="font-semibold text-brand underline" href={`tel:${phone}`}>
-                  {formatPhoneDisplay(phone)}
-                </a>
-              </li>
-            ) : null}
-            {whatsapp ? (
-              <li>
-                WhatsApp:{' '}
-                <a
-                  className="font-semibold text-brand underline"
-                  href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {formatPhoneDisplay(whatsapp)}
-                </a>
-              </li>
-            ) : null}
-            {email ? (
-              <li>
-                Correo:{' '}
-                <a className="font-semibold text-brand underline" href={`mailto:${email}`}>
-                  {email}
-                </a>
-              </li>
-            ) : null}
-          </ul>
-        </Card>
-      ) : null}
+      <WorkerContactCard workerProfileId={profile.id} contact={profile.contact} />
 
       <p className="text-center text-sm text-muted">
         <Link href="/buscar" className="underline">

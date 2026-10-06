@@ -15,10 +15,14 @@ export class WorkersPublicController {
   @Public()
   @Get(':id')
   @ApiOperation({
-    summary: 'RF-017: perfil público de un trabajador (sin dpi, nit ni datos privados)',
+    summary:
+      'RF-017: perfil público de un trabajador (sin dpi, nit ni datos privados). Contacto solo con sesión.',
   })
-  getPublicProfile(@Param('id', UUID_PIPE) id: string): Promise<PublicWorkerProfileDto> {
-    return this.workers.getPublicProfile(id);
+  getPublicProfile(
+    @Param('id', UUID_PIPE) id: string,
+    @CurrentUser() viewer?: AuthenticatedUser,
+  ): Promise<PublicWorkerProfileDto> {
+    return this.workers.getPublicProfile(id, viewer);
   }
 
   @Get(':id/identity')

@@ -1,16 +1,21 @@
 import type { Metadata } from 'next';
-import { AuthPageShell } from '@/components/forms/auth-page-shell';
 import { RegisterForm } from '@/components/forms/register-form';
 
 export const metadata: Metadata = { title: 'Crear cuenta' };
 
-export default function RegistroPage() {
-  return (
-    <AuthPageShell
-      title="Crear cuenta"
-      description="Verifica tu teléfono y completa tus datos. No necesitas correo electrónico."
-    >
-      <RegisterForm />
-    </AuthPageShell>
-  );
+interface PageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+function parseMode(raw: string | string[] | undefined): 'CLIENT' | 'WORKER' | null {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (value === 'CLIENT' || value === 'WORKER') return value;
+  return null;
+}
+
+export default async function RegistroPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const initialMode = parseMode(params.mode);
+
+  return <RegisterForm initialMode={initialMode} />;
 }
