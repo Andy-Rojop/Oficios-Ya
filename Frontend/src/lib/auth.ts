@@ -153,8 +153,8 @@ export function useLogout() {
       disconnectChatSocket();
       queryClient.setQueryData(ME_QUERY_KEY, undefined);
       await queryClient.clear();
-      // Navegación completa: garantiza header de invitado (Buscar / Ingresar / Registrarse).
-      window.location.assign('/');
+      // Hard reload a invitado aunque falle la API (la cookie puede quedar; el clear del backend ayuda).
+      window.location.replace('/');
     },
   });
 }

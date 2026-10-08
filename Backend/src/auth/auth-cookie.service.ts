@@ -35,8 +35,18 @@ export class AuthCookieService {
   }
 
   clearAuthCookies(res: Response): void {
-    res.clearCookie(ACCESS_TOKEN_COOKIE, { ...this.baseOptions(), path: '/' });
-    res.clearCookie(REFRESH_TOKEN_COOKIE, { ...this.baseOptions(), path: REFRESH_COOKIE_PATH });
+    // clearCookie + maxAge 0: más fiable en cross-site (Vercel → Railway, SameSite=None).
+    const accessOpts = { ...this.baseOptions(), path: '/', maxAge: 0, expires: new Date(0) };
+    const refreshOpts = {
+      ...this.baseOptions(),
+      path: REFRESH_COOKIE_PATH,
+      maxAge: 0,
+      expires: new Date(0),
+    };
+    res.clearCookie(ACCESS_TOKEN_COOKIE, accessOpts);
+    res.cookie(ACCESS_TOKEN_COOKIE, '', accessOpts);
+    res.clearCookie(REFRESH_TOKEN_COOKIE, refreshOpts);
+    res.cookie(REFRESH_TOKEN_COOKIE, '', refreshOpts);
   }
 
   private baseOptions(): CookieOptions {
