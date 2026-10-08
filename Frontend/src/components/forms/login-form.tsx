@@ -3,8 +3,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { FormField, FormMessage } from '@/components/forms/form-field';
@@ -13,13 +13,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   ME_QUERY_KEY,
-  fetchMe,
   getErrorMessage,
   login,
-  safeNextPath,
+  resolvePostAuthPath,
   switchMode,
+  useMe,
   type ActiveMode,
-  type UserDto,
 } from '@/lib/auth';
 import { normalizeGuatemalaPhone } from '@/lib/phone';
 
@@ -41,26 +40,17 @@ function parseMode(value: string | null): ActiveMode | null {
   return null;
 }
 
-/** Destino post-login: panel del trabajador o home del cliente (como el feed de Facebook). */
-function destinationFor(user: UserDto, mode: ActiveMode | null, nextParam: string | null): string {
-  const effective = mode ?? user.activeMode;
-  const fallback = effective === 'WORKER' ? '/panel' : '/';
-  return safeNextPath(nextParam, fallback);
-}
-
-function goToApp(path: string) {
-  // Navegación completa: evita quedarse en /ingresar si el router client falla.
-  window.location.assign(path);
-}
-
 export function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const mode = parseMode(searchParams.get('mode'));
   const nextParam = searchParams.get('next');
   const justReset = searchParams.get('recuperada') === '1';
   const [error, setError] = useState<string | null>(null);
-  const [redirecting, setRedirecting] = useState(false);
+  const redirected = useRef(false);
+
+  const me = useMe();
 
   const {
     register,
@@ -71,27 +61,31 @@ export function LoginForm() {
     defaultValues: { phone: '', password: '' },
   });
 
-  // Si ya hay sesión, no mostrar el formulario: ir al panel/home.
+  // Una sola redirección suave si ya hay sesión (sin window.location → evita parpadeo).
   useEffect(() => {
-    let cancelled = false;
-    fetchMe()
-      .then(async (user) => {
-        if (cancelled) return;
-        setRedirecting(true);
-        let current = user;
+    if (redirected.current || me.isLoading || me.isFetching || !me.data) return;
+    redirected.current = true;
+
+    void (async () => {
+      let current = me.data;
+      try {
         if (mode && current.activeMode !== mode) {
           current = await switchMode(mode);
+          queryClient.setQueryData(ME_QUERY_KEY, current);
         }
-        queryClient.setQueryData(ME_QUERY_KEY, current);
-        goToApp(destinationFor(current, mode, nextParam));
-      })
-      .catch(() => {
-        // sin sesión: formulario normal
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [mode, nextParam, queryClient]);
+        router.replace(
+          resolvePostAuthPath({
+            activeMode: current.activeMode,
+            requestedMode: mode,
+            next: nextParam,
+          }),
+        );
+      } catch (err) {
+        redirected.current = false;
+        setError(getErrorMessage(err));
+      }
+    })();
+  }, [me.data, me.isLoading, me.isFetching, mode, nextParam, queryClient, router]);
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
@@ -106,17 +100,23 @@ export function LoginForm() {
         user = await switchMode(mode);
       }
       queryClient.setQueryData(ME_QUERY_KEY, user);
-      setRedirecting(true);
-      goToApp(destinationFor(user, mode, nextParam));
+      redirected.current = true;
+      router.replace(
+        resolvePostAuthPath({
+          activeMode: user.activeMode,
+          requestedMode: mode,
+          next: nextParam,
+        }),
+      );
     } catch (err) {
       setError(getErrorMessage(err));
     }
   });
 
   const roleLabel = mode === 'WORKER' ? 'trabajador' : mode === 'CLIENT' ? 'cliente' : null;
-  const busy = isSubmitting || redirecting;
+  const checkingSession = me.isLoading || (Boolean(me.data) && redirected.current);
 
-  if (redirecting) {
+  if (checkingSession && !error) {
     return <p className="text-center text-sm text-muted">Entrando…</p>;
   }
 
@@ -154,7 +154,7 @@ export function LoginForm() {
 
       {error ? <FormMessage tone="error">{error}</FormMessage> : null}
 
-      <Button type="submit" className="w-full" disabled={busy}>
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? 'Ingresando…' : 'Ingresar'}
       </Button>
 
@@ -166,7 +166,13 @@ export function LoginForm() {
           ¿Olvidaste tu contraseña?
         </Link>
         <Link
-          href={mode === 'WORKER' ? '/registro?mode=WORKER' : '/registro'}
+          href={
+            mode === 'WORKER'
+              ? '/registro?mode=WORKER'
+              : mode === 'CLIENT'
+                ? '/registro?mode=CLIENT'
+                : '/registro'
+          }
           className="font-medium text-brand underline-offset-4 hover:underline"
         >
           Crear una cuenta

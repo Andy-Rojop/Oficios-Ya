@@ -2,27 +2,18 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Next.js 16 renombró `middleware` a `proxy` (misma función: corre antes de renderizar la ruta).
+ * Next.js 16: `proxy` corre antes de renderizar la ruta.
  *
- * Protege las rutas privadas: si no hay cookie `access_token` redirige a /ingresar?next=...
- * Solo comprueba que la cookie exista; la validez real la verifica la API en cada petición.
- * Si el access token expiró pero aún hay refresh token, la pantalla /ingresar intenta
- * renovar la sesión automáticamente antes de pedir la contraseña.
+ * NO bloqueamos aquí por cookie `access_token`: en producción el front (Vercel) y la
+ * API (Railway) son orígenes distintos. La cookie httpOnly la emite la API y el
+ * navegador la manda solo a ese host (credentials: include). Vercel nunca la ve en
+ * `request.cookies`, así que un redirect aquí provoca bucle:
+ *   /panel → /ingresar → (fetchMe OK) → /panel → /ingresar …
  *
- * Las cookies las emite la API en localhost:4000 sin atributo Domain (host-only). Los
- * navegadores no separan cookies por puerto, así que también llegan a localhost:3000.
- * En producción define COOKIE_DOMAIN en el backend para compartirlas con el frontend.
+ * La protección real está en el cliente (`useMe` + redirect) y en la API (JWT).
  */
-const ACCESS_TOKEN_COOKIE = 'access_token';
-
-export function proxy(request: NextRequest) {
-  if (request.cookies.has(ACCESS_TOKEN_COOKIE)) {
-    return NextResponse.next();
-  }
-
-  const loginUrl = new URL('/ingresar', request.url);
-  loginUrl.searchParams.set('next', `${request.nextUrl.pathname}${request.nextUrl.search}`);
-  return NextResponse.redirect(loginUrl);
+export function proxy(_request: NextRequest) {
+  return NextResponse.next();
 }
 
 export const config = {

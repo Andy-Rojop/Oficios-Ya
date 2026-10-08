@@ -51,16 +51,16 @@ const MODE_OPTIONS: {
 
 export function AccountPanel() {
   const router = useRouter();
-  const { data: user, isLoading, error } = useMe();
+  const { data: user, isLoading, isFetching, error } = useMe();
   const unauthorized = isUnauthorized(error);
 
   useEffect(() => {
-    if (unauthorized) {
+    if (!isLoading && !isFetching && unauthorized) {
       router.replace('/ingresar?next=/cuenta');
     }
-  }, [unauthorized, router]);
+  }, [unauthorized, isLoading, isFetching, router]);
 
-  if (isLoading) {
+  if (isLoading || (isFetching && !user)) {
     return <p className="text-muted">Cargando tu cuenta…</p>;
   }
 

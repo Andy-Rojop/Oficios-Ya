@@ -360,7 +360,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
       });
       await signOutFirebase();
       queryClient.setQueryData(ME_QUERY_KEY, user);
-      router.replace('/panel');
+      router.replace(user.activeMode === 'WORKER' ? '/panel' : '/');
     } catch (err) {
       setError(getErrorMessage(err));
     }

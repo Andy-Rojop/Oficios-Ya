@@ -94,7 +94,6 @@ export function useMe() {
     queryFn: fetchMe,
     retry: false,
     staleTime: 60_000,
-    refetchOnMount: 'always',
   });
 }
 
@@ -139,7 +138,7 @@ export function useSwitchMode(options?: { navigate?: boolean }) {
     onSuccess: async (updated) => {
       await applyAuthenticatedUser(queryClient, updated);
       if (shouldNavigate) {
-        router.replace(updated.activeMode === 'WORKER' ? '/panel' : '/');
+        router.replace(homePathForMode(updated.activeMode));
       }
     },
   });
@@ -182,6 +181,39 @@ export function getErrorMessage(error: unknown): string {
 export function safeNextPath(next: string | null | undefined, fallback = '/panel'): string {
   if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) {
     return fallback;
+  }
+  return next;
+}
+
+/** Home del módulo según el modo activo. */
+export function homePathForMode(mode: ActiveMode): string {
+  return mode === 'WORKER' ? '/panel' : '/';
+}
+
+/**
+ * Destino tras login/registro.
+ * Respeta `next` solo si encaja con el modo; si no, manda al módulo correcto
+ * (cliente → `/`, trabajador → `/panel`).
+ */
+export function resolvePostAuthPath(options: {
+  activeMode: ActiveMode;
+  requestedMode?: ActiveMode | null;
+  next?: string | null;
+}): string {
+  const mode = options.requestedMode ?? options.activeMode;
+  const home = homePathForMode(mode);
+  const next = options.next ? safeNextPath(options.next, home) : home;
+
+  if (mode === 'WORKER') {
+    if (next === '/' || next.startsWith('/buscar') || next.startsWith('/registro')) {
+      return home;
+    }
+    return next;
+  }
+
+  // Cliente: nunca al panel de trabajador
+  if (next === '/panel' || next.startsWith('/panel/')) {
+    return home;
   }
   return next;
 }
