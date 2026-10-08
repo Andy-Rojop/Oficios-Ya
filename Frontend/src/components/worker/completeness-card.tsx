@@ -9,6 +9,7 @@ export function CompletenessCard() {
   const { data } = useQuery<Completeness, Error>({
     queryKey: WORKER_QUERY_KEYS.completeness,
     queryFn: workersApi.getCompleteness,
+    refetchOnMount: 'always',
   });
 
   if (!data) {

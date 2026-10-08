@@ -33,7 +33,7 @@ export function ReviewForm({
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.detail(requestId) });
-      void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.list });
+      void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.lists });
       if (workerProfileId) {
         void queryClient.invalidateQueries({ queryKey: REVIEW_QUERY_KEYS.worker(workerProfileId) });
       }

@@ -40,10 +40,12 @@ function linksForMode(mode: ActiveMode | undefined): NavLink[] {
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { data: user, isLoading } = useMe();
+  const { data: user, isLoading, isFetching } = useMe();
 
+  // Si ya hay usuario en caché, no vaciar el menú mientras se revalida.
+  const showGuest = !user && !isLoading && !isFetching;
   const links: NavLink[] = [
-    ...(isLoading ? [] : user ? linksForMode(user.activeMode) : GUEST_LINKS),
+    ...(user ? linksForMode(user.activeMode) : showGuest ? GUEST_LINKS : []),
     ...(isStaffRole(user?.role) ? [{ href: '/admin', label: 'Admin' }] : []),
   ];
 

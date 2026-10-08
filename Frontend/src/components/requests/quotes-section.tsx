@@ -34,7 +34,7 @@ export function QuotesSection({ request }: { request: ServiceRequestDto }) {
 
   function refresh() {
     void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.detail(request.id) });
-    void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.list });
+    void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.lists });
   }
 
   const respond = useMutation({

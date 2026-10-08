@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Briefcase, Check, LogOut, Mail, MapPin, Phone, Search, UserRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -17,10 +17,10 @@ import {
   changePhone,
   getErrorMessage,
   isUnauthorized,
-  switchMode,
   updateEmail,
   useLogout,
   useMe,
+  useSwitchMode,
   type ActiveMode,
   type UserDto,
 } from '@/lib/auth';
@@ -159,11 +159,7 @@ function ProfileCard({ user }: { user: UserDto }) {
 }
 
 function ModeCard({ user }: { user: UserDto }) {
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: switchMode,
-    onSuccess: (updated) => queryClient.setQueryData(ME_QUERY_KEY, updated),
-  });
+  const mutation = useSwitchMode();
 
   return (
     <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">

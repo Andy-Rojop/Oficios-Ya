@@ -65,7 +65,9 @@ export interface CreateRequestInput {
 }
 
 export const REQUEST_QUERY_KEYS = {
-  list: ['requests', 'list'] as const,
+  /** Prefijo para invalidar todas las listas (cliente y trabajador). */
+  lists: ['requests', 'list'] as const,
+  list: (role: 'client' | 'worker') => ['requests', 'list', role] as const,
   detail: (id: string) => ['requests', 'detail', id] as const,
 };
 

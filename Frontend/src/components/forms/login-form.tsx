@@ -12,7 +12,7 @@ import { PhoneInput } from '@/components/forms/phone-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  ME_QUERY_KEY,
+  applyAuthenticatedUser,
   fetchMe,
   getErrorMessage,
   login,
@@ -73,7 +73,7 @@ export function LoginForm() {
         if (mode && current.activeMode !== mode) {
           current = await switchMode(mode);
         }
-        queryClient.setQueryData(ME_QUERY_KEY, current);
+        await applyAuthenticatedUser(queryClient, current);
         router.replace(next);
       })
       .catch(() => {
@@ -93,7 +93,7 @@ export function LoginForm() {
       if (mode && user.activeMode !== mode) {
         user = await switchMode(mode);
       }
-      queryClient.setQueryData(ME_QUERY_KEY, user);
+      await applyAuthenticatedUser(queryClient, user);
       router.replace(next);
     } catch (err) {
       setError(getErrorMessage(err));

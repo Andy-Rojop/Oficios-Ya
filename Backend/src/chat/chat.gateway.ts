@@ -117,8 +117,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
       client.disconnect(true);
       return { ok: false, statusCode: 401, error: 'Debes iniciar sesión para usar el chat' };
     }
+    let current = user;
     try {
-      await this.auth.ensureSessionActive(user);
+      current = await this.auth.ensureSessionActive(user);
+      client.data.user = current;
     } catch {
       client.disconnect(true);
       return {
@@ -129,7 +131,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
     }
 
     try {
-      return { ok: true, data: await handler(user) };
+      return { ok: true, data: await handler(current) };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         client.disconnect(true);

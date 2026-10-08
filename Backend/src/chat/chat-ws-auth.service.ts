@@ -39,9 +39,12 @@ export class ChatWsAuthService {
     return this.strategy.validate(payload);
   }
 
-  /** Re-valida que la sesión del socket siga vigente (logout, sesión revocada o cuenta suspendida). */
-  async ensureSessionActive(user: AuthenticatedUser): Promise<void> {
-    await this.strategy.validate({
+  /**
+   * Re-valida la sesión (logout, revocada o suspendida) y devuelve el usuario fresco
+   * (p. ej. `activeMode` actualizado tras un cambio de modo).
+   */
+  async ensureSessionActive(user: AuthenticatedUser): Promise<AuthenticatedUser> {
+    return this.strategy.validate({
       sub: user.id,
       sid: user.sessionId,
       role: user.role,

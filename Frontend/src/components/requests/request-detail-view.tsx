@@ -44,7 +44,7 @@ export function RequestDetailView({ requestId }: { requestId: string }) {
 
   function onUpdated(request: ServiceRequestDto) {
     queryClient.setQueryData(REQUEST_QUERY_KEYS.detail(requestId), request);
-    void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.list });
+    void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.lists });
   }
 
   const changeStatus = useMutation({

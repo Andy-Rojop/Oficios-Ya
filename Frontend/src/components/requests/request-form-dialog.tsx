@@ -56,7 +56,7 @@ export function RequestFormDialog({
         urgent,
       }),
     onSuccess: (request) => {
-      void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.list });
+      void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.lists });
       router.push(`/solicitudes/${request.id}`);
     },
     onError: (error) => {

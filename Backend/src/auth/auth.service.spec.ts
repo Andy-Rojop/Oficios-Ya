@@ -135,9 +135,9 @@ describe('AuthService', () => {
       expect(state.failedLoginAttempts).toBe(1);
     });
 
-    it('bloquea la cuenta tras 5 intentos fallidos', async () => {
+    it('bloquea la cuenta tras LOGIN_MAX_FAILED_ATTEMPTS intentos fallidos', async () => {
       const max = LIMITS.LOGIN_MAX_FAILED_ATTEMPTS;
-      expect(max).toBe(5);
+      expect(max).toBe(10);
 
       for (let attempt = 1; attempt < max; attempt++) {
         await expect(service.login({ phone: PHONE, password: 'wrong' })).rejects.toBeInstanceOf(
@@ -146,12 +146,12 @@ describe('AuthService', () => {
       }
       expect(state.lockedUntil).toBeNull();
 
-      // 5.º intento fallido: la cuenta queda bloqueada (423)
-      const fifth = await service
+      // Último intento fallido: la cuenta queda bloqueada (423)
+      const last = await service
         .login({ phone: PHONE, password: 'wrong' })
         .catch((e: unknown) => e);
-      expect(fifth).toBeInstanceOf(HttpException);
-      expect((fifth as HttpException).getStatus()).toBe(423);
+      expect(last).toBeInstanceOf(HttpException);
+      expect((last as HttpException).getStatus()).toBe(423);
       expect(state.lockedUntil).toBeInstanceOf(Date);
       expect(state.lockedUntil!.getTime()).toBeGreaterThan(Date.now());
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, Inbox, MessageSquare, Wrench } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { FormMessage } from '@/components/forms/form-field';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
-import { ME_QUERY_KEY, getErrorMessage, isUnauthorized, switchMode, useMe } from '@/lib/auth';
+import { getErrorMessage, isUnauthorized, useMe, useSwitchMode } from '@/lib/auth';
 import { WORKER_QUERY_KEYS, workersApi, type OwnWorkerProfile } from '@/lib/workers';
 import { CompletenessCard } from './completeness-card';
 import { PortfolioCard } from './portfolio-card';
@@ -48,11 +48,7 @@ export function WorkerDashboard() {
 }
 
 function ClientModeNotice() {
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: () => switchMode('WORKER'),
-    onSuccess: (updated) => queryClient.setQueryData(ME_QUERY_KEY, updated),
-  });
+  const mutation = useSwitchMode();
 
   return (
     <Card className="space-y-4">
@@ -65,7 +61,7 @@ function ClientModeNotice() {
       {mutation.isError ? (
         <FormMessage tone="error">{getErrorMessage(mutation.error)}</FormMessage>
       ) : null}
-      <Button disabled={mutation.isPending} onClick={() => mutation.mutate()}>
+      <Button disabled={mutation.isPending} onClick={() => mutation.mutate('WORKER')}>
         {mutation.isPending ? 'Cambiando…' : 'Cambiar a modo trabajador'}
       </Button>
     </Card>
@@ -77,6 +73,7 @@ function WorkerPanel() {
   const profileQuery = useQuery<OwnWorkerProfile, Error>({
     queryKey: WORKER_QUERY_KEYS.profile,
     queryFn: workersApi.getProfile,
+    refetchOnMount: 'always',
   });
 
   if (profileQuery.isLoading) {

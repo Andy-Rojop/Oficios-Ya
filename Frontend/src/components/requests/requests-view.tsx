@@ -27,10 +27,13 @@ const EMPTY_WORKER =
 export function RequestsView() {
   const router = useRouter();
   const me = useMe();
+  const asWorker = me.data?.activeMode === 'WORKER';
+  const role = asWorker ? 'worker' : 'client';
 
   const requests = useQuery<ServiceRequestDto[], Error>({
-    queryKey: REQUEST_QUERY_KEYS.list,
-    queryFn: () => requestsApi.list(),
+    queryKey: REQUEST_QUERY_KEYS.list(role),
+    queryFn: () => requestsApi.list(role),
+    enabled: Boolean(me.data),
     refetchOnMount: 'always',
     retry: false,
   });
@@ -41,9 +44,7 @@ export function RequestsView() {
     }
   }, [me.error, requests.error, router]);
 
-  const asWorker = me.data?.activeMode === 'WORKER';
-  const all = requests.data ?? [];
-  const visible = all.filter((request) => request.myRole === (asWorker ? 'WORKER' : 'CLIENT'));
+  const visible = requests.data ?? [];
   const emptyText = asWorker ? EMPTY_WORKER : EMPTY_CLIENT;
 
   return (

@@ -1,7 +1,9 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { ApiError, apiFetch } from './api-client';
+import { connectChatSocket, disconnectChatSocket } from './socket';
 
 export type ActiveMode = 'CLIENT' | 'WORKER';
 export type UserRole = 'USER' | 'ADMIN' | 'MUNICIPAL';
@@ -92,6 +94,7 @@ export function useMe() {
     queryFn: fetchMe,
     retry: false,
     staleTime: 60_000,
+    refetchOnMount: 'always',
   });
 }
 
@@ -101,12 +104,54 @@ export function useSetMe() {
   return (user: UserDto) => queryClient.setQueryData(ME_QUERY_KEY, user);
 }
 
+/**
+ * Actualiza `me` e invalida datos que dependen del modo/sesión
+ * (solicitudes, chat, panel trabajador, avisos) y reinicia el socket.
+ */
+export async function applyAuthenticatedUser(
+  queryClient: QueryClient,
+  user: UserDto,
+  options?: { reconnectSocket?: boolean },
+): Promise<void> {
+  queryClient.setQueryData(ME_QUERY_KEY, user);
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ['requests'] }),
+    queryClient.invalidateQueries({ queryKey: ['chat'] }),
+    queryClient.invalidateQueries({ queryKey: ['workers'] }),
+    queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  ]);
+  if (options?.reconnectSocket !== false) {
+    disconnectChatSocket();
+    connectChatSocket();
+  }
+}
+
+/**
+ * Cambia CLIENT ↔ WORKER, refresca cachés y (por defecto) navega al home del modo.
+ */
+export function useSwitchMode(options?: { navigate?: boolean }) {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const shouldNavigate = options?.navigate !== false;
+
+  return useMutation({
+    mutationFn: switchMode,
+    onSuccess: async (updated) => {
+      await applyAuthenticatedUser(queryClient, updated);
+      if (shouldNavigate) {
+        router.replace(updated.activeMode === 'WORKER' ? '/panel' : '/');
+      }
+    },
+  });
+}
+
 /** Cierra sesión, limpia caché y vuelve a la home pública (`/`). */
 export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
     onSettled: async () => {
+      disconnectChatSocket();
       queryClient.setQueryData(ME_QUERY_KEY, undefined);
       await queryClient.clear();
       // Navegación completa: garantiza header de invitado (Buscar / Ingresar / Registrarse).
