@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -12,13 +12,14 @@ import { PhoneInput } from '@/components/forms/phone-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  applyAuthenticatedUser,
+  ME_QUERY_KEY,
   fetchMe,
   getErrorMessage,
   login,
   safeNextPath,
   switchMode,
   type ActiveMode,
+  type UserDto,
 } from '@/lib/auth';
 import { normalizeGuatemalaPhone } from '@/lib/phone';
 
@@ -40,19 +41,26 @@ function parseMode(value: string | null): ActiveMode | null {
   return null;
 }
 
-function defaultNextForMode(mode: ActiveMode | null): string {
-  return mode === 'WORKER' ? '/panel' : '/';
+/** Destino post-login: panel del trabajador o home del cliente (como el feed de Facebook). */
+function destinationFor(user: UserDto, mode: ActiveMode | null, nextParam: string | null): string {
+  const effective = mode ?? user.activeMode;
+  const fallback = effective === 'WORKER' ? '/panel' : '/';
+  return safeNextPath(nextParam, fallback);
+}
+
+function goToApp(path: string) {
+  // Navegación completa: evita quedarse en /ingresar si el router client falla.
+  window.location.assign(path);
 }
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const mode = parseMode(searchParams.get('mode'));
   const nextParam = searchParams.get('next');
-  const next = safeNextPath(nextParam, defaultNextForMode(mode));
   const justReset = searchParams.get('recuperada') === '1';
   const [error, setError] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
 
   const {
     register,
@@ -63,44 +71,54 @@ export function LoginForm() {
     defaultValues: { phone: '', password: '' },
   });
 
+  // Si ya hay sesión, no mostrar el formulario: ir al panel/home.
   useEffect(() => {
-    if (!nextParam) return;
     let cancelled = false;
     fetchMe()
       .then(async (user) => {
         if (cancelled) return;
+        setRedirecting(true);
         let current = user;
         if (mode && current.activeMode !== mode) {
           current = await switchMode(mode);
         }
-        await applyAuthenticatedUser(queryClient, current);
-        router.replace(next);
+        queryClient.setQueryData(ME_QUERY_KEY, current);
+        goToApp(destinationFor(current, mode, nextParam));
       })
       .catch(() => {
-        // sin sesión: se muestra el formulario normal
+        // sin sesión: formulario normal
       });
     return () => {
       cancelled = true;
     };
-  }, [nextParam, next, mode, queryClient, router]);
+  }, [mode, nextParam, queryClient]);
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
     const phone = normalizeGuatemalaPhone(values.phone);
-    if (!phone) return;
+    if (!phone) {
+      setError('Ingresa un teléfono válido de Guatemala (8 dígitos)');
+      return;
+    }
     try {
       let user = await login({ phone, password: values.password });
       if (mode && user.activeMode !== mode) {
         user = await switchMode(mode);
       }
-      await applyAuthenticatedUser(queryClient, user);
-      router.replace(next);
+      queryClient.setQueryData(ME_QUERY_KEY, user);
+      setRedirecting(true);
+      goToApp(destinationFor(user, mode, nextParam));
     } catch (err) {
       setError(getErrorMessage(err));
     }
   });
 
   const roleLabel = mode === 'WORKER' ? 'trabajador' : mode === 'CLIENT' ? 'cliente' : null;
+  const busy = isSubmitting || redirecting;
+
+  if (redirecting) {
+    return <p className="text-center text-sm text-muted">Entrando…</p>;
+  }
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4">
@@ -136,7 +154,7 @@ export function LoginForm() {
 
       {error ? <FormMessage tone="error">{error}</FormMessage> : null}
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button type="submit" className="w-full" disabled={busy}>
         {isSubmitting ? 'Ingresando…' : 'Ingresar'}
       </Button>
 
@@ -148,7 +166,7 @@ export function LoginForm() {
           ¿Olvidaste tu contraseña?
         </Link>
         <Link
-          href="/registro"
+          href={mode === 'WORKER' ? '/registro?mode=WORKER' : '/registro'}
           className="font-medium text-brand underline-offset-4 hover:underline"
         >
           Crear una cuenta
