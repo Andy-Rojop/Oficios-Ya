@@ -4,9 +4,9 @@ import { ArrowRight, Briefcase, Check, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'Elegí cómo entrar',
+  title: 'Elija cómo ingresar',
   description:
-    'Entrá como cliente para buscar oficios, o como trabajador para ofrecer tus servicios.',
+    'Ingrese como cliente para buscar oficios, o como trabajador para ofrecer sus servicios.',
 };
 
 const ROLES = [
@@ -14,7 +14,7 @@ const ROLES = [
     mode: 'CLIENT' as const,
     title: 'Cliente',
     badge: 'Busco un oficio',
-    description: 'Encontrá plomeros, electricistas y más cerca de vos en El Asintal.',
+    description: 'Encuentre plomeros, electricistas y más cerca de usted en El Asintal.',
     points: ['Mapa de oficios cercanos', 'Precios de referencia', 'Chat privado'],
     loginHref: '/ingresar?mode=CLIENT&next=/',
     registerHref: '/registro?mode=CLIENT',
@@ -25,7 +25,7 @@ const ROLES = [
     mode: 'WORKER' as const,
     title: 'Trabajador',
     badge: 'Ofrezco mis servicios',
-    description: 'Mostrá tu oficio, precios y fotos. Recibí solicitudes de clientes.',
+    description: 'Muestre su oficio, precios y fotos. Reciba solicitudes de clientes.',
     points: ['Perfil público', 'Solicitudes y cotizaciones', 'Más visibilidad local'],
     loginHref: '/ingresar?mode=WORKER&next=/panel',
     registerHref: '/registro?mode=WORKER',
@@ -54,10 +54,10 @@ export default function RolesPage() {
             className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl"
             style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
           >
-            ¿Cómo querés entrar?
+            ¿Cómo desea ingresar?
           </h1>
           <p className="mt-3 max-w-md text-base text-white/75 sm:text-lg">
-            Elegí tu rol. Después podés cambiarlo cuando quieras desde tu cuenta.
+            Elija su rol. Después puede cambiarlo cuando quiera desde su cuenta.
           </p>
         </header>
 

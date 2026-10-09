@@ -10,7 +10,7 @@ export type ScheduleDayKey = (typeof SCHEDULE_DAYS)[number];
 
 export class ScheduleDayDto {
   @ApiProperty({ description: 'true si no atiende ese día' })
-  @IsBoolean({ message: 'Indica si atiendes o no ese día' })
+  @IsBoolean({ message: 'Indique si atiende o no ese día' })
   closed: boolean;
 
   @ApiPropertyOptional({ example: '08:00' })

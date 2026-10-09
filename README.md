@@ -36,3 +36,11 @@ Constantes/enums compartidos viven duplicados (a propósito, para deploys indepe
 - `Frontend/src/lib/shared/`
 
 Mantenerlos alineados si cambiás un límite o enum.
+
+## Guía de estilo de textos
+
+Toda la interfaz (web y mensajes de API visibles al usuario) usa **ustedeo**:
+
+- Preferir: «Ingrese», «Seleccione», «Verifique», «Toque el mapa», «Elija su rol».
+- Evitar voseo («querés», «podés», «Filtrá», «Tocá») y tuteo informal («tu/tus» + «puedes/tienes» en imperativos).
+- Textos repetidos (botones, errores comunes): `Frontend/src/lib/ui-copy.ts`.

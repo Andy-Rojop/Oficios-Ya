@@ -88,7 +88,7 @@ export function NotificationBell({ enabled }: { enabled: boolean }) {
             {isLoading ? (
               <li className="px-3 py-4 text-sm text-muted">Cargando…</li>
             ) : !data?.items.length ? (
-              <li className="px-3 py-4 text-sm text-muted">No tienes notificaciones.</li>
+              <li className="px-3 py-4 text-sm text-muted">No tiene notificaciones.</li>
             ) : (
               data.items.map((item) => {
                 const content = (

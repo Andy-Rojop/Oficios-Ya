@@ -136,19 +136,19 @@ export function statusHint(request: ServiceRequestDto): string {
   switch (request.status) {
     case 'SENT':
       return mine === 'WORKER'
-        ? 'Un cliente te envió esta solicitud. Acéptala o recházala.'
+        ? 'Un cliente le envió esta solicitud. Acéptela o rechácela.'
         : 'Esperando la respuesta del trabajador.';
     case 'ACCEPTED':
       return mine === 'WORKER'
-        ? 'Aceptaste la solicitud. Coordina los detalles por chat y envía tu cotización.'
-        : 'El trabajador aceptó. Coordinen los detalles por chat.';
+        ? 'Aceptó la solicitud. Coordine los detalles por chat y envíe su cotización.'
+        : 'El trabajador aceptó. Coordine los detalles por chat.';
     case 'IN_PROGRESS':
       return 'El trabajo está en curso.';
     case 'COMPLETED':
       if (request.clientConfirmedAt) return 'Trabajo finalizado y confirmado por el cliente.';
       return mine === 'CLIENT'
-        ? 'El trabajador marcó el trabajo como finalizado. Confírmalo para poder calificarlo.'
-        : 'Marcaste el trabajo como finalizado. Falta que el cliente lo confirme.';
+        ? 'El trabajador marcó el trabajo como finalizado. Confírmelo para poder calificarlo.'
+        : 'Marcó el trabajo como finalizado. Falta que el cliente lo confirme.';
     case 'REJECTED':
       return 'El trabajador rechazó esta solicitud.';
     case 'CANCELLED':

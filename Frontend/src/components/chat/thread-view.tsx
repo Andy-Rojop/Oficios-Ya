@@ -413,8 +413,8 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
         ) : null}
         {!messagesQuery.isLoading && !messagesQuery.isError && messages.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted">
-            Escribe tu primer mensaje{summary ? ` a ${summary.peer.name}` : ''}. Describe qué
-            necesitas y cuándo.
+            Escriba su primer mensaje{summary ? ` a ${summary.peer.name}` : ''}. Describa qué
+            necesita y cuándo.
           </p>
         ) : null}
 
@@ -445,8 +445,8 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
           <div className="flex flex-wrap items-center justify-between gap-2 py-1 text-sm">
             <p className="text-muted">
               {summary.blockedByMe
-                ? 'Bloqueaste a esta persona. Desbloquéala para volver a escribir.'
-                : 'No puedes enviar mensajes en esta conversación.'}
+                ? 'Bloqueó a esta persona. Desbloquéela para volver a escribir.'
+                : 'No puede enviar mensajes en esta conversación.'}
             </p>
             {summary.blockedByMe ? (
               <Button
@@ -496,8 +496,8 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
               value={text}
               rows={1}
               maxLength={MESSAGE_MAX_LENGTH}
-              aria-label="Escribe un mensaje"
-              placeholder={busy === 'image' ? 'Enviando foto…' : 'Escribe un mensaje'}
+              aria-label="Escriba un mensaje"
+              placeholder={busy === 'image' ? 'Enviando foto…' : 'Escriba un mensaje'}
               disabled={!summary}
               onChange={(event) => setText(event.target.value)}
               onKeyDown={(event) => {

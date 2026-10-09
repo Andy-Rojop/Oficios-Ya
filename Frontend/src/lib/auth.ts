@@ -169,12 +169,12 @@ export function getErrorMessage(error: unknown): string {
     return error.message;
   }
   if (error instanceof TypeError) {
-    return 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.';
+    return 'No se pudo conectar con el servidor. Revise su conexión e inténtelo de nuevo.';
   }
   if (error instanceof Error) {
     return error.message;
   }
-  return 'Ocurrió un error inesperado. Inténtalo de nuevo.';
+  return 'Ocurrió un error inesperado. Inténtelo de nuevo.';
 }
 
 /** Solo permite redirigir a rutas internas (evita open redirect). */

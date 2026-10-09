@@ -131,7 +131,7 @@ export class AdminService {
       throw new BadRequestException('Solo se puede poner ACTIVE o SUSPENDED');
     }
     if (userId === actorId) {
-      throw new BadRequestException('No puedes cambiar el estado de tu propia cuenta');
+      throw new BadRequestException('No puede cambiar el estado de su propia cuenta');
     }
 
     const user = await this.prisma.user.findUnique({
@@ -247,7 +247,7 @@ export class AdminService {
       body:
         dto.decision === IdentityStatus.VERIFIED
           ? 'Tu identidad fue aprobada. Ya aparece como verificada en tu perfil.'
-          : `Tu identidad fue rechazada.${dto.note ? ` Motivo: ${dto.note}` : ' Revisa tus datos e inténtalo de nuevo.'}`,
+          : `Su identidad fue rechazada.${dto.note ? ` Motivo: ${dto.note}` : ' Revise sus datos e inténtelo de nuevo.'}`,
       link: '/panel',
     });
 
@@ -378,7 +378,7 @@ export class AdminService {
         },
         ip,
       });
-      throw new ForbiddenException('No puedes ver esta conversación sin un reporte abierto');
+      throw new ForbiddenException('No puede ver esta conversación sin un reporte abierto');
     }
 
     const conversation = await this.prisma.conversation.findUnique({

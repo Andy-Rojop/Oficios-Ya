@@ -49,7 +49,7 @@ export class RegisterDto {
   email?: string;
 
   @ApiProperty({ example: true })
-  @Equals(true, { message: 'Debes aceptar los términos y condiciones' })
+  @Equals(true, { message: 'Debe aceptar los términos y condiciones' })
   acceptTerms: true;
 
   @ApiPropertyOptional({ description: 'Iniciar directamente en modo trabajador' })

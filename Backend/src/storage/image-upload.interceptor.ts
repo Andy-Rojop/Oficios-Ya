@@ -9,6 +9,7 @@ import {
 import type { Request, Response } from 'express';
 import multer from 'multer';
 import type { Observable } from 'rxjs';
+import { ALLOWED_IMAGE_MIME_TYPES, MESSAGE_INVALID_FORMAT } from './image-processing';
 import { StorageService } from './storage.service';
 
 /** Nombre del campo multipart que contiene la imagen. */
@@ -37,6 +38,13 @@ export class ImageUploadInterceptor implements NestInterceptor {
       this.handler = multer({
         storage: multer.memoryStorage(),
         limits: { fileSize: this.storage.maxUploadBytes, files: 1 },
+        fileFilter: (_req, file, cb) => {
+          if (!(ALLOWED_IMAGE_MIME_TYPES as readonly string[]).includes(file.mimetype)) {
+            cb(new BadRequestException(MESSAGE_INVALID_FORMAT));
+            return;
+          }
+          cb(null, true);
+        },
       }).single(IMAGE_FIELD_NAME);
     }
     return this.handler;
@@ -62,13 +70,16 @@ export class ImageUploadInterceptor implements NestInterceptor {
   }
 
   private toHttpError(error: unknown): Error {
+    if (error instanceof BadRequestException || error instanceof PayloadTooLargeException) {
+      return error;
+    }
     if (error instanceof multer.MulterError) {
       if (error.code === 'LIMIT_FILE_SIZE') {
         const maxMb = Math.round((this.storage.maxUploadBytes / (1024 * 1024)) * 10) / 10;
         return new PayloadTooLargeException(`La imagen supera el tamaño máximo de ${maxMb} MB`);
       }
       if (error.code === 'LIMIT_UNEXPECTED_FILE') {
-        return new BadRequestException(`Envía una sola imagen en el campo "${IMAGE_FIELD_NAME}"`);
+        return new BadRequestException(`Envíe una sola imagen en el campo "${IMAGE_FIELD_NAME}"`);
       }
       return new BadRequestException('No se pudo procesar el archivo enviado');
     }

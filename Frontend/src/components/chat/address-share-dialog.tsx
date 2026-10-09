@@ -35,7 +35,7 @@ export function AddressShareDialog({ peerName, onClose, onSend }: AddressShareDi
 
   function attachMyLocation() {
     if (!('geolocation' in navigator)) {
-      setError('Tu navegador no permite obtener la ubicación.');
+      setError('Su navegador no permite obtener la ubicación.');
       return;
     }
     setError(null);
@@ -49,7 +49,7 @@ export function AddressShareDialog({ peerName, onClose, onSend }: AddressShareDi
         setLocating(false);
       },
       () => {
-        setError('No pudimos obtener tu ubicación. Escribe la dirección a mano.');
+        setError('No pudimos obtener su ubicación. Escriba la dirección a mano.');
         setLocating(false);
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
@@ -77,11 +77,11 @@ export function AddressShareDialog({ peerName, onClose, onSend }: AddressShareDi
           role="alert"
           className="space-y-1 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
         >
-          <p className="font-semibold">Cuidado con tu seguridad</p>
+          <p className="font-semibold">Cuidado con su seguridad</p>
           <p>
-            Comparte tu dirección solo con personas en las que confíes y cuando ya hayas acordado el
+            Comparta su dirección solo con personas en las que confíe y cuando ya haya acordado el
             trabajo. Quien esté en esta conversación ({peerName}) podrá verla y conservarla.
-            OficiosYa nunca te pedirá tu dirección por mensaje.
+            OficiosYa nunca le pedirá su dirección por mensaje.
           </p>
         </div>
 

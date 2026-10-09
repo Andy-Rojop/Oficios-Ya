@@ -8,7 +8,7 @@ export default function RecuperarPage() {
   return (
     <AuthPageShell
       title="Recuperar contraseña"
-      description="Verifica tu teléfono con un código SMS y elige una contraseña nueva."
+      description="Verifique su teléfono con un código SMS y elija una contraseña nueva."
     >
       <RecoverForm />
     </AuthPageShell>

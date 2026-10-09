@@ -189,6 +189,7 @@ export class WorkerIdentityDto {
 
 export interface PublicWorkerProfileSource {
   id: string;
+  userId: string;
   headline: string;
   description: string;
   experienceYears: number | null;
@@ -239,11 +240,13 @@ export class PublicWorkerProfileDto {
   @ApiProperty({ type: [ServiceResponseDto] }) services: ServiceResponseDto[];
   @ApiProperty({ type: [PortfolioItemResponseDto] }) portfolio: PortfolioItemResponseDto[];
   @ApiProperty() memberSince: Date;
+  /** true si el visitante autenticado es el dueño de este perfil. */
+  @ApiProperty() isOwner: boolean;
 
   static fromEntity(
     profile: PublicWorkerProfileSource,
     toPublicUrl: UrlResolver,
-    options: { includeContact?: boolean } = {},
+    options: { includeContact?: boolean; viewerUserId?: string | null } = {},
   ): PublicWorkerProfileDto {
     const channels = readStoredVisibleChannels(profile.visibleChannels);
     const includeContact = options.includeContact === true;
@@ -286,6 +289,7 @@ export class PublicWorkerProfileDto {
       PortfolioItemResponseDto.fromEntity(item, toPublicUrl),
     );
     dto.memberSince = profile.createdAt;
+    dto.isOwner = Boolean(options.viewerUserId && options.viewerUserId === profile.userId);
     return dto;
   }
 }

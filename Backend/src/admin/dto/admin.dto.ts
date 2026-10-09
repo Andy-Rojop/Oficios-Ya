@@ -89,7 +89,7 @@ export class ResolveReportDto {
   @ApiProperty({ minLength: 5, maxLength: 1000 })
   @Transform(trim)
   @IsString()
-  @MinLength(5, { message: 'Describe la resolución con al menos 5 caracteres' })
+  @MinLength(5, { message: 'Describa la resolución con al menos 5 caracteres' })
   @MaxLength(1000)
   resolution: string;
 }

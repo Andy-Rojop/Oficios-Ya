@@ -72,7 +72,7 @@ export function InboxView() {
             </h1>
             <p className="text-sm text-white/75 sm:text-base">
               {list.length === 0
-                ? 'Tus conversaciones con clientes y trabajadores aparecen aquí.'
+                ? 'Sus conversaciones con clientes y trabajadores aparecen aquí.'
                 : unreadTotal > 0
                   ? `${unreadTotal} sin leer · ${list.length} conversación${list.length === 1 ? '' : 'es'}`
                   : `${list.length} conversación${list.length === 1 ? '' : 'es'}`}
@@ -98,7 +98,7 @@ export function InboxView() {
       <div className="animate-[home-fade-up_0.55s_ease-out_0.08s_both]">
         {conversations.isLoading ? (
           <Card className="rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
-            <p className="text-muted">Cargando tus conversaciones…</p>
+            <p className="text-muted">Cargando sus conversaciones…</p>
           </Card>
         ) : conversations.isError && !isUnauthorized(conversations.error) ? (
           <Card className="space-y-3 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
@@ -115,9 +115,9 @@ export function InboxView() {
               <MessageSquare aria-hidden className="h-7 w-7" />
             </span>
             <div className="space-y-1">
-              <p className="text-lg font-semibold">Aún no tienes conversaciones</p>
+              <p className="text-lg font-semibold">Aún no tiene conversaciones</p>
               <p className="mx-auto max-w-sm text-sm text-muted">
-                Buscá un trabajador y tocá «Contactar» en su perfil para escribirle.
+                Busque un trabajador y toque «Contactar» en su perfil para escribirle.
               </p>
             </div>
             {me.data?.activeMode !== 'WORKER' ? (
@@ -130,7 +130,7 @@ export function InboxView() {
               </Link>
             ) : (
               <p className="text-sm text-muted">
-                Cuando un cliente te contacte, la conversación aparecerá aquí.
+                Cuando un cliente lo contacte, la conversación aparecerá aquí.
               </p>
             )}
           </Card>
@@ -159,7 +159,7 @@ function ConversationRow({
 }) {
   const { peer, lastMessage, unreadCount } = conversation;
   const unread = unreadCount > 0;
-  const prefix = lastMessage && lastMessage.senderId === meId ? 'Tú: ' : '';
+  const prefix = lastMessage && lastMessage.senderId === meId ? 'Yo: ' : '';
   const initial = peer.name.trim().charAt(0).toUpperCase() || '?';
 
   return (

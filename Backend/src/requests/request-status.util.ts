@@ -69,6 +69,6 @@ export function assertTransition(
     );
   }
   if (!actors.includes(actor)) {
-    throw new ForbiddenException('No tienes permiso para hacer este cambio en la solicitud');
+    throw new ForbiddenException('No tiene permiso para hacer este cambio en la solicitud');
   }
 }

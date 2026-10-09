@@ -1,0 +1,23 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "extensionsToTreatAsEsm": [".ts"],
+  "transform": {
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "useESM": true,
+        "tsconfig": "<rootDir>/../tsconfig.jest.json",
+        "diagnostics": false
+      }
+    ]
+  },
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^@nestjs/config$": "<rootDir>/stubs/nestjs-config.stub.ts",
+    "^@nestjs/swagger$": "<rootDir>/stubs/nestjs-swagger.stub.ts",
+    "^firebase-admin/(app|auth)$": "<rootDir>/stubs/firebase-admin.stub.ts"
+  }
+}

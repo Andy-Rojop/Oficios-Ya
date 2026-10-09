@@ -56,7 +56,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       throw err instanceof Error
         ? err
-        : new UnauthorizedException('Debes iniciar sesión para continuar');
+        : new UnauthorizedException('Debe iniciar sesión para continuar');
     }
     return user;
   }

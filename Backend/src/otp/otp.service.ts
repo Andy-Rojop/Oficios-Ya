@@ -60,7 +60,7 @@ export class OtpService {
 
     const authTime = typeof decoded.auth_time === 'number' ? decoded.auth_time : 0;
     if (Math.floor(Date.now() / 1000) - authTime > MAX_AUTH_AGE_SECONDS) {
-      throw new UnauthorizedException('La verificación expiró. Solicita un nuevo código por SMS');
+      throw new UnauthorizedException('La verificación expiró. Solicite un nuevo código por SMS');
     }
 
     return { uid: decoded.uid, phoneNumber };

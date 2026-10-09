@@ -6,7 +6,9 @@ import sharp from 'sharp';
 export const ALLOWED_IMAGE_FORMATS = ['jpeg', 'png', 'webp'] as const;
 export const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
-const MESSAGE_INVALID_FORMAT = 'Formato de imagen no permitido. Usa JPG, PNG o WebP';
+export const MESSAGE_INVALID_FORMAT = 'Formato no permitido. Use JPG, PNG o WebP';
+export const MESSAGE_UNREADABLE_IMAGE =
+  'No se pudo leer la imagen. Verifique que sea un archivo JPG, PNG o WebP válido';
 
 export interface ProcessedImage {
   buffer: Buffer;
@@ -23,7 +25,7 @@ export interface ProcessedImage {
  */
 export async function processImage(input: Buffer, maxBytes: number): Promise<ProcessedImage> {
   if (!input || input.length === 0) {
-    throw new BadRequestException('Adjunta una imagen');
+    throw new BadRequestException('Adjunte una imagen');
   }
   if (input.length > maxBytes) {
     const maxMb = Math.round((maxBytes / (1024 * 1024)) * 10) / 10;
@@ -58,8 +60,10 @@ export async function processImage(input: Buffer, maxBytes: number): Promise<Pro
     if (error instanceof BadRequestException || error instanceof PayloadTooLargeException) {
       throw error;
     }
-    throw new BadRequestException(
-      'No se pudo leer la imagen. Verifica que sea un archivo JPG, PNG o WebP válido',
-    );
+    // Fallo típico de sharp en Linux sin binario: se propaga para loguear el stack arriba.
+    if (error instanceof Error && /sharp|Could not load/i.test(error.message)) {
+      throw error;
+    }
+    throw new BadRequestException(MESSAGE_UNREADABLE_IMAGE);
   }
 }

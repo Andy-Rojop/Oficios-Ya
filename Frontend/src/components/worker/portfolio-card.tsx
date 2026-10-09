@@ -42,7 +42,7 @@ export function PortfolioCard() {
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     const found: Record<string, string> = {};
-    if (title.trim().length < 2) found.title = 'Escribe un título (mínimo 2 caracteres)';
+    if (title.trim().length < 2) found.title = 'Escriba un título (mínimo 2 caracteres)';
     if (!file) found.file = 'Elige una imagen';
     setErrors(found);
     if (Object.keys(found).length > 0 || !file) return;
@@ -61,7 +61,7 @@ export function PortfolioCard() {
       <div className="space-y-1">
         <CardTitle>Portafolio</CardTitle>
         <CardDescription>
-          Fotos de trabajos que hayas realizado (JPG, PNG o WebP, máx. 5 MB).
+          Fotos de trabajos que haya realizado (JPG, PNG o WebP, máx. 5 MB).
         </CardDescription>
       </div>
 
@@ -117,7 +117,7 @@ export function PortfolioCard() {
         <FormMessage tone="error">{getErrorMessage(remove.error)}</FormMessage>
       ) : null}
       {!query.isLoading && items.length === 0 ? (
-        <p className="text-sm text-muted">Todavía no has subido fotos.</p>
+        <p className="text-sm text-muted">Todavía no ha subido fotos.</p>
       ) : null}
 
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">

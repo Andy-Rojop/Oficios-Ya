@@ -49,7 +49,7 @@ export class CreateRequestDto {
   @Transform(trim)
   @IsString({ message: 'La descripción debe ser texto' })
   @MinLength(REQUEST_DESCRIPTION_MIN_LENGTH, {
-    message: `Describe lo que necesitas con al menos ${REQUEST_DESCRIPTION_MIN_LENGTH} caracteres`,
+    message: `Describa lo que necesita con al menos ${REQUEST_DESCRIPTION_MIN_LENGTH} caracteres`,
   })
   @MaxLength(REQUEST_DESCRIPTION_MAX_LENGTH, {
     message: `La descripción no puede superar ${REQUEST_DESCRIPTION_MAX_LENGTH} caracteres`,
@@ -63,7 +63,7 @@ export class CreateRequestDto {
 
   @ApiPropertyOptional({ default: false })
   @IsOptional()
-  @IsBoolean({ message: 'Indica si es urgente (sí o no)' })
+  @IsBoolean({ message: 'Indique si es urgente (sí o no)' })
   urgent?: boolean;
 }
 
@@ -106,7 +106,7 @@ export class CreateQuoteDto {
   @Transform(trim)
   @IsString({ message: 'El alcance debe ser texto' })
   @MinLength(QUOTE_SCOPE_MIN_LENGTH, {
-    message: `Describe el alcance con al menos ${QUOTE_SCOPE_MIN_LENGTH} caracteres`,
+    message: `Describa el alcance con al menos ${QUOTE_SCOPE_MIN_LENGTH} caracteres`,
   })
   @MaxLength(QUOTE_SCOPE_MAX_LENGTH, {
     message: `El alcance no puede superar ${QUOTE_SCOPE_MAX_LENGTH} caracteres`,
@@ -118,7 +118,7 @@ export class CreateQuoteDto {
 export class RespondQuoteDto {
   @ApiProperty({ enum: [QuoteStatus.ACCEPTED, QuoteStatus.REJECTED] })
   @IsIn([QuoteStatus.ACCEPTED, QuoteStatus.REJECTED], {
-    message: 'Responde con ACCEPTED o REJECTED',
+    message: 'Responda con ACCEPTED o REJECTED',
   })
   status: 'ACCEPTED' | 'REJECTED';
 }

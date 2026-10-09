@@ -21,7 +21,7 @@ const resetSchema = z
       .string()
       .min(8, 'La contraseña debe tener al menos 8 caracteres')
       .max(72, 'La contraseña no puede superar 72 caracteres'),
-    confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
+    confirmPassword: z.string().min(1, 'Confirme su contraseña'),
   })
   .refine((values) => values.newPassword === values.confirmPassword, {
     path: ['confirmPassword'],
@@ -49,7 +49,7 @@ export function RecoverForm() {
     return (
       <PhoneOtpFlow
         onVerified={setVerification}
-        phoneHint="Ingresa el teléfono de tu cuenta. Te enviaremos un código por SMS."
+        phoneHint="Ingrese el teléfono de su cuenta. Le enviaremos un código por SMS."
       />
     );
   }

@@ -123,7 +123,7 @@ export function ServicesCard({ profile }: { profile: OwnWorkerProfile }) {
       ) : null}
 
       {services.length === 0 && !servicesQuery.isLoading && editing === null ? (
-        <p className="text-sm text-muted">Aún no tienes servicios. Agrega el primero.</p>
+        <p className="text-sm text-muted">Aún no tiene servicios. Agregue el primero.</p>
       ) : null}
 
       <ul className="space-y-3">
@@ -290,15 +290,15 @@ function ServiceForm({
     const found: Record<string, string> = {};
     const categoryId = form.categoryId || categories.data?.[0]?.id || '';
     if (!categoryId) found.categoryId = 'Elige una categoría';
-    if (form.name.trim().length < 3) found.name = 'Escribe un nombre (mínimo 3 caracteres)';
+    if (form.name.trim().length < 3) found.name = 'Escriba un nombre (mínimo 3 caracteres)';
     if (form.description.trim().length < 10)
-      found.description = 'Describe el servicio (mínimo 10 caracteres)';
+      found.description = 'Describa el servicio (mínimo 10 caracteres)';
 
     let priceAmount: number | null = null;
     if (!negotiable) {
       priceAmount = Number(form.priceAmount);
       if (form.priceAmount.trim() === '' || !Number.isFinite(priceAmount) || priceAmount <= 0) {
-        found.priceAmount = 'Ingresa un precio mayor a cero';
+        found.priceAmount = 'Ingrese un precio mayor a cero';
       }
     }
 

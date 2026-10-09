@@ -84,7 +84,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
                 </p>
               ) : null}
               <p className="mt-2 animate-[home-fade-up_0.7s_ease-out_0.16s_both] text-sm text-white/80 sm:text-base">
-                Encontrá oficios de confianza cerca tuyo.
+                Encuentre oficios de confianza cerca de usted.
               </p>
 
               <div className="mt-4 animate-[home-fade-up_0.7s_ease-out_0.24s_both]">
@@ -119,7 +119,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
             >
               Oficios
             </h2>
-            <p className="mt-1 text-muted">Elegí el servicio que necesitás en El Asintal.</p>
+            <p className="mt-1 text-muted">Elija el servicio que necesita en El Asintal.</p>
           </div>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {categories.map((category, index) => {
@@ -180,10 +180,10 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               className="relative text-xl font-semibold text-foreground"
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              Pronto vas a ver oficios aquí
+              Pronto verá oficios aquí
             </p>
             <p className="relative mx-auto mt-2 max-w-md text-sm text-muted">
-              Mientras tanto explorá el mapa de El Asintal o buscá por categoría.
+              Mientras tanto explore el mapa de El Asintal o busque por categoría.
             </p>
             <div className="relative mt-6 flex flex-wrap justify-center gap-3">
               <Link

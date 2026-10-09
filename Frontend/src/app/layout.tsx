@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: '%s · OficiosYa',
   },
   description:
-    'Encontrá trabajadores de confianza en El Asintal, Retalhuleu. Carpintería, electricidad, plomería y más.',
+    'Encuentre trabajadores de confianza en El Asintal, Retalhuleu. Carpintería, electricidad, plomería y más.',
   applicationName: 'OficiosYa',
   manifest: '/manifest.webmanifest',
   appleWebApp: {

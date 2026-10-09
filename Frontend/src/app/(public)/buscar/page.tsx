@@ -14,7 +14,7 @@ import {
 export const metadata: Metadata = {
   title: 'Buscar trabajadores',
   description:
-    'Encontrá oficios de confianza en El Asintal: filtrá por categoría, zona, precio y calificación.',
+    'Encuentre oficios de confianza en El Asintal: filtre por categoría, zona, precio y calificación.',
 };
 
 interface PageProps {
@@ -32,7 +32,7 @@ async function loadResults(filters: SearchFilters): Promise<{
     const message =
       error instanceof ApiError
         ? error.message
-        : 'No se pudo cargar la búsqueda. Revisá que la API esté en marcha.';
+        : 'No se pudo cargar la búsqueda. Revise que la API esté en marcha.';
     return { data: null, error: message };
   }
 }
@@ -60,8 +60,8 @@ export default async function BuscarPage({ searchParams }: PageProps) {
           Buscar trabajadores
         </h1>
         <p className="max-w-2xl text-muted">
-          Filtrá por oficio, zona y precio. Usá el mapa para ver quién está cerca del área que
-          elijas. Las ubicaciones son zonas aproximadas, nunca una dirección exacta.
+          Filtre por oficio, zona y precio. Use el mapa para ver quién está cerca del área que
+          elija. Las ubicaciones son zonas aproximadas, nunca una dirección exacta.
         </p>
       </header>
 

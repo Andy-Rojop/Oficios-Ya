@@ -104,8 +104,8 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
         <div className="space-y-1">
           <CardTitle>Verificación de identidad</CardTitle>
           <CardDescription>
-            DPI y NIT son privados: solo los ve la administración para validar tu perfil. No
-            aparecen en tu página pública.
+            DPI y NIT son privados: solo los ve la administración para validar su perfil. No
+            aparecen en su página pública.
           </CardDescription>
         </div>
 
@@ -165,7 +165,7 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
 
         {locked ? (
           <p className="text-sm text-muted">
-            Tu solicitud está en revisión. Te avisaremos cuando haya una decisión.
+            Su solicitud está en revisión. Le avisaremos cuando haya una decisión.
           </p>
         ) : null}
         {error && !error.includes('DPI') ? <FormMessage tone="error">{error}</FormMessage> : null}
@@ -199,7 +199,7 @@ export function AvailabilityCard({ profile }: { profile: OwnWorkerProfile }) {
     <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
       <div className="space-y-1">
         <CardTitle>Disponibilidad</CardTitle>
-        <CardDescription>Los clientes ven si podés tomar trabajos ahora.</CardDescription>
+        <CardDescription>Los clientes ven si puede tomar trabajos ahora.</CardDescription>
       </div>
       <div role="radiogroup" aria-label="Disponibilidad" className="grid gap-2 sm:grid-cols-3">
         {AVAILABILITY_OPTIONS.map((option) => {
@@ -286,20 +286,20 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
 
   function validate(): Record<string, string> {
     const found: Record<string, string> = {};
-    if (headline.trim().length < 3) found.headline = 'Escribe tu oficio (mínimo 3 caracteres)';
+    if (headline.trim().length < 3) found.headline = 'Escriba su oficio (mínimo 3 caracteres)';
     if (description.trim().length < 10)
-      found.description = 'Describe tu experiencia (mínimo 10 caracteres)';
+      found.description = 'Describa su experiencia (mínimo 10 caracteres)';
     if (experience !== '') {
       const years = Number(experience);
       if (!Number.isInteger(years) || years < 0 || years > 60) {
-        found.experience = 'Ingresa un número entero entre 0 y 60';
+        found.experience = 'Ingrese un número entero entre 0 y 60';
       }
     }
     if (schedule) {
       for (const day of DAY_KEYS) {
         const value = schedule[day];
         if (value && !value.closed && (!value.from || !value.to || value.from >= value.to)) {
-          found.schedule = `Revisa el horario del ${DAY_LABELS[day].toLowerCase()}: la hora de inicio debe ser anterior a la de fin`;
+          found.schedule = `Revise el horario del ${DAY_LABELS[day].toLowerCase()}: la hora de inicio debe ser anterior a la de fin`;
           break;
         }
       }
@@ -329,7 +329,7 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <div className="space-y-1">
           <CardTitle>Mi perfil de trabajador</CardTitle>
-          <CardDescription>Así te verán los clientes en tu perfil público.</CardDescription>
+          <CardDescription>Así lo verán los clientes en su perfil público.</CardDescription>
         </div>
 
         <FormField id="headline" label="Oficio principal" error={errors.headline}>
@@ -371,7 +371,7 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
           id="description"
           label="Descripción"
           error={errors.description}
-          hint="Cuenta qué haces y por qué confiar en ti."
+          hint="Cuente qué hace y por qué confiar en usted."
         >
           {(aria) => (
             <Textarea
@@ -406,7 +406,7 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
         <fieldset className="space-y-2">
           <legend className="text-sm font-semibold">Canales de contacto visibles</legend>
           <p className="text-xs text-muted">
-            Por privacidad, tu teléfono solo se muestra si lo activas aquí. El chat de la app
+            Por privacidad, su teléfono solo se muestra si lo activa aquí. El chat de la app
             siempre está disponible.
           </p>
           <div className="flex flex-wrap gap-x-5 gap-y-2">

@@ -48,8 +48,8 @@ export function QuotesSection({ request }: { request: ServiceRequestDto }) {
       {quotes.length === 0 ? (
         <p className="text-sm text-muted">
           {request.actions.canQuote
-            ? 'Aún no has enviado una cotización.'
-            : 'Todavía no hay cotizaciones. Son privadas: solo tú y el trabajador pueden verlas.'}
+            ? 'Aún no ha enviado una cotización.'
+            : 'Todavía no hay cotizaciones. Son privadas: solo usted y el trabajador pueden verlas.'}
         </p>
       ) : (
         <ul className="space-y-3">
@@ -75,7 +75,7 @@ export function QuotesSection({ request }: { request: ServiceRequestDto }) {
         <QuoteForm requestId={request.id} onSent={refresh} />
       ) : request.actions.canQuote ? (
         <p className="text-xs text-muted">
-          Podrás enviar otra cotización cuando el cliente responda la actual.
+          Podrá enviar otra cotización cuando el cliente responda la actual.
         </p>
       ) : null}
     </div>
@@ -168,7 +168,7 @@ function QuoteForm({ requestId, onSent }: { requestId: string; onSent: () => voi
           onChange={(event) => setAmountText(event.target.value)}
         />
         {amountText !== '' && amount === null ? (
-          <p className="text-xs text-red-700">Escribe un monto válido, con máximo 2 decimales.</p>
+          <p className="text-xs text-red-700">Escriba un monto válido, con máximo 2 decimales.</p>
         ) : null}
       </div>
       <div className="space-y-1">

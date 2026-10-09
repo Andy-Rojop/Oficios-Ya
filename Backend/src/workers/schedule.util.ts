@@ -30,7 +30,7 @@ export function normalizeSchedule(schedule: ScheduleDto): StoredSchedule {
     }
     if (!value.from || !value.to) {
       throw new BadRequestException(
-        `Indica la hora de inicio y de fin para el ${DAY_LABELS[day]}, o márcalo como cerrado`,
+        `Indique la hora de inicio y de fin para el ${DAY_LABELS[day]}, o márquelo como cerrado`,
       );
     }
     if (value.from >= value.to) {

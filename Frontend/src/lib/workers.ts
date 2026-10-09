@@ -151,6 +151,8 @@ export interface PublicWorkerProfile {
   services: ServiceDto[];
   portfolio: PortfolioItemDto[];
   memberSince: string;
+  /** true si el visitante autenticado es el dueño de este perfil. */
+  isOwner: boolean;
 }
 
 export const WORKER_QUERY_KEYS = {

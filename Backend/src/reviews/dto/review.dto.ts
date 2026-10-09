@@ -47,7 +47,7 @@ export class ReplyReviewDto {
   @ApiProperty({ minLength: 1, maxLength: LIMITS.REVIEW_COMMENT_MAX })
   @Transform(trim)
   @IsString({ message: 'La respuesta debe ser texto' })
-  @MinLength(1, { message: 'Escribe tu respuesta' })
+  @MinLength(1, { message: 'Escriba su respuesta' })
   @MaxLength(LIMITS.REVIEW_COMMENT_MAX, {
     message: `La respuesta no puede superar ${LIMITS.REVIEW_COMMENT_MAX} caracteres`,
   })
@@ -60,7 +60,7 @@ export class ReportReviewDto {
   @Transform(trim)
   @IsString({ message: 'El motivo debe ser texto' })
   @MinLength(REPORT_REASON_MIN_LENGTH, {
-    message: `Describe el motivo con al menos ${REPORT_REASON_MIN_LENGTH} caracteres`,
+    message: `Describa el motivo con al menos ${REPORT_REASON_MIN_LENGTH} caracteres`,
   })
   @MaxLength(REPORT_REASON_MAX_LENGTH, {
     message: `El motivo no puede superar ${REPORT_REASON_MAX_LENGTH} caracteres`,

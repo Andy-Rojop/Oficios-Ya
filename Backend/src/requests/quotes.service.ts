@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -35,6 +36,9 @@ export class QuotesService {
     dto: CreateQuoteDto,
   ): Promise<QuoteDto> {
     const request = await this.requestForParticipant(requestId, userId);
+    if (request.clientId === request.workerId) {
+      throw new BadRequestException('No puede cotizar una solicitud consigo mismo');
+    }
     if (request.workerId !== userId) {
       throw new ForbiddenException('Solo el trabajador puede enviar cotizaciones');
     }
@@ -46,7 +50,7 @@ export class QuotesService {
       select: { id: true },
     });
     if (pending) {
-      throw new ConflictException('Ya enviaste una cotización que el cliente aún no responde');
+      throw new ConflictException('Ya envió una cotización que el cliente aún no responde');
     }
 
     const conversation = await ensurePairConversation(
@@ -107,7 +111,7 @@ export class QuotesService {
         select: { id: true },
       });
       if (accepted) {
-        throw new ConflictException('Ya aceptaste otra cotización para esta solicitud');
+        throw new ConflictException('Ya aceptó otra cotización para esta solicitud');
       }
     }
 

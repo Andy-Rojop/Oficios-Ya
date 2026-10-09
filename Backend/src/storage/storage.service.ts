@@ -119,7 +119,20 @@ export class StorageService implements OnModuleInit {
   }
 
   private async upload(kind: StorageBucketKind, buffer: Buffer, path: string): Promise<string> {
-    const processed = await processImage(buffer, this.maxUploadBytes);
+    let processed;
+    try {
+      processed = await processImage(buffer, this.maxUploadBytes);
+    } catch (error) {
+      if (error instanceof Error && /sharp|Could not load/i.test(error.message)) {
+        this.logger.error(
+          `Fallo de sharp al procesar imagen (¿binario linux-x64 ausente?): ${error.message}`,
+          error.stack,
+        );
+        throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
+      }
+      throw error;
+    }
+
     const finalPath = this.normalizePath(path);
     const { error } = await this.getClient()
       .storage.from(this.bucketName(kind))
@@ -129,8 +142,11 @@ export class StorageService implements OnModuleInit {
         cacheControl: kind === 'public' ? '31536000' : '3600',
       });
     if (error) {
-      this.logger.error(`Fallo al subir "${finalPath}" a Storage: ${error.message}`);
-      throw new ServiceUnavailableException('No se pudo guardar la imagen. Inténtalo de nuevo');
+      this.logger.error(
+        `Fallo al subir "${finalPath}" a Storage (${this.bucketName(kind)}): ${error.message}`,
+        error.stack,
+      );
+      throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
     }
     return finalPath;
   }
@@ -159,7 +175,7 @@ export class StorageService implements OnModuleInit {
       .createSignedUrl(path, ttl);
     if (error || !data) {
       this.logger.error(`Fallo al firmar "${path}": ${error?.message ?? 'sin datos'}`);
-      throw new ServiceUnavailableException('No se pudo obtener el archivo. Inténtalo de nuevo');
+      throw new ServiceUnavailableException('No se pudo obtener el archivo. Inténtelo de nuevo');
     }
     return data.signedUrl;
   }
@@ -169,7 +185,7 @@ export class StorageService implements OnModuleInit {
     const { error } = await this.getClient().storage.from(this.bucketName(kind)).remove([path]);
     if (error) {
       this.logger.error(`Fallo al eliminar "${path}" de Storage: ${error.message}`);
-      throw new ServiceUnavailableException('No se pudo eliminar el archivo. Inténtalo de nuevo');
+      throw new ServiceUnavailableException('No se pudo eliminar el archivo. Inténtelo de nuevo');
     }
   }
 

@@ -3,9 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { ContactButton } from '@/components/chat/contact-button';
-import { RequestServiceButton } from '@/components/requests/request-service-button';
 import { Card, CardTitle } from '@/components/ui/card';
+import { OwnProfileActions } from '@/components/worker/own-profile-actions';
 import { WorkerContactCard } from '@/components/worker/worker-contact-card';
 import { WorkerReviews } from '@/components/worker/worker-reviews';
 import { ApiError } from '@/lib/api-client';
@@ -116,10 +115,11 @@ export default async function TrabajadorPage({ params }: PageProps) {
 
         <p className="whitespace-pre-line">{profile.description}</p>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-          <ContactButton workerProfileId={profile.id} />
-          <RequestServiceButton workerProfileId={profile.id} workerName={profile.name} />
-        </div>
+        <OwnProfileActions
+          workerProfileId={profile.id}
+          workerName={profile.name}
+          isOwner={profile.isOwner}
+        />
       </Card>
 
       {profile.zones.length > 0 ? (

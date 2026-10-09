@@ -45,7 +45,7 @@ export class PortfolioService {
     file: UploadedImage | undefined,
   ): Promise<PortfolioItemResponseDto> {
     if (!file) {
-      throw new BadRequestException('Adjunta una imagen en el campo "file"');
+      throw new BadRequestException('Adjunte una imagen en el campo "file"');
     }
     const profileId = await this.workers.requireProfileId(userId);
 

@@ -92,7 +92,7 @@ export function normalizeMessageInput(
 
   switch (dto.type) {
     case MessageType.TEXT: {
-      if (!content) throw new BadRequestException('Escribe un mensaje');
+      if (!content) throw new BadRequestException('Escriba un mensaje');
       if (content.length > MESSAGE_TEXT_MAX_LENGTH) {
         throw new BadRequestException(
           `El mensaje no puede superar ${MESSAGE_TEXT_MAX_LENGTH} caracteres`,
@@ -104,7 +104,7 @@ export function normalizeMessageInput(
       const path = dto.imagePath ?? '';
       const prefix = chatImagePrefix(dto.conversationId, senderId);
       if (!path.startsWith(prefix) || path.includes('..') || !path.endsWith('.webp')) {
-        throw new BadRequestException('La imagen no es válida. Súbela de nuevo');
+        throw new BadRequestException('La imagen no es válida. Súbala de nuevo');
       }
       if (content && content.length > MESSAGE_CAPTION_MAX_LENGTH) {
         throw new BadRequestException(
@@ -114,14 +114,14 @@ export function normalizeMessageInput(
       return { type: dto.type, content, imagePath: path, latitude: null, longitude: null };
     }
     case MessageType.ADDRESS: {
-      if (!content) throw new BadRequestException('Escribe la dirección y algunas referencias');
+      if (!content) throw new BadRequestException('Escriba la dirección y algunas referencias');
       if (content.length > MESSAGE_ADDRESS_MAX_LENGTH) {
         throw new BadRequestException(
           `La dirección no puede superar ${MESSAGE_ADDRESS_MAX_LENGTH} caracteres`,
         );
       }
       if (hasLat !== hasLng) {
-        throw new BadRequestException('Envía la latitud y la longitud juntas, o ninguna');
+        throw new BadRequestException('Envíe la latitud y la longitud juntas, o ninguna');
       }
       return {
         type: dto.type,
@@ -155,7 +155,7 @@ export class ChatService {
     dto: CreateConversationDto,
   ): Promise<ConversationSummaryDto> {
     if (Boolean(dto.workerProfileId) === Boolean(dto.workerUserId)) {
-      throw new BadRequestException('Indica el trabajador con el que quieres hablar');
+      throw new BadRequestException('Indique el trabajador con el que desea hablar');
     }
 
     const profile = await this.prisma.workerProfile.findFirst({
@@ -167,7 +167,7 @@ export class ChatService {
     }
     const workerUserId = profile.userId;
     if (workerUserId === userId) {
-      throw new BadRequestException('No puedes iniciar una conversación contigo mismo');
+      throw new BadRequestException('No puede iniciar una conversación consigo mismo');
     }
     await this.access.assertNotBlocked(userId, workerUserId);
 
@@ -328,7 +328,7 @@ export class ChatService {
   ): Promise<ChatImageUploadDto> {
     await this.access.getForSending(conversationId, userId);
     if (!file) {
-      throw new BadRequestException('Adjunta una imagen en el campo "file"');
+      throw new BadRequestException('Adjunte una imagen en el campo "file"');
     }
 
     const path = `${chatImagePrefix(conversationId, userId)}${randomUUID()}.webp`;

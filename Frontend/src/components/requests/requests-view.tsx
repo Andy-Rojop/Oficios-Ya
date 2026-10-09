@@ -16,9 +16,9 @@ import {
 import { StatusBadge } from './status-badge';
 
 const EMPTY_CLIENT =
-  'Aún no has solicitado ningún servicio. Buscá un trabajador y tocá «Solicitar servicio» en su perfil.';
+  'Aún no ha solicitado ningún servicio. Busque un trabajador y toque «Solicitar servicio» en su perfil.';
 const EMPTY_WORKER =
-  'Aún no has recibido solicitudes. Cuando un cliente te pida un servicio, aparecerá aquí.';
+  'Aún no ha recibido solicitudes. Cuando un cliente le pida un servicio, aparecerá aquí.';
 
 /**
  * Lista de solicitudes según el modo activo (cliente o trabajador).
@@ -58,13 +58,13 @@ export function RequestsView() {
         </h1>
         <p className="text-sm text-muted">
           {asWorker
-            ? 'Pedidos que te enviaron los clientes.'
-            : 'Servicios que pediste a trabajadores.'}
+            ? 'Pedidos que le enviaron los clientes.'
+            : 'Servicios que solicitó a trabajadores.'}
         </p>
       </header>
 
       {requests.isLoading || me.isLoading ? (
-        <p className="text-muted">Cargando tus solicitudes…</p>
+        <p className="text-muted">Cargando sus solicitudes…</p>
       ) : requests.isError && !isUnauthorized(requests.error) ? (
         <Card className="space-y-3">
           <p role="alert" className="text-sm font-medium text-red-700">
@@ -131,7 +131,7 @@ function RequestRow({ request }: { request: ServiceRequestDto }) {
           <span>Enviada el {formatDate(request.createdAt)}</span>
           {request.service ? <span>· {request.service.name}</span> : null}
           {needsAction ? (
-            <span className="font-semibold text-brand">· Requiere tu atención</span>
+            <span className="font-semibold text-brand">· Requiere su atención</span>
           ) : null}
         </p>
       </Link>

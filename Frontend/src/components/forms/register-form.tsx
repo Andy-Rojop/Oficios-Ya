@@ -17,6 +17,7 @@ import { ME_QUERY_KEY, getErrorMessage, register as registerAccount } from '@/li
 import { useZones } from '@/lib/catalog';
 import { signOutFirebase } from '@/lib/firebase';
 import { formatPhoneDisplay } from '@/lib/phone';
+import { UI_COPY } from '@/lib/ui-copy';
 import { cn } from '@/lib/utils';
 
 const registerSchema = z
@@ -30,10 +31,10 @@ const registerSchema = z
       .string()
       .min(8, 'La contraseña debe tener al menos 8 caracteres')
       .max(72, 'La contraseña no puede superar 72 caracteres'),
-    confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
-    zoneId: z.string().min(1, 'Selecciona tu zona'),
-    email: z.union([z.literal(''), z.email('Ingresa un correo válido').max(254)]),
-    acceptTerms: z.boolean().refine((value) => value, 'Debes aceptar los términos y condiciones'),
+    confirmPassword: z.string().min(1, 'Confirme su contraseña'),
+    zoneId: z.string().min(1, 'Seleccione su zona'),
+    email: z.union([z.literal(''), z.email('Ingrese un correo válido').max(254)]),
+    acceptTerms: z.boolean().refine((value) => value, 'Debe aceptar los términos y condiciones'),
     startAsWorker: z.boolean(),
   })
   .refine((values) => values.password === values.confirmPassword, {
@@ -49,7 +50,7 @@ const ROLE_OPTIONS = [
     role: 'CLIENT' as const,
     title: 'Cliente',
     badge: 'Busco un oficio',
-    description: 'Encontrá plomeros, electricistas y más cerca de vos en El Asintal.',
+    description: 'Encuentre plomeros, electricistas y más cerca de usted en El Asintal.',
     points: ['Mapa de oficios cercanos', 'Precios de referencia', 'Chat privado'],
     Icon: Search,
     tone: 'dark' as const,
@@ -58,7 +59,7 @@ const ROLE_OPTIONS = [
     role: 'WORKER' as const,
     title: 'Trabajador',
     badge: 'Ofrezco mis servicios',
-    description: 'Mostrá tu oficio, precios y fotos. Recibí solicitudes de clientes.',
+    description: 'Muestre su oficio, precios y fotos. Reciba solicitudes de clientes.',
     points: ['Perfil público', 'Solicitudes y cotizaciones', 'Más visibilidad local'],
     Icon: Briefcase,
     tone: 'accent' as const,
@@ -82,11 +83,11 @@ function RolePicker({
   return (
     <fieldset className="space-y-4">
       {!compact ? (
-        <legend className="sr-only">¿Cómo te querés registrar?</legend>
+        <legend className="sr-only">¿Cómo desea registrarse?</legend>
       ) : (
         <>
           <legend className="text-sm font-semibold text-foreground">Tipo de cuenta</legend>
-          <p className="text-xs text-muted">Podés cambiarlo después desde tu cuenta.</p>
+          <p className="text-xs text-muted">Puede cambiarlo después desde su cuenta.</p>
         </>
       )}
       <div className={cn('grid gap-3', compact ? 'grid-cols-1' : 'gap-4 lg:grid-cols-2')}>
@@ -298,10 +299,10 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
               className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl"
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              Creá tu cuenta en OficiosYa
+              Cree su cuenta en OficiosYa
             </h1>
             <p className="mt-3 max-w-md text-base text-white/75 sm:text-lg">
-              Elegí cómo vas a usar la app. Después verificás tu teléfono en un minuto.
+              Elija cómo usará la app. Después verificará su teléfono en un minuto.
             </p>
           </div>
 
@@ -310,9 +311,9 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
           </div>
 
           <p className="mt-8 text-center text-sm text-white/65 sm:text-left">
-            ¿Ya tienes cuenta?{' '}
+            {UI_COPY.alreadyHaveAccount}{' '}
             <Link href="/ingresar" className="font-semibold text-white underline underline-offset-4">
-              Ingresar
+              {UI_COPY.login}
             </Link>
           </p>
         </div>
@@ -323,8 +324,8 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
   if (!verification) {
     return (
       <RegisterPanel
-        title="Verificá tu teléfono"
-        description={`Te registrás como ${role === 'WORKER' ? 'trabajador' : 'cliente'}. Te enviamos un código por SMS.`}
+        title="Verifique su teléfono"
+        description={`Se registrará como ${role === 'WORKER' ? 'trabajador' : 'cliente'}. Le enviamos un código por SMS.`}
       >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-brand-soft/70 px-3 py-2.5 text-sm">
           <span>
@@ -368,8 +369,8 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
 
   return (
     <RegisterPanel
-      title="Completá tu perfil"
-      description="Ya verificaste el teléfono. Ahora creamos tu cuenta."
+      title="Complete su perfil"
+      description="Ya verificó el teléfono. Ahora creamos su cuenta."
     >
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         <FormMessage tone="success">
@@ -428,7 +429,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
 
         <FormField
           id="zoneId"
-          label="Zona donde vives"
+          label="Zona donde vive"
           hint="Aldea, cantón o caserío de El Asintal."
           error={
             errors.zoneId?.message ??
@@ -437,7 +438,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
         >
           {(aria) => (
             <Select {...aria} {...register('zoneId')} disabled={zones.isLoading}>
-              <option value="">{zones.isLoading ? 'Cargando zonas…' : 'Selecciona tu zona'}</option>
+              <option value="">{zones.isLoading ? 'Cargando zonas…' : 'Seleccione su zona'}</option>
               {zones.data?.map((zone) => (
                 <option key={zone.id} value={zone.id}>
                   {zone.name}
@@ -494,12 +495,12 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
         </Button>
 
         <p className="text-center text-sm text-muted">
-          ¿Ya tienes cuenta?{' '}
+          {UI_COPY.alreadyHaveAccount}{' '}
           <Link
             href="/ingresar"
             className="font-medium text-brand underline-offset-4 hover:underline"
           >
-            Ingresar
+            {UI_COPY.login}
           </Link>
         </p>
       </form>

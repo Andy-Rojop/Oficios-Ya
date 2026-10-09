@@ -109,7 +109,7 @@ export class AuthController {
   ): Promise<{ message: string }> {
     await this.authService.resetPassword(dto);
     this.cookieService.clearAuthCookies(res);
-    return { message: 'Contraseña actualizada. Inicia sesión con tu nueva contraseña' };
+    return { message: 'Contraseña actualizada. Inicie sesión con su nueva contraseña' };
   }
 
   @ApiCookieAuth('access_token')

@@ -44,7 +44,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       session.userId !== payload.sub ||
       session.user.status !== AccountStatus.ACTIVE
     ) {
-      throw new UnauthorizedException('Tu sesión ya no es válida. Inicia sesión de nuevo');
+      throw new UnauthorizedException('Su sesión ya no es válida. Inicie sesión de nuevo');
     }
 
     return {

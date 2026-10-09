@@ -56,7 +56,7 @@ export class ReportConversationDto {
   @Transform(trim)
   @IsString({ message: 'El motivo debe ser texto' })
   @MinLength(REPORT_REASON_MIN_LENGTH, {
-    message: `Describe el motivo con al menos ${REPORT_REASON_MIN_LENGTH} caracteres`,
+    message: `Describa el motivo con al menos ${REPORT_REASON_MIN_LENGTH} caracteres`,
   })
   @MaxLength(REPORT_REASON_MAX_LENGTH, {
     message: `El motivo no puede superar ${REPORT_REASON_MAX_LENGTH} caracteres`,

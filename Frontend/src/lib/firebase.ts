@@ -29,7 +29,7 @@ export function isFirebaseConfigured(): boolean {
 function getFirebaseApp(): FirebaseApp {
   if (!isFirebaseConfigured()) {
     throw new Error(
-      'La verificación por SMS no está configurada. Completa las variables NEXT_PUBLIC_FIREBASE_* en Frontend/.env.local.',
+      'La verificación por SMS no está configurada. Complete las variables NEXT_PUBLIC_FIREBASE_* en Frontend/.env.local.',
     );
   }
   return getApps().length > 0 ? getApp() : initializeApp(getFirebaseConfig());
@@ -98,17 +98,17 @@ export async function signOutFirebase(): Promise<void> {
 
 const FIREBASE_ERROR_MESSAGES: Record<string, string> = {
   'auth/invalid-phone-number': 'El número de teléfono no es válido.',
-  'auth/missing-phone-number': 'Ingresa tu número de teléfono.',
-  'auth/too-many-requests': 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
-  'auth/quota-exceeded': 'Se alcanzó el límite de SMS por hoy. Inténtalo más tarde.',
-  'auth/invalid-verification-code': 'El código es incorrecto. Revísalo e inténtalo de nuevo.',
-  'auth/missing-verification-code': 'Ingresa el código que recibiste por SMS.',
-  'auth/code-expired': 'El código venció. Solicita uno nuevo.',
-  'auth/captcha-check-failed': 'No se pudo verificar que eres una persona. Recarga la página.',
+  'auth/missing-phone-number': 'Ingrese su número de teléfono.',
+  'auth/too-many-requests': 'Demasiados intentos. Espere unos minutos e inténtelo de nuevo.',
+  'auth/quota-exceeded': 'Se alcanzó el límite de SMS por hoy. Inténtelo más tarde.',
+  'auth/invalid-verification-code': 'El código es incorrecto. Revíselo e inténtelo de nuevo.',
+  'auth/missing-verification-code': 'Ingrese el código que recibió por SMS.',
+  'auth/code-expired': 'El código venció. Solicite uno nuevo.',
+  'auth/captcha-check-failed': 'No se pudo verificar que es una persona. Recargue la página.',
   'auth/invalid-app-credential':
-    'No se pudo verificar la aplicación. Recarga la página e inténtalo de nuevo.',
+    'No se pudo verificar la aplicación. Recargue la página e inténtelo de nuevo.',
   'auth/operation-not-allowed': 'La verificación por teléfono no está habilitada para esta región.',
-  'auth/network-request-failed': 'Sin conexión. Revisa tu internet e inténtalo de nuevo.',
+  'auth/network-request-failed': 'Sin conexión. Revise su conexión e inténtelo de nuevo.',
   'auth/user-disabled': 'Esta cuenta está deshabilitada.',
 };
 
@@ -120,10 +120,10 @@ export function getFirebaseErrorMessage(error: unknown): string {
     if (process.env.NODE_ENV !== 'production') {
       return `Error Firebase (${error.code}): ${error.message}`;
     }
-    return 'No se pudo completar la verificación por SMS. Inténtalo de nuevo.';
+    return 'No se pudo completar la verificación por SMS. Inténtelo de nuevo.';
   }
   if (error instanceof Error) {
     return error.message;
   }
-  return 'Ocurrió un error inesperado. Inténtalo de nuevo.';
+  return 'Ocurrió un error inesperado. Inténtelo de nuevo.';
 }

@@ -99,7 +99,7 @@ export function RequestFormDialog({
 
         <div className="space-y-1">
           <label htmlFor="request-description" className="text-sm font-medium">
-            ¿Qué necesitas?
+            ¿Qué necesita?
           </label>
           <Textarea
             id="request-description"
@@ -107,7 +107,7 @@ export function RequestFormDialog({
             autoFocus
             maxLength={REQUEST_DESCRIPTION_MAX}
             value={description}
-            placeholder="Describe el trabajo con detalle (mínimo 10 caracteres)"
+            placeholder="Describa el trabajo con detalle (mínimo 10 caracteres)"
             onChange={(event) => setDescription(event.target.value)}
           />
           <p className="text-right text-xs text-muted">

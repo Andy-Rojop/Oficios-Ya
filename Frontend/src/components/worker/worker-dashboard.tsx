@@ -30,14 +30,14 @@ export function WorkerDashboard() {
   }, [unauthorized, isLoading, isFetching, router]);
 
   if (isLoading || (isFetching && !user)) {
-    return <p className="text-muted">Cargando tu panel…</p>;
+    return <p className="text-muted">Cargando su panel…</p>;
   }
   if (!user) {
     return unauthorized ? (
       <p className="text-muted">Redirigiendo…</p>
     ) : (
       <FormMessage tone="error">
-        {error ? getErrorMessage(error) : 'No se pudo cargar tu panel.'}
+        {error ? getErrorMessage(error) : 'No se pudo cargar su panel.'}
       </FormMessage>
     );
   }
@@ -54,9 +54,9 @@ function ClientModeNotice() {
   return (
     <Card className="space-y-4">
       <div className="space-y-1">
-        <CardTitle>Estás en modo cliente</CardTitle>
+        <CardTitle>Está en modo cliente</CardTitle>
         <CardDescription>
-          Cambia a modo trabajador para publicar tu perfil, tus servicios y tu portafolio.
+          Cambie a modo trabajador para publicar su perfil, sus servicios y su portafolio.
         </CardDescription>
       </div>
       {mutation.isError ? (
@@ -78,12 +78,12 @@ function WorkerPanel() {
   });
 
   if (profileQuery.isLoading) {
-    return <p className="text-muted">Cargando tu perfil…</p>;
+    return <p className="text-muted">Cargando su perfil…</p>;
   }
   if (!profileQuery.data) {
     return (
       <FormMessage tone="error">
-        {profileQuery.error ? getErrorMessage(profileQuery.error) : 'No se pudo cargar tu perfil.'}
+        {profileQuery.error ? getErrorMessage(profileQuery.error) : 'No se pudo cargar su perfil.'}
       </FormMessage>
     );
   }
@@ -110,7 +110,7 @@ function WorkerPanel() {
               Hola, {firstName}
             </h1>
             <p className="text-sm text-white/75 sm:text-base">
-              Administrá tu oficio, disponibilidad y cómo te ven los clientes en El Asintal.
+              Administre su oficio, disponibilidad y cómo lo ven los clientes en El Asintal.
             </p>
           </div>
           <Link
@@ -137,8 +137,8 @@ function WorkerPanel() {
           />
           <QuickLink
             href={`/trabajador/${profile.id}`}
-            label="Tu vitrina"
-            hint="Así te ven afuera"
+            label="Su vitrina"
+            hint="Así lo ven afuera"
             Icon={Wrench}
           />
         </ul>

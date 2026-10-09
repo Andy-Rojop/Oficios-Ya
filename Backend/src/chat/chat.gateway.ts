@@ -115,7 +115,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
     const user = client.data.user;
     if (!user) {
       client.disconnect(true);
-      return { ok: false, statusCode: 401, error: 'Debes iniciar sesión para usar el chat' };
+      return { ok: false, statusCode: 401, error: 'Debe iniciar sesión para usar el chat' };
     }
     let current = user;
     try {
@@ -126,7 +126,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
       return {
         ok: false,
         statusCode: 401,
-        error: 'Tu sesión ya no es válida. Inicia sesión de nuevo',
+        error: 'Su sesión ya no es válida. Inicie sesión de nuevo',
       };
     }
 
@@ -143,7 +143,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection {
       return {
         ok: false,
         statusCode: 500,
-        error: 'No se pudo completar la acción. Inténtalo de nuevo',
+        error: 'No se pudo completar la acción. Inténtelo de nuevo',
       };
     }
   }

@@ -30,11 +30,11 @@ export class ChatWsAuthService {
     const cookies = parseCookieHeader(handshake.headers.cookie);
     const token = cookies[ACCESS_TOKEN_COOKIE];
     if (!token) {
-      throw new UnauthorizedException('Debes iniciar sesión para usar el chat');
+      throw new UnauthorizedException('Debe iniciar sesión para usar el chat');
     }
     const payload = await this.tokens.verifyAccessToken(token);
     if (!payload) {
-      throw new UnauthorizedException('Tu sesión expiró. Inicia sesión de nuevo');
+      throw new UnauthorizedException('Su sesión expiró. Inicie sesión de nuevo');
     }
     return this.strategy.validate(payload);
   }

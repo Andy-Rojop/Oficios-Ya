@@ -10,9 +10,9 @@ export class SetZonesDto {
   })
   @IsArray({ message: 'Las zonas deben enviarse como una lista' })
   @ArrayMaxSize(MAX_COVERAGE_ZONES, {
-    message: `Puedes elegir como máximo ${MAX_COVERAGE_ZONES} zonas`,
+    message: `Puede elegir como máximo ${MAX_COVERAGE_ZONES} zonas`,
   })
-  @ArrayUnique({ message: 'No repitas zonas' })
+  @ArrayUnique({ message: 'No repita zonas' })
   @IsUUID('all', { each: true, message: 'Alguna zona seleccionada no es válida' })
   zoneIds: string[];
 }

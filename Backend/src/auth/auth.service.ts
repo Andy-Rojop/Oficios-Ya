@@ -31,7 +31,7 @@ export interface AuthResult {
 }
 
 const INVALID_CREDENTIALS = 'Teléfono o contraseña incorrectos';
-const INVALID_SESSION = 'Tu sesión ya no es válida. Inicia sesión de nuevo';
+const INVALID_SESSION = 'Su sesión ya no es válida. Inicie sesión de nuevo';
 
 function isUniqueViolation(error: unknown): boolean {
   return (

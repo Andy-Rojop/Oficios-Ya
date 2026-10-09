@@ -22,10 +22,10 @@ const RESEND_SECONDS = 60;
 const phoneSchema = z.object({
   phone: z
     .string()
-    .min(1, 'Ingresa tu número de teléfono')
+    .min(1, 'Ingrese su número de teléfono')
     .refine(
       (value) => normalizeGuatemalaPhone(value) !== null,
-      'Ingresa un teléfono válido de Guatemala (8 dígitos)',
+      'Ingrese un teléfono válido de Guatemala (8 dígitos)',
     ),
 });
 
@@ -117,7 +117,7 @@ export function PhoneOtpFlow({ onVerified, phoneHint }: PhoneOtpFlowProps) {
   if (!isFirebaseConfigured()) {
     return (
       <FormMessage tone="error">
-        La verificación por SMS aún no está configurada. Completa las variables{' '}
+        La verificación por SMS aún no está configurada. Complete las variables{' '}
         <code>NEXT_PUBLIC_FIREBASE_*</code> en <code>Frontend/.env.local</code> y reinicia el
         servidor.
       </FormMessage>
@@ -130,7 +130,7 @@ export function PhoneOtpFlow({ onVerified, phoneHint }: PhoneOtpFlowProps) {
         <FormField
           id="phone"
           label="Número de teléfono"
-          hint={phoneHint ?? 'Te enviaremos un código por SMS para verificarlo.'}
+          hint={phoneHint ?? 'Le enviaremos un código por SMS para verificarlo.'}
           error={phoneForm.formState.errors.phone?.message}
         >
           {(aria) => <PhoneInput {...aria} {...phoneForm.register('phone')} />}

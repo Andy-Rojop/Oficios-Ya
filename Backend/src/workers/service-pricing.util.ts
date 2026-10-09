@@ -5,7 +5,7 @@ import { PriceMode } from '../generated/prisma/enums';
 export const MAX_PRICE_AMOUNT = 99_999_999.99;
 
 export const MESSAGE_PRICE_REQUIRED =
-  'Indica un precio mayor a cero para precio fijo o "desde"; solo "a convenir" puede ir sin precio';
+  'Indique un precio mayor a cero para precio fijo o "desde"; solo "a convenir" puede ir sin precio';
 
 /**
  * RF-015: valida el precio de un servicio y devuelve el monto a guardar.

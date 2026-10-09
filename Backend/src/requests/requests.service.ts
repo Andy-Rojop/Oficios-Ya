@@ -99,7 +99,7 @@ export class RequestsService {
   /** El cliente actual envía una solicitud a un trabajador y queda enlazada a su conversación. */
   async create(userId: string, dto: CreateRequestDto): Promise<RequestDto> {
     if (Boolean(dto.workerProfileId) === Boolean(dto.workerUserId)) {
-      throw new BadRequestException('Indica el trabajador al que le quieres pedir el servicio');
+      throw new BadRequestException('Indique el trabajador al que desea pedir el servicio');
     }
 
     const profile = await this.prisma.workerProfile.findFirst({
@@ -110,10 +110,10 @@ export class RequestsService {
       throw new NotFoundException('Trabajador no encontrado');
     }
     if (profile.userId === userId) {
-      throw new BadRequestException('No puedes pedirte un servicio a ti mismo');
+      throw new BadRequestException('No puede solicitarse un servicio a sí mismo');
     }
     if (await this.access.isBlockedEitherWay(userId, profile.userId)) {
-      throw new ForbiddenException('No puedes enviar una solicitud a este trabajador');
+      throw new ForbiddenException('No puede enviar una solicitud a este trabajador');
     }
 
     if (dto.serviceId) {
@@ -144,7 +144,7 @@ export class RequestsService {
       select: { id: true },
     });
     if (pending) {
-      throw new ConflictException('Ya tienes una solicitud pendiente con este trabajador');
+      throw new ConflictException('Ya tiene una solicitud pendiente con este trabajador');
     }
 
     // Se asegura la conversación fuera de la transacción (maneja la carrera de @@unique sin abortarla).
@@ -176,7 +176,7 @@ export class RequestsService {
     await this.notifications.notify(profile.userId, {
       type: NotificationType.REQUEST_NEW,
       title: 'Nueva solicitud de servicio',
-      body: `${createdRequest.client.name} te envió una solicitud${createdRequest.urgent ? ' urgente' : ''}.`,
+      body: `${createdRequest.client.name} le envió una solicitud${createdRequest.urgent ? ' urgente' : ''}.`,
       link: `/solicitudes/${created.id}`,
     });
     return createdRequest;
@@ -246,7 +246,7 @@ export class RequestsService {
       });
       if (result.count !== 1) {
         throw new ConflictException(
-          'La solicitud cambió mientras la actualizabas. Recarga e inténtalo de nuevo',
+          'La solicitud cambió mientras la actualizaba. Recargue e inténtelo de nuevo',
         );
       }
       if (data.clientConfirmedAt) {

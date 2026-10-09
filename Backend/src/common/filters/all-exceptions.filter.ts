@@ -1,4 +1,11 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 
 interface ErrorBody {
@@ -11,6 +18,8 @@ interface ErrorBody {
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionsFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     // Los errores de WebSocket los resuelve el propio gateway (respuesta ack); aquí solo HTTP.
     if (host.getType() !== 'http') {
@@ -41,6 +50,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
           error = exception.name;
         }
       }
+    }
+
+    if (statusCode >= 500) {
+      const detail =
+        exception instanceof Error
+          ? `${exception.message}\n${exception.stack ?? ''}`
+          : String(exception);
+      this.logger.error(`HTTP ${statusCode} ${request.method} ${request.url}: ${detail}`);
     }
 
     const payload: ErrorBody = {

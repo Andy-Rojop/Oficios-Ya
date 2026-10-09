@@ -49,7 +49,7 @@ export function ResultsList({ initial, filters, emptyHint }: ResultsListProps) {
       <div className="rounded-2xl border border-dashed border-border bg-surface/70 p-8 text-center">
         <p className="text-lg font-semibold">No encontramos trabajadores con esos filtros</p>
         <p className="mt-1 text-sm text-muted">
-          {emptyHint ?? 'Probá con otra palabra, quitá algún filtro o ampliá el rango de precio.'}
+          {emptyHint ?? 'Pruebe con otra palabra, quite algún filtro o amplíe el rango de precio.'}
         </p>
       </div>
     );

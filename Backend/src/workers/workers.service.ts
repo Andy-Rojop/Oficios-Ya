@@ -48,6 +48,7 @@ const SERVICE_SELECT = {
 /** Select explícito: dpi, nit y passwordHash NO se leen de la base de datos en el perfil público. */
 const PUBLIC_PROFILE_SELECT = {
   id: true,
+  userId: true,
   headline: true,
   description: true,
   experienceYears: true,
@@ -263,6 +264,7 @@ export class WorkersService {
     }
     return PublicWorkerProfileDto.fromEntity(profile, (path) => this.storage.getPublicUrl(path), {
       includeContact: Boolean(viewer),
+      viewerUserId: viewer?.id ?? null,
     });
   }
 
@@ -276,7 +278,7 @@ export class WorkersService {
       throw new NotFoundException('No encontramos este perfil de trabajador');
     }
     if (profile.userId !== requester.id && requester.role !== Role.ADMIN) {
-      throw new ForbiddenException('No tienes permiso para ver estos datos');
+      throw new ForbiddenException('No tiene permiso para ver estos datos');
     }
     return WorkerIdentityDto.fromEntity(profile);
   }

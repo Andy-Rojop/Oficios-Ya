@@ -19,7 +19,7 @@ export class UsersService {
   /** RF-006: actualizar nombre y/o zona. */
   async updateProfile(userId: string, dto: UpdateProfileDto): Promise<User> {
     if (dto.name === undefined && dto.zoneId === undefined) {
-      throw new BadRequestException('Indica al menos un campo para actualizar (nombre o zona)');
+      throw new BadRequestException('Indique al menos un campo para actualizar (nombre o zona)');
     }
 
     if (dto.zoneId !== undefined) {
@@ -52,7 +52,7 @@ export class UsersService {
   async updateEmail(userId: string, dto: UpdateEmailDto): Promise<User> {
     const current = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!current) {
-      throw new UnauthorizedException('Tu sesión ya no es válida. Inicia sesión de nuevo');
+      throw new UnauthorizedException('Su sesión ya no es válida. Inicie sesión de nuevo');
     }
 
     const email = dto.email;

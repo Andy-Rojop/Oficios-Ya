@@ -79,14 +79,14 @@ export function disconnectChatSocket(): void {
 export function emitWithAck<T>(instance: Socket, event: string, payload: unknown): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     if (!instance.connected) {
-      reject(new Error('Sin conexión con el chat. Revisa tu internet e inténtalo de nuevo.'));
+      reject(new Error('Sin conexión con el chat. Revise su conexión e inténtelo de nuevo.'));
       return;
     }
     instance
       .timeout(ACK_TIMEOUT_MS)
       .emit(event, payload, (timeoutError: Error | null, ack?: Ack<T>) => {
         if (timeoutError || !ack) {
-          reject(new Error('El servidor no respondió. Inténtalo de nuevo.'));
+          reject(new Error('El servidor no respondió. Inténtelo de nuevo.'));
           return;
         }
         if (!ack.ok) {

@@ -1,5 +1,16 @@
 packages:
   - '.'
+# Railway (linux/x64/glibc) + máquina local: sharp y otros binarios opcionales
+supportedArchitectures:
+  os:
+    - current
+    - linux
+  cpu:
+    - current
+    - x64
+  libc:
+    - current
+    - glibc
 allowBuilds:
   prisma: true
   '@prisma/engines': true

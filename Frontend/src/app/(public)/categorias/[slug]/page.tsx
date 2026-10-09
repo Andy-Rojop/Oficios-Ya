@@ -62,7 +62,7 @@ export default async function CategoriaPage({ params, searchParams }: PageProps)
     error =
       err instanceof ApiError
         ? err.message
-        : 'No se pudo cargar la categoría. Revisá que la API esté en marcha.';
+        : 'No se pudo cargar la categoría. Revise que la API esté en marcha.';
   }
 
   return (

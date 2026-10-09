@@ -61,7 +61,7 @@ export function AccountPanel() {
   }, [unauthorized, isLoading, isFetching, router]);
 
   if (isLoading || (isFetching && !user)) {
-    return <p className="text-muted">Cargando tu cuenta…</p>;
+    return <p className="text-muted">Cargando su cuenta…</p>;
   }
 
   if (!user) {
@@ -70,7 +70,7 @@ export function AccountPanel() {
     }
     return (
       <FormMessage tone="error">
-        {error ? getErrorMessage(error) : 'No se pudo cargar tu cuenta.'}
+        {error ? getErrorMessage(error) : 'No se pudo cargar su cuenta.'}
       </FormMessage>
     );
   }
@@ -94,7 +94,7 @@ export function AccountPanel() {
               Hola, {firstName}
             </h1>
             <p className="text-sm text-white/75 sm:text-base">
-              Datos de tu cuenta, modo de uso y seguridad de acceso.
+              Datos de su cuenta, modo de uso y seguridad de acceso.
             </p>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-white">
@@ -136,7 +136,7 @@ function ProfileCard({ user }: { user: UserDto }) {
     <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
       <div className="space-y-1">
         <CardTitle>Mi perfil</CardTitle>
-        <CardDescription>Información principal de tu cuenta en OficiosYa.</CardDescription>
+        <CardDescription>Información principal de su cuenta en OficiosYa.</CardDescription>
       </div>
       <dl className="grid gap-3 sm:grid-cols-2">
         {rows.map(({ label, value, Icon }) => (
@@ -166,7 +166,7 @@ function ModeCard({ user }: { user: UserDto }) {
       <div className="space-y-1">
         <CardTitle>Modo de uso</CardTitle>
         <CardDescription>
-          Cliente ve Buscar. Trabajador ve el Panel. Podés cambiar cuando quieras.
+          Cliente ve Buscar. Trabajador ve el Panel. Puede cambiar cuando quiera.
         </CardDescription>
       </div>
       <div role="radiogroup" aria-label="Modo de uso" className="grid gap-3 sm:grid-cols-2">
@@ -218,7 +218,7 @@ function ModeCard({ user }: { user: UserDto }) {
 }
 
 const emailSchema = z.object({
-  email: z.union([z.literal(''), z.email('Ingresa un correo válido').max(254)]),
+  email: z.union([z.literal(''), z.email('Ingrese un correo válido').max(254)]),
 });
 type EmailValues = z.infer<typeof emailSchema>;
 
@@ -271,7 +271,7 @@ function EmailCard({ user }: { user: UserDto }) {
 }
 
 const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Ingresa tu contraseña actual'),
+  currentPassword: z.string().min(1, 'Ingrese su contraseña actual'),
 });
 type PasswordValues = z.infer<typeof passwordSchema>;
 
@@ -334,7 +334,7 @@ function PhoneChangeCard({ currentPhone }: { currentPhone: string }) {
         </Button>
       ) : !verification ? (
         <div className="space-y-3">
-          <PhoneOtpFlow onVerified={setVerification} phoneHint="Ingresa tu número nuevo." />
+          <PhoneOtpFlow onVerified={setVerification} phoneHint="Ingrese su número nuevo." />
           <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
             Cancelar
           </Button>
@@ -389,7 +389,7 @@ function SessionCard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <CardTitle>Sesión</CardTitle>
-          <CardDescription>Cerrá la sesión en este dispositivo.</CardDescription>
+          <CardDescription>Cierre la sesión en este dispositivo.</CardDescription>
         </div>
         <Button variant="outline" disabled={logout.isPending} onClick={() => logout.mutate()}>
           <LogOut aria-hidden className="h-4 w-4" />

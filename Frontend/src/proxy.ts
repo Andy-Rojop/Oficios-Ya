@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 /**
  * Next.js 16: `proxy` corre antes de renderizar la ruta.
@@ -12,7 +11,7 @@ import type { NextRequest } from 'next/server';
  *
  * La protección real está en el cliente (`useMe` + redirect) y en la API (JWT).
  */
-export function proxy(_request: NextRequest) {
+export function proxy() {
   return NextResponse.next();
 }
 

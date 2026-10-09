@@ -66,7 +66,7 @@ export class ReviewsService {
     }
     if (request.status !== RequestStatus.COMPLETED || !request.clientConfirmedAt) {
       throw new BadRequestException(
-        'Solo puedes calificar un trabajo finalizado que ya confirmaste',
+        'Solo puede calificar un trabajo finalizado que ya confirmó',
       );
     }
     if (request.review) {
@@ -92,7 +92,7 @@ export class ReviewsService {
       await this.notifications.notify(request.workerId, {
         type: NotificationType.REVIEW_NEW,
         title: 'Nueva reseña',
-        body: `${request.client.name} te calificó con ${dto.rating} estrella${dto.rating === 1 ? '' : 's'}.`,
+        body: `${request.client.name} le calificó con ${dto.rating} estrella${dto.rating === 1 ? '' : 's'}.`,
         link: profileId ? `/trabajador/${profileId}` : `/solicitudes/${request.id}`,
       });
       return toPublicReview(created);

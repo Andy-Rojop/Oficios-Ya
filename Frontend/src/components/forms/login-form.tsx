@@ -21,16 +21,17 @@ import {
   type ActiveMode,
 } from '@/lib/auth';
 import { normalizeGuatemalaPhone } from '@/lib/phone';
+import { UI_COPY } from '@/lib/ui-copy';
 
 const loginSchema = z.object({
   phone: z
     .string()
-    .min(1, 'Ingresa tu número de teléfono')
+    .min(1, 'Ingrese su número de teléfono')
     .refine(
       (value) => normalizeGuatemalaPhone(value) !== null,
-      'Ingresa un teléfono válido de Guatemala (8 dígitos)',
+      'Ingrese un teléfono válido de Guatemala (8 dígitos)',
     ),
-  password: z.string().min(1, 'Ingresa tu contraseña'),
+  password: z.string().min(1, 'Ingrese su contraseña'),
 });
 
 type LoginValues = z.infer<typeof loginSchema>;
@@ -48,6 +49,7 @@ export function LoginForm() {
   const nextParam = searchParams.get('next');
   const justReset = searchParams.get('recuperada') === '1';
   const [error, setError] = useState<string | null>(null);
+  /** Solo se lee/escribe en el effect (evita doble redirect). */
   const redirected = useRef(false);
 
   const me = useMe();
@@ -61,7 +63,7 @@ export function LoginForm() {
     defaultValues: { phone: '', password: '' },
   });
 
-  // Una sola redirección suave si ya hay sesión (sin window.location → evita parpadeo).
+  // Redirección suave si ya hay sesión o acabamos de guardar el usuario en caché.
   useEffect(() => {
     if (redirected.current || me.isLoading || me.isFetching || !me.data) return;
     redirected.current = true;
@@ -91,7 +93,7 @@ export function LoginForm() {
     setError(null);
     const phone = normalizeGuatemalaPhone(values.phone);
     if (!phone) {
-      setError('Ingresa un teléfono válido de Guatemala (8 dígitos)');
+      setError('Ingrese un teléfono válido de Guatemala (8 dígitos)');
       return;
     }
     try {
@@ -99,22 +101,15 @@ export function LoginForm() {
       if (mode && user.activeMode !== mode) {
         user = await switchMode(mode);
       }
+      // El effect redirige cuando `me.data` queda en caché.
       queryClient.setQueryData(ME_QUERY_KEY, user);
-      redirected.current = true;
-      router.replace(
-        resolvePostAuthPath({
-          activeMode: user.activeMode,
-          requestedMode: mode,
-          next: nextParam,
-        }),
-      );
     } catch (err) {
       setError(getErrorMessage(err));
     }
   });
 
   const roleLabel = mode === 'WORKER' ? 'trabajador' : mode === 'CLIENT' ? 'cliente' : null;
-  const checkingSession = me.isLoading || (Boolean(me.data) && redirected.current);
+  const checkingSession = (me.isLoading || Boolean(me.data)) && !error;
 
   if (checkingSession && !error) {
     return <p className="text-center text-sm text-muted">Entrando…</p>;
@@ -124,7 +119,7 @@ export function LoginForm() {
     <form onSubmit={onSubmit} noValidate className="space-y-4">
       {roleLabel ? (
         <p className="rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand-dark">
-          Vas a entrar como <strong>{roleLabel}</strong>.{' '}
+          Entrará como <strong>{roleLabel}</strong>.{' '}
           <Link href="/roles" className="font-medium underline-offset-2 hover:underline">
             Cambiar rol
           </Link>
@@ -133,7 +128,7 @@ export function LoginForm() {
 
       {justReset ? (
         <FormMessage tone="success">
-          Contraseña actualizada. Ingresa con tu nueva contraseña.
+          Contraseña actualizada. Ingrese con su nueva contraseña.
         </FormMessage>
       ) : null}
 
@@ -163,7 +158,7 @@ export function LoginForm() {
           href="/recuperar"
           className="font-medium text-brand underline-offset-4 hover:underline"
         >
-          ¿Olvidaste tu contraseña?
+          {UI_COPY.forgotPassword}
         </Link>
         <Link
           href={
@@ -175,7 +170,7 @@ export function LoginForm() {
           }
           className="font-medium text-brand underline-offset-4 hover:underline"
         >
-          Crear una cuenta
+          {UI_COPY.createAccount}
         </Link>
       </div>
     </form>

@@ -32,7 +32,7 @@ export function HomeSearchForm({ variant = 'default' }: HomeSearchFormProps) {
         role="search"
       >
         <Label htmlFor="home-search-q" className="sr-only">
-          ¿Qué oficio necesitás?
+          ¿Qué oficio necesita?
         </Label>
         <div className="flex min-w-0 flex-1 items-center gap-1.5 pl-2">
           <Search aria-hidden className="h-4 w-4 shrink-0 text-muted" />
@@ -41,7 +41,7 @@ export function HomeSearchForm({ variant = 'default' }: HomeSearchFormProps) {
             type="search"
             value={q}
             onChange={(event) => setQ(event.target.value)}
-            placeholder="¿Qué oficio necesitás?"
+            placeholder="¿Qué oficio necesita?"
             maxLength={100}
             enterKeyHint="search"
             autoComplete="off"
@@ -62,7 +62,7 @@ export function HomeSearchForm({ variant = 'default' }: HomeSearchFormProps) {
       role="search"
     >
       <div className="min-w-0 flex-1 space-y-1">
-        <Label htmlFor="home-search-q">¿Qué oficio necesitás?</Label>
+        <Label htmlFor="home-search-q">¿Qué oficio necesita?</Label>
         <Input
           id="home-search-q"
           type="search"

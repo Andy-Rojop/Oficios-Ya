@@ -1,6 +1,6 @@
 import { BadRequestException, PayloadTooLargeException } from '@nestjs/common';
 import sharp from 'sharp';
-import { processImage } from './image-processing';
+import { MESSAGE_INVALID_FORMAT, processImage } from './image-processing';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -12,6 +12,14 @@ async function makeImage(format: 'jpeg' | 'png' | 'webp', width: number, height:
 }
 
 describe('processImage', () => {
+  it.each(['jpeg', 'png', 'webp'] as const)('acepta %s válido y lo convierte a WebP', async (format) => {
+    const input = await makeImage(format, 800, 600);
+    const result = await processImage(input, MAX_BYTES);
+    const metadata = await sharp(result.buffer).metadata();
+    expect(metadata.format).toBe('webp');
+    expect(result.contentType).toBe('image/webp');
+  });
+
   it('reduce a 1600 px, convierte a WebP y elimina EXIF', async () => {
     const input = await makeImage('jpeg', 3200, 1600);
     expect((await sharp(input).metadata()).exif).toBeDefined();
@@ -36,6 +44,9 @@ describe('processImage', () => {
       .gif()
       .toBuffer();
     await expect(processImage(gif, MAX_BYTES)).rejects.toBeInstanceOf(BadRequestException);
+    await expect(processImage(gif, MAX_BYTES)).rejects.toMatchObject({
+      response: { message: MESSAGE_INVALID_FORMAT, statusCode: 400 },
+    });
   });
 
   it('rechaza archivos que no son imagen', async () => {
@@ -47,5 +58,6 @@ describe('processImage', () => {
   it('rechaza imágenes que superan el máximo', async () => {
     const input = await makeImage('png', 100, 100);
     await expect(processImage(input, 10)).rejects.toBeInstanceOf(PayloadTooLargeException);
+    await expect(processImage(input, 10)).rejects.toThrow(/tamaño máximo/i);
   });
 });

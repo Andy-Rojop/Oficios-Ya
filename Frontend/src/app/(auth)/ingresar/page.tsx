@@ -9,7 +9,7 @@ export default function IngresarPage() {
   return (
     <AuthPageShell
       title="Ingresar"
-      description="Entrá con tu teléfono y tu contraseña. El inicio de sesión no envía SMS."
+      description="Ingrese con su teléfono y su contraseña. El inicio de sesión no envía SMS."
     >
       <Suspense fallback={null}>
         <LoginForm />

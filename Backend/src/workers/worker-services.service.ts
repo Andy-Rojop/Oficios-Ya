@@ -81,7 +81,7 @@ export class WorkerServicesService {
     const count = await this.prisma.service.count({ where: { workerProfileId: profileId } });
     if (count >= MAX_SERVICES_PER_WORKER) {
       throw new BadRequestException(
-        `Puedes publicar como máximo ${MAX_SERVICES_PER_WORKER} servicios`,
+        `Puede publicar como máximo ${MAX_SERVICES_PER_WORKER} servicios`,
       );
     }
 
@@ -151,7 +151,7 @@ export class WorkerServicesService {
     file: UploadedImage | undefined,
   ): Promise<ServiceResponseDto> {
     if (!file) {
-      throw new BadRequestException('Adjunta una imagen en el campo "file"');
+      throw new BadRequestException('Adjunte una imagen en el campo "file"');
     }
     const current = await this.findOwned(userId, serviceId);
     if (current.photos.length >= MAX_PHOTOS_PER_SERVICE) {

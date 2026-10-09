@@ -74,11 +74,11 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
   function useMyLocation() {
     setMessage(null);
     if (!('geolocation' in navigator)) {
-      setMessage('Tu navegador no permite obtener la ubicación.');
+      setMessage('Su navegador no permite obtener la ubicación.');
       return;
     }
     setLocating(true);
-    setMessage('Buscando tu ubicación…');
+    setMessage('Buscando su ubicación…');
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setLocating(false);
@@ -86,7 +86,7 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
       },
       () => {
         setLocating(false);
-        setMessage('No pudimos obtener tu ubicación. Activá el permiso o tocá el mapa.');
+        setMessage('No pudimos obtener su ubicación. Active el permiso o toque el mapa.');
       },
       { timeout: 10_000, maximumAge: 5 * 60_000 },
     );
@@ -115,7 +115,7 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
           </span>
         ) : (
           <p className="text-xs text-muted sm:text-sm">
-            Tocá el mapa para ver oficios cerca de esa área.
+            Toque el mapa para ver oficios cerca de esa área.
           </p>
         )}
       </div>
@@ -154,7 +154,7 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
                 No encontramos resultados con esos filtros.
               </p>
               <p className="mt-1 text-sm text-muted">
-                Tocá otra parte del mapa, probá otra categoría o borrá el rango de precio.
+                Toque otra parte del mapa, pruebe otra categoría o borre el rango de precio.
               </p>
               <Link
                 href="/buscar"

@@ -23,7 +23,7 @@ export class ModeGuard implements CanActivate {
 
     const { user } = context.switchToHttp().getRequest<{ user?: AuthenticatedUser }>();
     if (!user || user.activeMode !== ActiveMode.WORKER) {
-      throw new ForbiddenException('Debes cambiar al modo trabajador para realizar esta acción');
+      throw new ForbiddenException('Debe cambiar al modo trabajador para realizar esta acción');
     }
     return true;
   }

@@ -113,10 +113,10 @@ export function SearchFiltersForm({
     }
     if (!('geolocation' in navigator)) {
       setSort('rating');
-      setMessage('Tu navegador no permite obtener la ubicación.');
+      setMessage('Su navegador no permite obtener la ubicación.');
       return;
     }
-    setMessage('Buscando tu ubicación…');
+    setMessage('Buscando su ubicación…');
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const found = {
@@ -129,7 +129,7 @@ export function SearchFiltersForm({
       },
       () => {
         setSort('rating');
-        setMessage('No pudimos obtener tu ubicación. Activá el permiso para ordenar por cercanía.');
+        setMessage('No pudimos obtener su ubicación. Active el permiso para ordenar por cercanía.');
       },
       { timeout: 10_000, maximumAge: 5 * 60_000 },
     );
@@ -158,7 +158,7 @@ export function SearchFiltersForm({
       <div className="flex gap-2">
         <div className="min-w-0 flex-1">
           <Label htmlFor="filter-q" className="sr-only">
-            ¿Qué oficio necesitás?
+            ¿Qué oficio necesita?
           </Label>
           <Input
             id="filter-q"

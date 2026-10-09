@@ -66,7 +66,7 @@ export function ReviewForm({
           rows={3}
           maxLength={REVIEW_COMMENT_MAX}
           value={comment}
-          placeholder="Cuenta cómo fue tu experiencia"
+          placeholder="Cuente cómo fue su experiencia"
           onChange={(event) => setComment(event.target.value)}
         />
         <p className="text-right text-xs text-muted">
@@ -107,7 +107,7 @@ export function ReplyForm({ reviewId, requestId }: { reviewId: string; requestId
       }}
     >
       <label htmlFor="review-reply" className="text-sm font-medium">
-        Responder a la reseña (solo puedes hacerlo una vez)
+        Responder a la reseña (solo puede hacerlo una vez)
       </label>
       <Textarea
         id="review-reply"

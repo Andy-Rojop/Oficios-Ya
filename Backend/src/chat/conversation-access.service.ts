@@ -58,7 +58,7 @@ export class ConversationAccessService {
   /** Lanza 403 si hay un bloqueo entre ambos (en cualquier dirección). */
   async assertNotBlocked(userA: string, userB: string): Promise<void> {
     if (await this.isBlockedEitherWay(userA, userB)) {
-      throw new ForbiddenException('No puedes enviar mensajes en esta conversación');
+      throw new ForbiddenException('No puede enviar mensajes en esta conversación');
     }
   }
 

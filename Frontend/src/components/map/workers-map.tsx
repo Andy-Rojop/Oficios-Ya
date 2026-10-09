@@ -165,7 +165,7 @@ export default function WorkersMap({
           >
             <Popup>
               <p className="text-sm font-semibold">El Asintal</p>
-              <p className="text-xs text-muted">Retalhuleu · oficios cerca de vos</p>
+              <p className="text-xs text-muted">Retalhuleu · oficios cerca de usted</p>
             </Popup>
           </CircleMarker>
         ) : null}
@@ -182,7 +182,7 @@ export default function WorkersMap({
             }}
           >
             <Popup>
-              <p className="text-sm font-semibold">Tu ubicación</p>
+              <p className="text-sm font-semibold">Su ubicación</p>
               <p className="text-xs text-muted">Aproximada (redondeada por privacidad)</p>
             </Popup>
           </CircleMarker>
@@ -254,7 +254,7 @@ export default function WorkersMap({
           {points.length === 0
             ? 'Ninguna de estas zonas tiene ubicación en el mapa todavía.'
             : interactive
-              ? 'Tocá el mapa o una zona para ver oficios cercanos. Los pines son centros de zona, nunca una dirección exacta.'
+              ? 'Toque el mapa o una zona para ver oficios cercanos. Los pines son centros de zona, nunca una dirección exacta.'
               : 'El mapa muestra el centro aproximado de cada zona, nunca la dirección de una persona.'}
         </p>
       ) : null}

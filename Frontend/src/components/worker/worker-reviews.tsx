@@ -151,7 +151,7 @@ function ReportReviewDialog({ reviewId, onClose }: { reviewId: string; onClose: 
             autoFocus
             maxLength={1000}
             value={reason}
-            placeholder="Cuéntanos el motivo (mínimo 10 caracteres)"
+            placeholder="Cuéntenos el motivo (mínimo 10 caracteres)"
             onChange={(event) => setReason(event.target.value)}
           />
         </div>

@@ -7,7 +7,7 @@ import { DEMO, loginAs, uniqueSuffix } from './helpers';
  */
 test.describe.serial('Flujos críticos cliente ↔ trabajador', () => {
   const marker = uniqueSuffix();
-  const chatText = `Hola, ¿tenés disponibilidad? (${marker})`;
+  const chatText = `Hola, ¿tiene disponibilidad? (${marker})`;
   const requestDesc = `Necesito revisión de tubería en la cocina (${marker}).`;
   const reviewComment = `Buen trabajo, puntual y limpio (${marker}).`;
 
@@ -46,7 +46,7 @@ test.describe.serial('Flujos críticos cliente ↔ trabajador', () => {
     await page.getByRole('button', { name: 'Contactar' }).click();
     await expect(page).toHaveURL(/\/mensajes\//, { timeout: 20_000 });
 
-    await page.getByLabel('Escribe un mensaje').fill(chatText);
+    await page.getByLabel('Escriba un mensaje').fill(chatText);
     await page.getByRole('button', { name: 'Enviar', exact: true }).click();
     await expect(page.getByText(chatText)).toBeVisible({ timeout: 20_000 });
   });

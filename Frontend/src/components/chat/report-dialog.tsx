@@ -25,7 +25,7 @@ export function ReportDialog({ conversationId, onClose }: ReportDialogProps) {
     return (
       <Modal title="Reporte enviado" onClose={onClose}>
         <p className="text-sm">
-          Gracias. Revisaremos la conversación. Si no te sientes seguro, también puedes bloquear a
+          Gracias. Revisaremos la conversación. Si no se siente seguro, también puede bloquear a
           esta persona.
         </p>
         <div className="flex justify-end">
@@ -54,7 +54,7 @@ export function ReportDialog({ conversationId, onClose }: ReportDialogProps) {
             autoFocus
             maxLength={REPORT_REASON_MAX_LENGTH}
             value={reason}
-            placeholder="Cuéntanos el motivo (mínimo 10 caracteres)"
+            placeholder="Cuéntenos el motivo (mínimo 10 caracteres)"
             onChange={(event) => setReason(event.target.value)}
           />
         </div>

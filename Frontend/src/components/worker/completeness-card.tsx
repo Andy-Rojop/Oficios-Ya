@@ -39,12 +39,12 @@ export function CompletenessCard() {
               className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
               style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              {data.complete ? 'Perfil listo al 100%' : `Tu perfil está al ${data.percentage}%`}
+              {data.complete ? 'Perfil listo al 100%' : `Su perfil está al ${data.percentage}%`}
             </h2>
             <p className="text-sm text-muted">
               {data.complete
-                ? 'Los clientes confían más en perfiles completos. Ya estás visible con todo.'
-                : 'Completá estos pasos para que más clientes te encuentren.'}
+                ? 'Los clientes confían más en perfiles completos. Ya está visible con todo.'
+                : 'Complete estos pasos para que más clientes lo encuentren.'}
             </p>
           </div>
           <div

@@ -53,7 +53,7 @@ export function WorkerContactCard({ workerProfileId, contact: initialContact }: 
       <Card className="space-y-3">
         <CardTitle>Contacto</CardTitle>
         <p className="text-sm text-muted">
-          Iniciá sesión para ver teléfono, WhatsApp o correo de este trabajador.
+          Inicie sesión para ver teléfono, WhatsApp o correo de este trabajador.
         </p>
         <Link
           href={loginHref}
@@ -70,7 +70,7 @@ export function WorkerContactCard({ workerProfileId, contact: initialContact }: 
       <Card className="space-y-3">
         <CardTitle>Contacto</CardTitle>
         <p className="text-sm text-muted">
-          Este trabajador no publicó canales de contacto. Podés escribirle por chat.
+          Este trabajador no publicó canales de contacto. Puede escribirle por chat.
         </p>
       </Card>
     );

@@ -123,6 +123,21 @@ describe('PublicWorkerProfileDto', () => {
     expect(dto.contact).toEqual({ phone: null, whatsapp: null, email: null });
   });
 
+  it('marca isOwner cuando el visitante es el dueño del perfil', () => {
+    const asOwner = PublicWorkerProfileDto.fromEntity(buildDirtySource(null), toUrl, {
+      viewerUserId: 'user-1',
+    });
+    expect(asOwner.isOwner).toBe(true);
+
+    const asGuest = PublicWorkerProfileDto.fromEntity(buildDirtySource(null), toUrl, {
+      viewerUserId: 'otro-user',
+    });
+    expect(asGuest.isOwner).toBe(false);
+
+    const anonymous = PublicWorkerProfileDto.fromEntity(buildDirtySource(null), toUrl);
+    expect(anonymous.isOwner).toBe(false);
+  });
+
   it('muestra solo los canales elegidos cuando hay sesión', () => {
     const dto = PublicWorkerProfileDto.fromEntity(
       buildDirtySource({ phone: true, whatsapp: false, email: false }),
