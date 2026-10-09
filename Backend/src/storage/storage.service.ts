@@ -52,6 +52,7 @@ export class StorageService implements OnModuleInit {
 
   /** Crea los buckets si faltan (best-effort: nunca impide arrancar la API). */
   onModuleInit(): void {
+    void this.verifySharpRuntime();
     if (!this.isConfigured()) {
       this.logger.warn(
         'Supabase Storage no está configurado (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY): las subidas devolverán 503',
@@ -59,6 +60,24 @@ export class StorageService implements OnModuleInit {
       return;
     }
     void this.ensureBuckets();
+  }
+
+  /** Comprueba al arranque si el binario nativo de sharp carga (útil en logs de Railway). */
+  private async verifySharpRuntime(): Promise<void> {
+    try {
+      const { default: sharpRuntime } = await import('sharp');
+      const meta = await sharpRuntime({
+        create: { width: 1, height: 1, channels: 3, background: '#000' },
+      })
+        .png()
+        .toBuffer();
+      this.logger.log(`sharp OK (${meta.length} bytes de prueba)`);
+    } catch (error) {
+      this.logger.error(
+        `sharp NO disponible en este runtime: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+    }
   }
 
   private async ensureBuckets(): Promise<void> {
@@ -123,10 +142,15 @@ export class StorageService implements OnModuleInit {
     try {
       processed = await processImage(buffer, this.maxUploadBytes);
     } catch (error) {
-      if (error instanceof Error && /sharp|Could not load/i.test(error.message)) {
+      if (
+        error instanceof ServiceUnavailableException ||
+        (error instanceof Error && /sharp|Could not load|libvips|dlopen|ERR_DLOPEN/i.test(error.message))
+      ) {
         this.logger.error(
-          `Fallo de sharp al procesar imagen (¿binario linux-x64 ausente?): ${error.message}`,
-          error.stack,
+          `Fallo de sharp al procesar imagen (¿binario linux-x64/musl ausente?): ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+          error instanceof Error ? error.stack : undefined,
         );
         throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
       }
@@ -134,21 +158,31 @@ export class StorageService implements OnModuleInit {
     }
 
     const finalPath = this.normalizePath(path);
-    const { error } = await this.getClient()
-      .storage.from(this.bucketName(kind))
-      .upload(finalPath, processed.buffer, {
-        contentType: processed.contentType,
-        upsert: false,
-        cacheControl: kind === 'public' ? '31536000' : '3600',
-      });
-    if (error) {
+    try {
+      const { error } = await this.getClient()
+        .storage.from(this.bucketName(kind))
+        .upload(finalPath, processed.buffer, {
+          contentType: processed.contentType,
+          upsert: false,
+          cacheControl: kind === 'public' ? '31536000' : '3600',
+        });
+      if (error) {
+        this.logger.error(
+          `Fallo al subir "${finalPath}" a Storage (${this.bucketName(kind)}): ${error.message}`,
+        );
+        throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
+      }
+      return finalPath;
+    } catch (error) {
+      if (error instanceof ServiceUnavailableException || error instanceof InternalServerErrorException) {
+        throw error;
+      }
       this.logger.error(
-        `Fallo al subir "${finalPath}" a Storage (${this.bucketName(kind)}): ${error.message}`,
-        error.stack,
+        `Error inesperado al subir "${finalPath}": ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
       );
       throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
     }
-    return finalPath;
   }
 
   /** Valida, procesa (1600 px, WebP, sin EXIF) y sube al bucket público. Devuelve la ruta final. */

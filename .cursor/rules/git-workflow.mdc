@@ -1,0 +1,11 @@
+---
+description: Flujo Git del proyecto — main, correo del autor, sin ramas extra
+alwaysApply: true
+---
+
+# Git en OficiosYa
+
+- Trabajar y subir cambios en **`main`**. No crear ramas de feature/fix salvo que el usuario lo pida explícitamente.
+- Al commitear, usar la identidad ya configurada en la máquina del usuario (su nombre y correo). **No** cambiar `git config`. **No** dejar trailers `Co-authored-by` de Cursor u otros autores artificiales.
+- Solo commitear cuando el usuario lo pida. Solo pushear cuando el usuario lo pida; el destino por defecto es **`origin/main`**.
+- Si hace falta un PR, preguntar primero; no asumir ramas nuevas.

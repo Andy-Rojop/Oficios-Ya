@@ -177,6 +177,13 @@ importers:
       typescript-eslint:
         specifier: ^8.43.0
         version: 8.71.0(eslint@9.39.5(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)
+    optionalDependencies:
+      '@img/sharp-linux-x64':
+        specifier: 0.35.5
+        version: 0.35.5
+      '@img/sharp-linuxmusl-x64':
+        specifier: 0.35.5
+        version: 0.35.5
 
 packages:
 

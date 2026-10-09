@@ -3,7 +3,7 @@
 
 [build]
 builder = "RAILPACK"
-buildCommand = "pnpm install --frozen-lockfile && pnpm run build"
+buildCommand = "pnpm install --frozen-lockfile && pnpm rebuild sharp && pnpm run build"
 watchPatterns = ["**"]
 
 [deploy]

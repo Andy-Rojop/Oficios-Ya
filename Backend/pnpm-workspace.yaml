@@ -11,6 +11,7 @@ supportedArchitectures:
   libc:
     - current
     - glibc
+    - musl
 allowBuilds:
   prisma: true
   '@prisma/engines': true

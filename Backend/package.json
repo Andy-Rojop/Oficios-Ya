@@ -51,6 +51,10 @@
     "socket.io": "^4.8.4",
     "zod": "^4.1.5"
   },
+  "optionalDependencies": {
+    "@img/sharp-linux-x64": "0.35.5",
+    "@img/sharp-linuxmusl-x64": "0.35.5"
+  },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@nestjs/cli": "^11.0.10",

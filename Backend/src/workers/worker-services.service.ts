@@ -1,5 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { PriceUnit } from '../generated/prisma/enums';
 import type { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -174,7 +180,8 @@ export class WorkerServicesService {
       return this.toDto(updated);
     } catch (error) {
       await this.storage.deleteObjectSilently(path);
-      throw error;
+      if (error instanceof HttpException) throw error;
+      throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
     }
   }
 

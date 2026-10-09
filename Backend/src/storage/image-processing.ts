@@ -1,10 +1,20 @@
-import { BadRequestException, PayloadTooLargeException } from '@nestjs/common';
+import {
+  BadRequestException,
+  PayloadTooLargeException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { LIMITS } from '../shared';
 import sharp from 'sharp';
 
 /** Formatos aceptados (RNF-040). */
 export const ALLOWED_IMAGE_FORMATS = ['jpeg', 'png', 'webp'] as const;
-export const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+/** Algunos navegadores envían image/jpg en lugar de image/jpeg. */
+export const ALLOWED_IMAGE_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+] as const;
 
 export const MESSAGE_INVALID_FORMAT = 'Formato no permitido. Use JPG, PNG o WebP';
 export const MESSAGE_UNREADABLE_IMAGE =
@@ -57,12 +67,19 @@ export async function processImage(input: Buffer, maxBytes: number): Promise<Pro
 
     return { buffer: data, contentType: 'image/webp', width: info.width, height: info.height };
   } catch (error) {
-    if (error instanceof BadRequestException || error instanceof PayloadTooLargeException) {
+    if (
+      error instanceof BadRequestException ||
+      error instanceof PayloadTooLargeException ||
+      error instanceof ServiceUnavailableException
+    ) {
       throw error;
     }
-    // Fallo típico de sharp en Linux sin binario: se propaga para loguear el stack arriba.
-    if (error instanceof Error && /sharp|Could not load/i.test(error.message)) {
-      throw error;
+    // Binario nativo ausente o libvips roto en el host (p. ej. Railway sin linux-x64).
+    if (
+      error instanceof Error &&
+      /sharp|Could not load|libvips|dlopen|ERR_DLOPEN/i.test(error.message)
+    ) {
+      throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
     }
     throw new BadRequestException(MESSAGE_UNREADABLE_IMAGE);
   }

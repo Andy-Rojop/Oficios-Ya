@@ -66,6 +66,18 @@ export class ImageUploadInterceptor implements NestInterceptor {
       });
     });
 
+    // Normaliza lo que deja multer para @UploadedFile() / servicios.
+    const raw = (request as Request & { file?: UploadedImage & { buffer: Buffer } }).file;
+    if (raw?.buffer) {
+      const uploaded: UploadedImage = {
+        buffer: Buffer.isBuffer(raw.buffer) ? raw.buffer : Buffer.from(raw.buffer),
+        mimetype: raw.mimetype,
+        size: raw.size,
+        originalname: raw.originalname,
+      };
+      (request as Request & { file?: UploadedImage }).file = uploaded;
+    }
+
     return next.handle();
   }
 
@@ -82,9 +94,6 @@ export class ImageUploadInterceptor implements NestInterceptor {
         return new BadRequestException(`Envíe una sola imagen en el campo "${IMAGE_FIELD_NAME}"`);
       }
       return new BadRequestException('No se pudo procesar el archivo enviado');
-    }
-    if (error instanceof Error) {
-      return error;
     }
     return new BadRequestException('No se pudo procesar el archivo enviado');
   }
