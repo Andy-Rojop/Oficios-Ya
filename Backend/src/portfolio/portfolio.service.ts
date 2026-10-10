@@ -52,7 +52,7 @@ export class PortfolioService {
     const count = await this.prisma.portfolioItem.count({ where: { workerProfileId: profileId } });
     if (count >= MAX_PORTFOLIO_ITEMS) {
       throw new BadRequestException(
-        `Tu portafolio admite como máximo ${MAX_PORTFOLIO_ITEMS} fotos. Elimina alguna para subir otra`,
+        `Su portafolio admite como máximo ${MAX_PORTFOLIO_ITEMS} fotos. Elimine alguna para subir otra`,
       );
     }
 

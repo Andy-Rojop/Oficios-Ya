@@ -218,7 +218,7 @@ export class StorageService implements OnModuleInit {
           this.logger.error(
             `Reintento de subida a "${bucket}/${finalPath}" falló: ${this.formatStorageError(retryError)}`,
           );
-          throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
+          throw new ServiceUnavailableException(this.userMessageForStorageError(retryError));
         }
       }
       if (error instanceof ServiceUnavailableException || error instanceof InternalServerErrorException) {
@@ -228,7 +228,7 @@ export class StorageService implements OnModuleInit {
         `Fallo al subir "${finalPath}" a Storage (${bucket}): ${this.formatStorageError(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
-      throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
+      throw new ServiceUnavailableException(this.userMessageForStorageError(error));
     }
   }
 
@@ -238,9 +238,11 @@ export class StorageService implements OnModuleInit {
     buffer: Buffer,
     contentType: string,
   ): Promise<void> {
+    // Uint8Array evita fallos del SDK con Buffer en algunos runtimes Node.
+    const body = new Uint8Array(buffer);
     const { error } = await this.getClient()
       .storage.from(this.bucketName(kind))
-      .upload(finalPath, buffer, {
+      .upload(finalPath, body, {
         contentType,
         upsert: false,
         cacheControl: kind === 'public' ? '31536000' : '3600',
@@ -248,6 +250,40 @@ export class StorageService implements OnModuleInit {
     if (error) {
       throw error;
     }
+  }
+
+  /** Mensaje seguro para el usuario según el error de Supabase Storage. */
+  private userMessageForStorageError(error: unknown): string {
+    const text = this.formatStorageError(error).toLowerCase();
+    if (text.includes('bucket not found') || this.isBucketMissingError(error)) {
+      return (
+        `No existe el bucket de imágenes en Supabase (${this.publicBucket}). ` +
+        'Créelo en Storage (público) o revise SUPABASE_PUBLIC_BUCKET en Railway.'
+      );
+    }
+    if (
+      text.includes('invalid api key') ||
+      text.includes('invalid jwt') ||
+      text.includes('jwt') ||
+      text.includes('unauthorized') ||
+      text.includes('not allowed') ||
+      text.includes('403')
+    ) {
+      return (
+        'Credenciales de Supabase Storage inválidas. ' +
+        'En Railway use SUPABASE_SERVICE_ROLE_KEY (service_role), no la clave anon.'
+      );
+    }
+    if (text.includes('fetch failed') || text.includes('enotfound') || text.includes('network')) {
+      return (
+        'No se pudo conectar con Supabase Storage. ' +
+        'Verifique SUPABASE_URL en Railway (https://xxxx.supabase.co).'
+      );
+    }
+    if (text.includes('payload too large') || text.includes('entity too large')) {
+      return 'La imagen es demasiado grande. Use un archivo de máximo 5 MB.';
+    }
+    return 'No se pudo guardar la imagen. Intente de nuevo';
   }
 
   /** Valida, procesa (1600 px, WebP, sin EXIF) y sube al bucket público. Devuelve la ruta final. */
