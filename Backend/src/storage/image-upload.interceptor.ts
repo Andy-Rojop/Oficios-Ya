@@ -66,16 +66,10 @@ export class ImageUploadInterceptor implements NestInterceptor {
       });
     });
 
-    // Normaliza lo que deja multer para @UploadedFile() / servicios.
-    const raw = (request as Request & { file?: UploadedImage & { buffer: Buffer } }).file;
-    if (raw?.buffer) {
-      const uploaded: UploadedImage = {
-        buffer: Buffer.isBuffer(raw.buffer) ? raw.buffer : Buffer.from(raw.buffer),
-        mimetype: raw.mimetype,
-        size: raw.size,
-        originalname: raw.originalname,
-      };
-      (request as Request & { file?: UploadedImage }).file = uploaded;
+    // Asegura Buffer nativo en el File de multer (compatible con @UploadedFile()).
+    const multerFile = (request as Request & { file?: Express.Multer.File }).file;
+    if (multerFile?.buffer && !Buffer.isBuffer(multerFile.buffer)) {
+      multerFile.buffer = Buffer.from(multerFile.buffer);
     }
 
     return next.handle();
