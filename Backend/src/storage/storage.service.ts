@@ -59,7 +59,52 @@ export class StorageService implements OnModuleInit {
       );
       return;
     }
+    this.logger.log(
+      `Storage listo: host=${this.supabaseHost()} buckets=${this.publicBucket},${this.privateBucket}`,
+    );
     void this.ensureBuckets();
+  }
+
+  private supabaseHost(): string {
+    try {
+      return new URL(this.supabaseUrl).host;
+    } catch {
+      return '(url inválida)';
+    }
+  }
+
+  private formatStorageError(error: unknown): string {
+    if (!error || typeof error !== 'object') return String(error);
+    const e = error as { message?: string; statusCode?: string | number; error?: string; name?: string };
+    return JSON.stringify({
+      message: e.message,
+      statusCode: e.statusCode,
+      error: e.error,
+      name: e.name,
+    });
+  }
+
+  private isBucketMissingError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') return false;
+    const e = error as { message?: string; error?: string; statusCode?: string | number };
+    const text = `${e.message ?? ''} ${e.error ?? ''}`.toLowerCase();
+    return (
+      text.includes('bucket not found') ||
+      (text.includes('not found') && Number(e.statusCode) === 404)
+    );
+  }
+
+  private async ensureBucket(kind: StorageBucketKind): Promise<void> {
+    const name = this.bucketName(kind);
+    const isPublic = kind === 'public';
+    const { error } = await this.getClient().storage.createBucket(name, { public: isPublic });
+    if (error && !this.isBucketMissingError(error)) {
+      // "already exists" u otros: no bloquear si el bucket ya está
+      const text = `${(error as { message?: string }).message ?? ''}`.toLowerCase();
+      if (text.includes('already exists') || text.includes('duplicate')) return;
+      throw error;
+    }
+    this.logger.log(`Bucket "${name}" asegurado (${isPublic ? 'público' : 'privado'})`);
   }
 
   /** Comprueba al arranque si el binario nativo de sharp carga (útil en logs de Railway). */
@@ -158,30 +203,50 @@ export class StorageService implements OnModuleInit {
     }
 
     const finalPath = this.normalizePath(path);
+    const bucket = this.bucketName(kind);
     try {
-      const { error } = await this.getClient()
-        .storage.from(this.bucketName(kind))
-        .upload(finalPath, processed.buffer, {
-          contentType: processed.contentType,
-          upsert: false,
-          cacheControl: kind === 'public' ? '31536000' : '3600',
-        });
-      if (error) {
-        this.logger.error(
-          `Fallo al subir "${finalPath}" a Storage (${this.bucketName(kind)}): ${error.message}`,
-        );
-        throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
-      }
+      await this.uploadToBucket(kind, finalPath, processed.buffer, processed.contentType);
       return finalPath;
     } catch (error) {
+      if (this.isBucketMissingError(error)) {
+        this.logger.warn(`Bucket "${bucket}" ausente; intentando crearlo y reintentar la subida`);
+        try {
+          await this.ensureBucket(kind);
+          await this.uploadToBucket(kind, finalPath, processed.buffer, processed.contentType);
+          return finalPath;
+        } catch (retryError) {
+          this.logger.error(
+            `Reintento de subida a "${bucket}/${finalPath}" falló: ${this.formatStorageError(retryError)}`,
+          );
+          throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
+        }
+      }
       if (error instanceof ServiceUnavailableException || error instanceof InternalServerErrorException) {
         throw error;
       }
       this.logger.error(
-        `Error inesperado al subir "${finalPath}": ${error instanceof Error ? error.message : String(error)}`,
+        `Fallo al subir "${finalPath}" a Storage (${bucket}): ${this.formatStorageError(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
       throw new ServiceUnavailableException('No se pudo guardar la imagen. Intente de nuevo');
+    }
+  }
+
+  private async uploadToBucket(
+    kind: StorageBucketKind,
+    finalPath: string,
+    buffer: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    const { error } = await this.getClient()
+      .storage.from(this.bucketName(kind))
+      .upload(finalPath, buffer, {
+        contentType,
+        upsert: false,
+        cacheControl: kind === 'public' ? '31536000' : '3600',
+      });
+    if (error) {
+      throw error;
     }
   }
 
