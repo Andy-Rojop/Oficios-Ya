@@ -13,6 +13,8 @@ Guía de despliegue: [`Frontend/docs/DEPLOY.md`](Frontend/docs/DEPLOY.md).
 
 ## Desarrollo local
 
+Requisito: **Node.js 22** o superior (`@supabase/supabase-js` no corre en Node 20). La versión está fijada en `.nvmrc`.
+
 ```bash
 # Terminal 1 — API
 cd Backend
