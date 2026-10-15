@@ -27,9 +27,10 @@ const CLIENT_LINKS: NavLink[] = [
   { href: '/cuenta', label: 'Cuenta' },
 ];
 
-/** Enlaces de trabajador: sin “Buscar” (eso es del modo cliente). */
+/** El trabajador también busca oficios cercanos en el mapa. */
 const WORKER_LINKS: NavLink[] = [
   { href: '/panel', label: 'Panel' },
+  { href: '/buscar', label: 'Buscar' },
   { href: '/mensajes', label: 'Mensajes' },
   { href: '/solicitudes', label: 'Solicitudes' },
   { href: '/cuenta', label: 'Cuenta' },

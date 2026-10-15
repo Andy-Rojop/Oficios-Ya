@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { WorkersMapLazy } from '@/components/map/workers-map-lazy';
 import { SearchFiltersForm } from '@/components/search/search-filters';
-import { SearchLoadMore } from '@/components/search/search-load-more';
-import { SearchWorkerCardView } from '@/components/search/search-worker-card';
+import { SearchMapPanel } from '@/components/search/search-map-panel';
 import { ApiError } from '@/lib/api-client';
 import {
   fetchCatalogCategories,
@@ -82,8 +80,8 @@ export default async function CategoriaPage({ params, searchParams }: PageProps)
           {category.name}
         </h1>
         <p className="max-w-2xl text-muted">
-          Trabajadores con teléfono verificado en esta categoría. El mapa solo muestra zonas
-          aproximadas.
+          Toque el mapa para ver a quienes están disponibles en {category.name}, del más cercano
+          al más lejano. Los pines son centros de zona, nunca una dirección exacta.
         </p>
       </header>
 
@@ -95,38 +93,13 @@ export default async function CategoriaPage({ params, searchParams }: PageProps)
         hideCategory
       />
 
-      {error ? (
-        <p
-          role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
-          {error}
-        </p>
-      ) : null}
-
-      {!error && items.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-surface px-5 py-8 text-center">
-          <p className="font-medium">Todavía no hay trabajadores públicos en {category.name}.</p>
-          <Link
-            href="/buscar"
-            className="mt-3 inline-block text-sm font-semibold text-brand hover:underline"
-          >
-            Ver otras categorías
-          </Link>
-        </div>
-      ) : null}
-
-      {items.length > 0 ? (
-        <>
-          <div className="space-y-3">
-            {items.map((worker) => (
-              <SearchWorkerCardView key={worker.id} worker={worker} />
-            ))}
-            <SearchLoadMore filters={filters} initialCursor={nextCursor} />
-          </div>
-          <WorkersMapLazy workers={items} />
-        </>
-      ) : null}
+      <SearchMapPanel
+        basePath={`/categorias/${category.slug}`}
+        filters={filters}
+        items={items}
+        nextCursor={nextCursor}
+        error={error}
+      />
     </section>
   );
 }

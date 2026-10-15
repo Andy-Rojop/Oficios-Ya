@@ -47,6 +47,11 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
           <p className="line-clamp-2 text-sm text-muted">{worker.description}</p>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted sm:text-sm">
+            {worker.distanceKm != null ? (
+              <span className="rounded-full bg-[#e7f6ee] px-2 py-0.5 text-xs font-semibold text-[#1f6b4a]">
+                ~{worker.distanceKm.toFixed(1)} km
+              </span>
+            ) : null}
             {worker.mainCategory ? <span>{worker.mainCategory.name}</span> : null}
             <span>
               ★ {worker.ratingAverage.toFixed(1)}
@@ -56,7 +61,6 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
             {worker.negotiable && worker.price ? (
               <span className="text-muted">· También a convenir</span>
             ) : null}
-            {worker.distanceKm != null ? <span>~{worker.distanceKm.toFixed(1)} km</span> : null}
           </div>
 
           {zones ? (

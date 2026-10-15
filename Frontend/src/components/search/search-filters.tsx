@@ -71,6 +71,21 @@ export function SearchFiltersForm({
   );
   const [message, setMessage] = useState<string | null>(null);
 
+  // El mapa escribe disponibilidad, orden y coordenadas en la URL. Se ajustan en el render
+  // para que "Aplicar filtros" no borre el punto que acaba de elegir.
+  const urlKey = `${filters.availability ?? ''}|${filters.sort ?? ''}|${filters.lat ?? ''}|${filters.lng ?? ''}`;
+  const [syncedKey, setSyncedKey] = useState(urlKey);
+  if (syncedKey !== urlKey) {
+    setSyncedKey(urlKey);
+    setAvailability(filters.availability ?? '');
+    setSort(filters.sort ?? 'rating');
+    setCoords(
+      filters.lat !== undefined && filters.lng !== undefined
+        ? { lat: filters.lat, lng: filters.lng }
+        : null,
+    );
+  }
+
   function apply(
     overrides: Partial<{ sort: SearchSort; coords: { lat: number; lng: number } | null }> = {},
   ) {

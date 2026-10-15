@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
+  Circle,
   CircleMarker,
   MapContainer,
   Popup,
@@ -88,6 +89,10 @@ function FitToView({
       coords.push([userLat, userLng]);
     }
 
+    if (selectedLat !== undefined && selectedLng !== undefined) {
+      map.flyTo([selectedLat, selectedLng], 14, { duration: 0.6 });
+      return;
+    }
     if (coords.length === 0) {
       map.setView(DEFAULT_MAP_CENTER, 13);
       return;
@@ -139,10 +144,10 @@ export default function WorkersMap({
           'z-0 w-full',
           fill
             ? 'h-full min-h-full rounded-none border-0'
-            : 'rounded-2xl border border-border',
+            : 'overflow-hidden rounded-2xl border border-border shadow-[0_10px_30px_rgba(26,35,50,0.08)]',
           !fill &&
             (interactive
-              ? 'h-[55vh] min-h-[280px] cursor-crosshair lg:h-full lg:min-h-[420px]'
+              ? 'h-[min(58vh,480px)] min-h-[300px] cursor-crosshair'
               : 'h-72 sm:h-96'),
           className,
         )}
@@ -150,7 +155,7 @@ export default function WorkersMap({
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {!fill ? (
           <FitToView points={points} selectedCenter={selectedCenter} userCenter={userCenter} />
@@ -189,21 +194,33 @@ export default function WorkersMap({
         ) : null}
 
         {selectedCenter ? (
-          <CircleMarker
-            center={[selectedCenter.lat, selectedCenter.lng]}
-            radius={12}
-            pathOptions={{
-              color: '#ffffff',
-              weight: 3,
-              fillColor: '#243248',
-              fillOpacity: 0.92,
-            }}
-          >
-            <Popup>
-              <p className="text-sm font-semibold">Área elegida</p>
-              <p className="text-xs text-muted">Mostramos oficios cercanos a este punto</p>
-            </Popup>
-          </CircleMarker>
+          <>
+            <Circle
+              center={[selectedCenter.lat, selectedCenter.lng]}
+              radius={1800}
+              pathOptions={{
+                color: '#1e3a5f',
+                weight: 1.5,
+                fillColor: '#1e3a5f',
+                fillOpacity: 0.08,
+              }}
+            />
+            <CircleMarker
+              center={[selectedCenter.lat, selectedCenter.lng]}
+              radius={11}
+              pathOptions={{
+                color: '#ffffff',
+                weight: 3,
+                fillColor: '#1f6b4a',
+                fillOpacity: 1,
+              }}
+            >
+              <Popup>
+                <p className="text-sm font-semibold">Área elegida</p>
+                <p className="text-xs text-muted">Disponibles, del más cercano al más lejano</p>
+              </Popup>
+            </CircleMarker>
+          </>
         ) : null}
 
         {points.map((point) => (
@@ -211,7 +228,7 @@ export default function WorkersMap({
             key={point.id}
             center={point.position}
             radius={Math.min(10 + point.workers.length * 2, 26)}
-            pathOptions={{ color: '#243248', weight: 2, fillColor: '#1e3a5f', fillOpacity: 0.75 }}
+            pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#1e3a5f', fillOpacity: 0.88 }}
             eventHandlers={
               interactive && onSelectPoint
                 ? {
@@ -254,7 +271,7 @@ export default function WorkersMap({
           {points.length === 0
             ? 'Ninguna de estas zonas tiene ubicación en el mapa todavía.'
             : interactive
-              ? 'Toque el mapa o una zona para ver oficios cercanos. Los pines son centros de zona, nunca una dirección exacta.'
+              ? 'Toque el mapa para ver a quienes están disponibles, ordenados por cercanía. Los pines son centros de zona, nunca una dirección exacta.'
               : 'El mapa muestra el centro aproximado de cada zona, nunca la dirección de una persona.'}
         </p>
       ) : null}

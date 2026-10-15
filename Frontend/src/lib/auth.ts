@@ -205,7 +205,7 @@ export function resolvePostAuthPath(options: {
   const next = options.next ? safeNextPath(options.next, home) : home;
 
   if (mode === 'WORKER') {
-    if (next === '/' || next.startsWith('/buscar') || next.startsWith('/registro')) {
+    if (next === '/' || next.startsWith('/registro')) {
       return home;
     }
     return next;

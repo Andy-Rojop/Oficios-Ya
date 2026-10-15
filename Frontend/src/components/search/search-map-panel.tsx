@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LocateFixed, MapPin } from 'lucide-react';
@@ -15,12 +15,17 @@ interface SearchMapPanelProps {
   items: SearchWorkerCard[];
   nextCursor: string | null;
   error?: string | null;
+  /** Ruta al marcar el mapa: /buscar o /categorias/[slug]. */
+  basePath?: string;
 }
 
 /** Redondeo a ~1 km: la ubicación solo se usa para ordenar por cercanía. */
 function roundCoord(value: number): number {
   return Math.round(value * 100) / 100;
 }
+
+/** Sobrevive a la navegación de la misma página para bajar a la lista después del clic. */
+let scrollToResults = false;
 
 function filtersKey(filters: SearchFilters): string {
   return [
@@ -37,13 +42,20 @@ function filtersKey(filters: SearchFilters): string {
   ].join('|');
 }
 
-export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapPanelProps) {
+export function SearchMapPanel({
+  filters,
+  items,
+  nextCursor,
+  error,
+  basePath = '/buscar',
+}: SearchMapPanelProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   /** Solo se marca cuando el usuario acepta geolocalización (no al tocar el mapa). */
   const [userCenter, setUserCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const selectedCenter =
     filters.lat !== undefined && filters.lng !== undefined
@@ -54,12 +66,22 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
     const coords = { lat: roundCoord(lat), lng: roundCoord(lng) };
     if (asUserLocation) setUserCenter(coords);
     setMessage(null);
+    const alreadyThere =
+      filters.sort === 'near' &&
+      filters.availability === 'AVAILABLE' &&
+      filters.lat === coords.lat &&
+      filters.lng === coords.lng;
+    if (alreadyThere) {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    scrollToResults = true;
     const params = toSearchParams({
       q: filters.q,
       categoryId: filters.categoryId,
       zoneId: filters.zoneId,
       minRating: filters.minRating,
-      availability: filters.availability,
+      availability: 'AVAILABLE',
       priceMin: filters.priceMin,
       priceMax: filters.priceMax,
       sort: 'near',
@@ -67,7 +89,7 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
       lng: coords.lng,
     });
     startTransition(() => {
-      router.push(`/buscar?${params.toString()}`);
+      router.push(`${basePath}?${params.toString()}`);
     });
   }
 
@@ -95,8 +117,14 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
   const key = filtersKey(filters);
   const nearActive = filters.sort === 'near' && selectedCenter !== null;
 
+  useEffect(() => {
+    if (!scrollToResults || !nearActive) return;
+    scrollToResults = false;
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [nearActive, filters.lat, filters.lng, items.length]);
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
@@ -109,13 +137,13 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
           {locating ? 'Obteniendo…' : 'Usar mi ubicación'}
         </Button>
         {nearActive ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-semibold text-accent-dark">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f6ee] px-3 py-1.5 text-xs font-semibold text-[#1f6b4a]">
             <MapPin aria-hidden className="h-3.5 w-3.5" />
-            Ordenado por cercanía al área elegida
+            Disponibles, del más cercano al más lejano
           </span>
         ) : (
           <p className="text-xs text-muted sm:text-sm">
-            Toque el mapa para ver oficios cerca de esa área.
+            Toque el mapa y la página baja a quienes están disponibles.
           </p>
         )}
       </div>
@@ -126,62 +154,84 @@ export function SearchMapPanel({ filters, items, nextCursor, error }: SearchMapP
         </p>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-stretch">
-        <div className="min-h-0 lg:sticky lg:top-4 lg:self-start">
-          <WorkersMapLazy
-            workers={items}
-            interactive
-            selectedCenter={selectedCenter}
-            userCenter={userCenter}
-            onSelectPoint={(lat, lng) => goNear(lat, lng)}
-            hideCaption={false}
-          />
-        </div>
+      <div className="relative">
+        <WorkersMapLazy
+          workers={items}
+          interactive
+          selectedCenter={selectedCenter}
+          userCenter={userCenter}
+          onSelectPoint={(lat, lng) => goNear(lat, lng)}
+        />
+        {!nearActive ? (
+          <p className="pointer-events-none absolute left-1/2 top-3 z-[400] -translate-x-1/2 rounded-full bg-white/95 px-3 py-1.5 text-center text-xs font-semibold text-foreground shadow-md">
+            Toque un punto del mapa
+          </p>
+        ) : null}
+      </div>
 
-        <div className="flex min-h-0 flex-col gap-3 rounded-2xl border border-border bg-surface p-3 shadow-sm sm:p-4 lg:max-h-[min(70vh,640px)] lg:overflow-y-auto">
-          {error ? (
-            <p
-              role="alert"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+      <div id="resultados-mapa" ref={resultsRef} className="scroll-mt-28 space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2
+              className="text-lg font-semibold text-foreground sm:text-xl"
+              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
             >
-              {error}
+              {nearActive ? 'Personas disponibles' : 'Resultados'}
+            </h2>
+            <p className="text-sm text-muted">
+              {nearActive
+                ? 'De la más cercana a la más lejana. La distancia es al centro de la zona, nunca a una casa.'
+                : 'Marque el mapa para ver solo disponibles, ordenados por cercanía.'}
+            </p>
+          </div>
+          {items.length > 0 ? (
+            <p className="text-sm text-muted">
+              {items.length}
+              {nextCursor ? '+' : ''} resultado{items.length === 1 ? '' : 's'}
+              {filters.q ? ` para “${filters.q}”` : ''}
+              {pending ? ' · Actualizando…' : ''}
             </p>
           ) : null}
-
-          {!error && items.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center">
-              <p className="font-medium text-foreground">
-                No encontramos resultados con esos filtros.
-              </p>
-              <p className="mt-1 text-sm text-muted">
-                Toque otra parte del mapa, pruebe otra categoría o borre el rango de precio.
-              </p>
-              <Link
-                href="/buscar"
-                className="mt-4 inline-block text-sm font-semibold text-brand hover:underline"
-              >
-                Ver todos
-              </Link>
-            </div>
-          ) : null}
-
-          {items.length > 0 ? (
-            <>
-              <p className="text-sm text-muted">
-                {items.length}
-                {nextCursor ? '+' : ''} resultado{items.length === 1 ? '' : 's'}
-                {filters.q ? ` para “${filters.q}”` : ''}
-                {pending ? ' · Actualizando…' : ''}
-              </p>
-              <div className="space-y-3">
-                {items.map((worker) => (
-                  <SearchWorkerCardView key={worker.id} worker={worker} />
-                ))}
-                <SearchLoadMore key={key} filters={filters} initialCursor={nextCursor} />
-              </div>
-            </>
-          ) : null}
         </div>
+
+        {error ? (
+          <p
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        {!error && items.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-surface px-4 py-8 text-center">
+            <p className="font-medium text-foreground">
+              {nearActive
+                ? 'No hay trabajadores disponibles cerca de este punto.'
+                : 'No encontramos resultados con esos filtros.'}
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              Toque otra parte del mapa, pruebe otra categoría o borre el rango de precio.
+            </p>
+            <Link
+              href={basePath}
+              className="mt-4 inline-block text-sm font-semibold text-brand hover:underline"
+            >
+              Ver todos
+            </Link>
+          </div>
+        ) : null}
+
+        {items.length > 0 ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            {items.map((worker) => (
+              <SearchWorkerCardView key={worker.id} worker={worker} />
+            ))}
+            <div className="md:col-span-2">
+              <SearchLoadMore key={key} filters={filters} initialCursor={nextCursor} />
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

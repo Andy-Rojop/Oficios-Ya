@@ -60,8 +60,8 @@ export default async function BuscarPage({ searchParams }: PageProps) {
           Buscar trabajadores
         </h1>
         <p className="max-w-2xl text-muted">
-          Filtre por oficio, zona y precio. Use el mapa para ver quién está cerca del área que
-          elija. Las ubicaciones son zonas aproximadas, nunca una dirección exacta.
+          Toque el mapa para ver a las personas disponibles, de la más cercana a la más lejana.
+          Los pines son centros de zona, nunca una dirección exacta.
         </p>
       </header>
 
