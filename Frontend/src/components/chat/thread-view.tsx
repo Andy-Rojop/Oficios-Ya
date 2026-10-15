@@ -29,6 +29,7 @@ import {
 import { CHAT_EVENTS, emitWithAck, getChatSocket } from '@/lib/socket';
 import { cn } from '@/lib/utils';
 import { AddressShareDialog, type AddressPayload } from './address-share-dialog';
+import { ChatAvatar } from './chat-avatar';
 import { MessageBubble } from './message-bubble';
 import { ReportDialog } from './report-dialog';
 import { useChatEvent, useChatSocket } from './use-chat-socket';
@@ -287,18 +288,19 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
 
   return (
     <section className="mx-auto flex h-[calc(100dvh-8.5rem)] min-h-[26rem] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-      <header className="relative flex items-center gap-2 border-b border-border bg-surface px-3 py-2.5">
+      <header className="relative flex items-center gap-1 border-b border-border bg-[#f0f2f5] px-2 py-2">
         <Link
           href="/mensajes"
           aria-label="Volver a mis mensajes"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl text-brand hover:bg-brand-soft"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl text-brand hover:bg-black/5"
         >
           ←
         </Link>
-        <div className="min-w-0 flex-1">
+        {summary ? <ChatAvatar name={summary.peer.name} className="h-10 w-10 text-base" /> : null}
+        <div className="min-w-0 flex-1 px-1">
           {summary ? (
             <>
-              <p className="truncate font-semibold leading-tight">
+              <p className="truncate text-[15px] font-semibold leading-tight">
                 {summary.peer.workerProfileId ? (
                   <Link
                     href={`/trabajador/${summary.peer.workerProfileId}`}
@@ -310,8 +312,8 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
                   summary.peer.name
                 )}
               </p>
-              <p className="truncate text-xs text-brand-dark">
-                {summary.peer.headline ?? (connected ? 'En línea' : 'Conectando…')}
+              <p className="truncate text-xs text-muted">
+                {summary.peer.headline ?? (connected ? 'en línea' : 'conectando…')}
               </p>
             </>
           ) : (
@@ -387,7 +389,7 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
       <div
         ref={scrollRef}
         onScroll={onScroll}
-        className="flex-1 space-y-2 overflow-y-auto bg-background/60 px-3 py-4"
+        className="chat-wallpaper flex-1 space-y-1.5 overflow-y-auto px-3 py-3"
         aria-live="polite"
       >
         {messagesQuery.hasNextPage ? (
@@ -425,8 +427,10 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
               return (
                 <div key={message.id} className="space-y-2">
                   {newDay ? (
-                    <p className="py-1 text-center text-xs font-semibold uppercase tracking-wide text-muted">
-                      {formatDayLabel(message.createdAt)}
+                    <p className="flex justify-center py-1.5">
+                      <span className="rounded-lg bg-white/90 px-2.5 py-1 text-xs font-medium text-muted shadow-sm">
+                        {formatDayLabel(message.createdAt)}
+                      </span>
                     </p>
                   ) : null}
                   <MessageBubble
@@ -440,7 +444,7 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
           : null}
       </div>
 
-      <footer className="border-t border-border bg-surface px-3 py-2.5">
+      <footer className="border-t border-border bg-[#f0f2f5] px-2 py-2">
         {summary && !canSend ? (
           <div className="flex flex-wrap items-center justify-between gap-2 py-1 text-sm">
             <p className="text-muted">
@@ -513,15 +517,16 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
                   void sendText();
                 }
               }}
-              className="max-h-32 min-h-11 flex-1 resize-none rounded-2xl border border-border bg-background px-4 py-2.5 text-base leading-snug placeholder:text-muted/70 focus-visible:border-ring"
+              className="max-h-32 min-h-11 flex-1 resize-none rounded-3xl border-0 bg-white px-4 py-2.5 text-base leading-snug shadow-sm placeholder:text-muted/70 focus-visible:outline-brand"
             />
-            <Button
+            <button
               type="submit"
-              className="h-11 shrink-0 rounded-full px-5"
+              aria-label="Enviar mensaje"
               disabled={!summary || !text.trim() || busy !== null}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#1f6b4a] text-white transition-opacity disabled:opacity-40"
             >
-              {busy === 'text' ? '…' : 'Enviar'}
-            </Button>
+              {busy === 'text' ? <span className="text-sm">…</span> : <SendIcon />}
+            </button>
           </form>
         )}
         {sendError ? (
@@ -599,6 +604,14 @@ function PhotoIcon() {
       <rect x="3" y="4" width="18" height="16" rx="3" />
       <circle cx="9" cy="10" r="1.8" />
       <path d="m21 16-5-5-8 9" />
+    </svg>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M3.2 11.3 20.4 3.6c.7-.3 1.4.4 1.1 1.1l-7.7 17.2c-.3.7-1.3.6-1.5-.1l-2.1-6.4-6.4-2.1c-.7-.2-.8-1.2-.1-1.5Z" />
     </svg>
   );
 }
