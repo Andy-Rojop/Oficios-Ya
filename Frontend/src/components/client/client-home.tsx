@@ -51,19 +51,21 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
   return (
     <div className="space-y-14 pb-8">
       {/* Hero a ancho completo: marca + mapa de El Asintal + búsqueda */}
-      <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 -mt-6">
-        <div className="relative min-h-[min(62vh,560px)] overflow-hidden bg-foreground">
-          <div className="pointer-events-none absolute inset-0 scale-105 animate-[home-map-drift_18s_ease-in-out_infinite_alternate]">
-            <WorkersMapLazy
-              workers={workers}
-              fill
-              hideCaption
-              className="h-full min-h-[min(62vh,560px)]"
-            />
+      <section className="relative left-1/2 z-20 w-screen max-w-[100vw] -translate-x-1/2 -mt-6">
+        <div className="relative min-h-[min(62vh,560px)] bg-foreground">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="h-full w-full scale-105 animate-[home-map-drift_18s_ease-in-out_infinite_alternate]">
+              <WorkersMapLazy
+                workers={workers}
+                fill
+                hideCaption
+                className="h-full min-h-[min(62vh,560px)]"
+              />
+            </div>
           </div>
 
           <div
-            className="absolute inset-0 bg-gradient-to-t from-[#162033]/90 via-[#243248]/55 to-[#243248]/20"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#162033]/90 via-[#243248]/55 to-[#243248]/20"
             aria-hidden
           />
 
@@ -74,7 +76,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               </p>
               <h1
                 className="mt-1.5 animate-[home-fade-up_0.7s_ease-out_0.08s_both] text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl"
-                style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+                style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
               >
                 OficiosYa
               </h1>
@@ -87,8 +89,8 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
                 Encuentre oficios de confianza cerca de usted.
               </p>
 
-              <div className="mt-4 animate-[home-fade-up_0.7s_ease-out_0.24s_both]">
-                <HomeSearchForm variant="hero" />
+              <div className="relative z-30 mt-4 animate-[home-fade-up_0.7s_ease-out_0.24s_both]">
+                <HomeSearchForm variant="hero" categories={categories} workers={workers} />
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2 animate-[home-fade-up_0.7s_ease-out_0.32s_both]">
@@ -115,7 +117,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
           <div className="max-w-xl">
             <h2
               className="text-2xl font-semibold tracking-tight sm:text-3xl"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               Oficios
             </h2>
@@ -150,7 +152,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
           <div className="max-w-xl">
             <h2
               className="text-2xl font-semibold tracking-tight sm:text-3xl"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               Trabajadores disponibles
             </h2>
@@ -178,7 +180,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
             />
             <p
               className="relative text-xl font-semibold text-foreground"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               Pronto verá oficios aquí
             </p>

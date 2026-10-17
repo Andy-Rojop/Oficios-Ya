@@ -105,7 +105,7 @@ export function RequestDetailView({ requestId }: { requestId: string }) {
           <div className="min-w-0">
             <h1
               className="break-words text-2xl font-semibold tracking-tight"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               {request.myRole === 'CLIENT' ? 'Solicitud a ' : 'Solicitud de '}
               {request.myRole === 'CLIENT' && request.worker.workerProfileId ? (

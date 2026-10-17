@@ -22,9 +22,15 @@ export class SearchController {
   }
 
   @Get('suggestions')
-  @ApiOperation({ summary: 'RF-036: hasta 8 sugerencias (categorías y titulares de trabajadores)' })
+  @ApiOperation({
+    summary:
+      'RF-036: hasta 8 sugerencias contextuales (categorías, servicios y trabajadores verificados)',
+  })
   @ApiOkResponse({ type: [SearchSuggestionDto] })
   suggestions(@Query() query: SearchSuggestionsQueryDto): Promise<SearchSuggestionDto[]> {
-    return this.search.suggestions(query.q);
+    return this.search.suggestions(query.q, {
+      categoryId: query.categoryId,
+      zoneId: query.zoneId,
+    });
   }
 }

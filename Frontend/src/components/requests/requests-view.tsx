@@ -52,7 +52,7 @@ export function RequestsView() {
       <header className="space-y-1">
         <h1
           className="text-2xl font-semibold"
-          style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
           Solicitudes
         </h1>

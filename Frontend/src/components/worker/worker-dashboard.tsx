@@ -105,7 +105,7 @@ function WorkerPanel() {
             </p>
             <h1
               className="text-3xl font-semibold tracking-tight sm:text-4xl"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               Hola, {firstName}
             </h1>

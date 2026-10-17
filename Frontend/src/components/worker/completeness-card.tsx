@@ -37,7 +37,7 @@ export function CompletenessCard() {
             </p>
             <h2
               className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               {data.complete ? 'Perfil listo al 100%' : `Su perfil está al ${data.percentage}%`}
             </h2>
@@ -58,7 +58,7 @@ export function CompletenessCard() {
                 'text-3xl font-semibold tabular-nums',
                 data.complete ? 'text-accent-dark' : 'text-brand',
               )}
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               {data.percentage}%
             </p>

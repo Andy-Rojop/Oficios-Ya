@@ -1,17 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import { Fraunces, Source_Sans_3 } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import { SiteHeader } from '@/components/layout/site-header';
 import { Providers } from '@/components/providers';
 import './globals.css';
 
-const sourceSans = Source_Sans_3({
-  variable: '--font-source-sans',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-const fraunces = Fraunces({
-  variable: '--font-fraunces',
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-jakarta',
   subsets: ['latin'],
   display: 'swap',
 });
@@ -47,7 +41,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es-GT" className={`${sourceSans.variable} ${fraunces.variable} h-full`}>
+    <html lang="es-GT" className={`${plusJakartaSans.variable} h-full`}>
       <body className="min-h-full antialiased">
         <Providers>
           <SiteHeader />

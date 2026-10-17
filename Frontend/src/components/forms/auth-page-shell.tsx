@@ -14,7 +14,7 @@ export function AuthPageShell({ title, description, children }: AuthPageShellPro
       <header className="space-y-2">
         <h1
           className="text-3xl font-semibold tracking-tight"
-          style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
           {title}
         </h1>

@@ -22,7 +22,7 @@ export function AdminDashboard() {
       <div>
         <h1
           className="text-2xl font-semibold"
-          style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
           Administración
         </h1>

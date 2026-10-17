@@ -55,7 +55,7 @@ export default async function BuscarPage({ searchParams }: PageProps) {
       <header className="space-y-2">
         <h1
           className="text-2xl font-semibold sm:text-3xl"
-          style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
           Buscar trabajadores
         </h1>
@@ -70,6 +70,7 @@ export default async function BuscarPage({ searchParams }: PageProps) {
         filters={filters}
         categories={categories}
         zones={zones}
+        workers={items}
       />
 
       <SearchMapPanel

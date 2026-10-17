@@ -89,7 +89,7 @@ export function AccountPanel() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/90">Mi cuenta</p>
             <h1
               className="text-3xl font-semibold tracking-tight sm:text-4xl"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               Hola, {firstName}
             </h1>

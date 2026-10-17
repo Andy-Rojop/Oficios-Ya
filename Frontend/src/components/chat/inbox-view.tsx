@@ -55,6 +55,7 @@ export function InboxView() {
   const unreadTotal = list.reduce((sum, item) => sum + item.unreadCount, 0);
   const [query, setQuery] = useState('');
   const [onlyUnread, setOnlyUnread] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const needle = query.trim().toLowerCase();
   const visible = list.filter((conversation) => {
     if (onlyUnread && conversation.unreadCount === 0) return false;
@@ -63,6 +64,24 @@ export function InboxView() {
     const haystack = `${conversation.peer.name} ${conversation.peer.headline ?? ''} ${preview}`.toLowerCase();
     return haystack.includes(needle);
   });
+
+  const isWorkerMode = me.data?.activeMode === 'WORKER';
+  const searchPlaceholder = onlyUnread
+    ? 'Buscar en mensajes no leídos…'
+    : isWorkerMode
+      ? 'Buscar cliente o mensaje…'
+      : 'Buscar trabajador, oficio o mensaje…';
+
+  const contextualPeerSuggestions = (() => {
+    const base = onlyUnread ? list.filter((c) => c.unreadCount > 0) : list;
+    return base
+      .filter((c) => {
+        if (!needle) return true;
+        const text = `${c.peer.name} ${c.peer.headline ?? ''}`.toLowerCase();
+        return text.includes(needle) && c.peer.name.toLowerCase() !== needle;
+      })
+      .slice(0, 5);
+  })();
 
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
@@ -84,16 +103,44 @@ export function InboxView() {
             {connected ? 'En línea' : 'Conectando…'}
           </span>
         </div>
-        <label className="mt-3 flex items-center gap-2 rounded-full bg-background px-3 py-2">
-          <Search aria-hidden className="h-4 w-4 shrink-0 text-muted" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Busque una conversación"
-            aria-label="Busque una conversación"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
-          />
-        </label>
+        <div className="relative mt-3">
+          <label className="flex items-center gap-2 rounded-full bg-background px-3 py-2">
+            <Search aria-hidden className="h-4 w-4 shrink-0 text-muted" />
+            <input
+              value={query}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
+              className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
+            />
+          </label>
+          {searchFocused && contextualPeerSuggestions.length > 0 ? (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                Sugerencias:
+              </span>
+              {contextualPeerSuggestions.map((conv) => (
+                <button
+                  key={conv.id}
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    setQuery(conv.peer.name);
+                    setSearchFocused(false);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground transition hover:border-accent hover:bg-accent-soft"
+                >
+                  <span>{conv.peer.name}</span>
+                  {conv.peer.headline ? (
+                    <span className="text-muted">· {conv.peer.headline}</span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
         <div className="mt-3 flex gap-2">
           <FilterChip active={!onlyUnread} onClick={() => setOnlyUnread(false)}>
             Todas

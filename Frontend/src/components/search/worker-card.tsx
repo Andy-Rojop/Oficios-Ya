@@ -35,7 +35,7 @@ export function WorkerResultCard({ worker }: { worker: SearchWorkerCard }) {
             <span
               aria-hidden
               className="flex h-full w-full items-center justify-center text-3xl font-semibold text-brand"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               {worker.name.charAt(0).toUpperCase()}
             </span>

@@ -142,10 +142,16 @@ export class SearchWorkersResponseDto {
 }
 
 export class SearchSuggestionDto {
-  @ApiProperty({ enum: ['category', 'worker'] }) type: 'category' | 'worker';
+  @ApiProperty({ enum: ['category', 'worker', 'service'] })
+  type: 'category' | 'worker' | 'service';
   @ApiProperty() label: string;
+  @ApiPropertyOptional({ description: 'Contexto adicional (categoría, trabajador o zona)' })
+  subtitle?: string;
   @ApiPropertyOptional({ description: 'Slug de la categoría (type = category)' }) slug?: string;
-  @ApiPropertyOptional({ description: 'Id del perfil (type = worker)' }) workerId?: string;
+  @ApiPropertyOptional({ description: 'Id de la categoría (type = category)' })
+  categoryId?: string;
+  @ApiPropertyOptional({ description: 'Id del perfil (type = worker | service)' })
+  workerId?: string;
 }
 
 export function toSnippet(text: string, max = DESCRIPTION_SNIPPET_LENGTH): string {

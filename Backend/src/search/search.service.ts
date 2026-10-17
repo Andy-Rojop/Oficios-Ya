@@ -128,22 +128,65 @@ export class SearchService {
     };
   }
 
-  /** Hasta 8 sugerencias: categorías activas y titulares de trabajadores verificados. */
-  async suggestions(rawQuery: string | undefined): Promise<SearchSuggestionDto[]> {
+  /** Hasta 8 sugerencias contextuales: categorías activas, servicios y trabajadores verificados. */
+  async suggestions(
+    rawQuery: string | undefined,
+    context?: { categoryId?: string; zoneId?: string },
+  ): Promise<SearchSuggestionDto[]> {
     const q = rawQuery?.trim() ?? '';
     if (q.length < MIN_SUGGESTION_LENGTH) return [];
     const contains = { contains: q, mode: 'insensitive' as const };
+    const needle = q.toLowerCase();
+
+    const workerAnd: Prisma.WorkerProfileWhereInput[] = [
+      {
+        OR: [
+          { headline: contains },
+          { description: contains },
+          { user: { name: contains } },
+          { mainCategory: { name: contains } },
+          { services: { some: { active: true, name: contains } } },
+        ],
+      },
+    ];
+
+    if (context?.categoryId) {
+      workerAnd.push({
+        OR: [
+          { mainCategoryId: context.categoryId },
+          { services: { some: { active: true, categoryId: context.categoryId } } },
+        ],
+      });
+    }
+
+    if (context?.zoneId) {
+      workerAnd.push({
+        zones: { some: { zoneId: context.zoneId } },
+      });
+    }
 
     const [categories, profiles] = await Promise.all([
-      this.prisma.category.findMany({
-        where: { active: true, name: contains },
-        select: { name: true, slug: true },
-        orderBy: { name: 'asc' },
-        take: MAX_CATEGORY_SUGGESTIONS,
-      }),
+      context?.categoryId
+        ? Promise.resolve([])
+        : this.prisma.category.findMany({
+            where: { active: true, name: contains },
+            select: { id: true, name: true, slug: true },
+            orderBy: { name: 'asc' },
+            take: MAX_CATEGORY_SUGGESTIONS,
+          }),
       this.prisma.workerProfile.findMany({
-        where: { user: VERIFIED_ACTIVE_USER, headline: contains },
-        select: { id: true, headline: true },
+        where: { user: VERIFIED_ACTIVE_USER, AND: workerAnd },
+        select: {
+          id: true,
+          headline: true,
+          user: { select: { name: true } },
+          mainCategory: { select: { name: true } },
+          services: {
+            where: { active: true, name: contains },
+            select: { name: true },
+            take: 2,
+          },
+        },
         orderBy: [{ ratingAverage: 'desc' }, { ratingCount: 'desc' }, { id: 'asc' }],
         take: MAX_SUGGESTIONS * 2,
       }),
@@ -152,15 +195,38 @@ export class SearchService {
     const result: SearchSuggestionDto[] = categories.map((category) => ({
       type: 'category',
       label: category.name,
+      subtitle: 'Categoría de oficio',
       slug: category.slug,
+      categoryId: 'id' in category ? category.id : undefined,
     }));
     const seen = new Set(result.map((item) => item.label.toLowerCase()));
+
     for (const profile of profiles) {
+      if (result.length >= MAX_SUGGESTIONS) break;
+      const services = Array.isArray(profile.services) ? profile.services : [];
+      for (const service of services) {
+        if (result.length >= MAX_SUGGESTIONS) break;
+        const serviceKey = service.name.toLowerCase();
+        if (!serviceKey.includes(needle) || seen.has(serviceKey)) continue;
+        seen.add(serviceKey);
+        result.push({
+          type: 'service',
+          label: service.name,
+          subtitle: [profile.user?.name, profile.mainCategory?.name].filter(Boolean).join(' · ') || profile.headline,
+          workerId: profile.id,
+        });
+      }
+
       if (result.length >= MAX_SUGGESTIONS) break;
       const key = profile.headline.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
-      result.push({ type: 'worker', label: profile.headline, workerId: profile.id });
+      result.push({
+        type: 'worker',
+        label: profile.headline,
+        subtitle: [profile.user?.name, profile.mainCategory?.name].filter(Boolean).join(' · ') || undefined,
+        workerId: profile.id,
+      });
     }
     return result;
   }

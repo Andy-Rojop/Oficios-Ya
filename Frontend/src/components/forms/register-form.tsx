@@ -160,7 +160,7 @@ function RolePicker({
                     'mt-5 font-semibold tracking-tight',
                     compact ? 'text-xl' : 'text-2xl sm:text-3xl',
                   )}
-                  style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+                  style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
                 >
                   {title}
                 </h3>
@@ -233,7 +233,7 @@ function RegisterPanel({
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-dark">OficiosYa</p>
         <h1
           className="text-3xl font-semibold tracking-tight"
-          style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
           {title}
         </h1>
@@ -297,7 +297,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">El Asintal</p>
             <h1
               className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               Cree su cuenta en OficiosYa
             </h1>

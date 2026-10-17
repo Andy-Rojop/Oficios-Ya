@@ -2,18 +2,27 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  ContextualSearchInput,
+  type ContextualSuggestionItem,
+} from '@/components/search/contextual-search-input';
+import type { CatalogCategory, SearchWorkerCard } from '@/lib/search';
 import { cn } from '@/lib/utils';
 
 interface HomeSearchFormProps {
   /** Estilo grande tipo Uber para el hero. */
   variant?: 'default' | 'hero';
+  categories?: CatalogCategory[];
+  workers?: SearchWorkerCard[];
 }
 
-export function HomeSearchForm({ variant = 'default' }: HomeSearchFormProps) {
+export function HomeSearchForm({
+  variant = 'default',
+  categories = [],
+  workers = [],
+}: HomeSearchFormProps) {
   const router = useRouter();
   const [q, setQ] = useState('');
 
@@ -22,6 +31,23 @@ export function HomeSearchForm({ variant = 'default' }: HomeSearchFormProps) {
     const trimmed = q.trim();
     const href = trimmed ? `/buscar?q=${encodeURIComponent(trimmed)}` : '/buscar';
     router.push(href);
+  }
+
+  function handleSelectSuggestion(item: ContextualSuggestionItem) {
+    if (item.kind === 'category' && item.categoryId) {
+      router.push(`/buscar?categoryId=${encodeURIComponent(item.categoryId)}`);
+      return;
+    }
+    if (item.kind === 'category' && item.slug) {
+      router.push(`/categorias/${encodeURIComponent(item.slug)}`);
+      return;
+    }
+    if (item.kind === 'worker' && item.workerId) {
+      router.push(`/trabajador/${encodeURIComponent(item.workerId)}`);
+      return;
+    }
+    setQ(item.label);
+    router.push(`/buscar?q=${encodeURIComponent(item.label)}`);
   }
 
   if (variant === 'hero') {
@@ -34,20 +60,16 @@ export function HomeSearchForm({ variant = 'default' }: HomeSearchFormProps) {
         <Label htmlFor="home-search-q" className="sr-only">
           ¿Qué oficio necesita?
         </Label>
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 pl-2">
-          <Search aria-hidden className="h-4 w-4 shrink-0 text-muted" />
-          <Input
-            id="home-search-q"
-            type="search"
-            value={q}
-            onChange={(event) => setQ(event.target.value)}
-            placeholder="¿Qué oficio necesita?"
-            maxLength={100}
-            enterKeyHint="search"
-            autoComplete="off"
-            className="h-9 border-0 bg-transparent px-0 text-sm shadow-none focus-visible:border-transparent focus-visible:ring-0"
-          />
-        </div>
+        <ContextualSearchInput
+          id="home-search-q"
+          variant="hero"
+          value={q}
+          onChange={setQ}
+          onSelectSuggestion={handleSelectSuggestion}
+          placeholder="¿Qué oficio necesita?"
+          categories={categories}
+          workers={workers}
+        />
         <Button type="submit" size="sm" className="shrink-0 rounded-lg px-3.5">
           Buscar
         </Button>
@@ -63,15 +85,14 @@ export function HomeSearchForm({ variant = 'default' }: HomeSearchFormProps) {
     >
       <div className="min-w-0 flex-1 space-y-1">
         <Label htmlFor="home-search-q">¿Qué oficio necesita?</Label>
-        <Input
+        <ContextualSearchInput
           id="home-search-q"
-          type="search"
           value={q}
-          onChange={(event) => setQ(event.target.value)}
+          onChange={setQ}
+          onSelectSuggestion={handleSelectSuggestion}
           placeholder="Ej. plomería, electricidad, carpintería…"
-          maxLength={100}
-          enterKeyHint="search"
-          autoComplete="off"
+          categories={categories}
+          workers={workers}
         />
       </div>
       <Button type="submit" className="sm:mb-0">

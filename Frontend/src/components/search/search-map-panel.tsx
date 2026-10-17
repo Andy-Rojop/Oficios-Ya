@@ -174,7 +174,7 @@ export function SearchMapPanel({
           <div>
             <h2
               className="text-lg font-semibold text-foreground sm:text-xl"
-              style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               {nearActive ? 'Personas disponibles' : 'Resultados'}
             </h2>

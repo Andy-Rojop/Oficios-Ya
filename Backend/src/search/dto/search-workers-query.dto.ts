@@ -151,4 +151,16 @@ export class SearchSuggestionsQueryDto {
   @IsString({ message: 'La búsqueda debe ser texto' })
   @MaxLength(60, { message: 'La búsqueda no puede superar 60 caracteres' })
   q?: string;
+
+  @ApiPropertyOptional({ format: 'uuid', description: 'Categoría activa para filtrar sugerencias' })
+  @Transform(emptyToUndefined)
+  @IsOptional()
+  @IsUUID('all', { message: 'La categoría no es válida' })
+  categoryId?: string;
+
+  @ApiPropertyOptional({ format: 'uuid', description: 'Zona activa para filtrar sugerencias' })
+  @Transform(emptyToUndefined)
+  @IsOptional()
+  @IsUUID('all', { message: 'La zona no es válida' })
+  zoneId?: string;
 }

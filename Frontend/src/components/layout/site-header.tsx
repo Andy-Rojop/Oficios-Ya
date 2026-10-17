@@ -59,7 +59,7 @@ export function SiteHeader() {
           <Link
             href="/"
             className="text-lg font-bold tracking-tight text-foreground"
-            style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
           >
             OficiosYa
           </Link>

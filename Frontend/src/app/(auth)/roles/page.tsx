@@ -52,7 +52,7 @@ export default function RolesPage() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">El Asintal</p>
           <h1
             className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl"
-            style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
           >
             ¿Cómo desea ingresar?
           </h1>
@@ -112,7 +112,7 @@ export default function RolesPage() {
 
                     <h2
                       className="relative mt-5 text-2xl font-semibold tracking-tight sm:text-3xl"
-                      style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+                      style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
                     >
                       {title}
                     </h2>

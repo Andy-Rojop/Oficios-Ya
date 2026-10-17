@@ -54,9 +54,11 @@ export interface SearchWorkersResponse {
 }
 
 export interface SearchSuggestion {
-  type: 'category' | 'worker';
+  type: 'category' | 'worker' | 'service';
   label: string;
+  subtitle?: string;
   slug?: string;
+  categoryId?: string;
   workerId?: string;
 }
 
@@ -140,11 +142,17 @@ export function fetchSearchWorkers(
   return apiFetch<SearchWorkersResponse>(`/search/workers?${query}`, init);
 }
 
-export function fetchSearchSuggestions(q: string, init?: RequestInit): Promise<SearchSuggestion[]> {
-  return apiFetch<SearchSuggestion[]>(
-    `/search/suggestions?${toSearchParams({ q }).toString()}`,
-    init,
-  );
+export function fetchSearchSuggestions(
+  q: string,
+  context?: { categoryId?: string; zoneId?: string },
+  init?: RequestInit,
+): Promise<SearchSuggestion[]> {
+  const query = toSearchParams({
+    q,
+    categoryId: context?.categoryId,
+    zoneId: context?.zoneId,
+  }).toString();
+  return apiFetch<SearchSuggestion[]>(`/search/suggestions?${query}`, init);
 }
 
 /** Catálogo público sin React Query: usable desde componentes de servidor. */

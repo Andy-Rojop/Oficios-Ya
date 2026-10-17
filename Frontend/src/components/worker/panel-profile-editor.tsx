@@ -81,7 +81,7 @@ export function PanelProfileEditor() {
         </p>
         <h1
           className="text-2xl font-semibold tracking-tight sm:text-3xl"
-          style={{ fontFamily: 'var(--font-display), Georgia, serif' }}
+          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
           Editar perfil
         </h1>

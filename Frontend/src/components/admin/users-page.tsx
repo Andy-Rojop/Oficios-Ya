@@ -14,11 +14,24 @@ export function UsersPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState('');
   const [search, setSearch] = useState('');
+  const [focused, setFocused] = useState(false);
   const qc = useQueryClient();
   const list = useQuery({
     queryKey: [...ADMIN_QUERY_KEYS.users(page), search],
     queryFn: () => adminApi.users(page, 20, search || undefined),
   });
+
+  const userSuggestions = (() => {
+    const items = list.data?.items ?? [];
+    const needle = q.trim().toLowerCase();
+    return items
+      .filter((u) => {
+        if (!needle) return true;
+        const hay = `${u.name} ${u.phone} ${u.email ?? ''} ${u.role} ${u.status}`.toLowerCase();
+        return hay.includes(needle) && u.name.toLowerCase() !== needle;
+      })
+      .slice(0, 6);
+  })();
 
   const setStatus = useMutation({
     mutationFn: (input: { id: string; status: 'ACTIVE' | 'SUSPENDED' }) =>
@@ -53,18 +66,61 @@ export function UsersPage() {
       </div>
 
       <form
-        className="flex gap-2"
+        className="relative flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           setPage(1);
           setSearch(q.trim());
+          setFocused(false);
         }}
       >
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar por nombre, teléfono o correo"
-        />
+        <div className="relative min-w-0 flex-1">
+          <Input
+            value={q}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setFocused(true);
+            }}
+            placeholder="Buscar por nombre, teléfono o correo"
+          />
+          {focused && userSuggestions.length > 0 ? (
+            <div className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-40 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+              <div className="border-b border-border/60 bg-brand-soft/40 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
+                Sugerencias de usuarios en el sistema
+              </div>
+              <ul className="max-h-56 divide-y divide-border/50 overflow-y-auto py-1">
+                {userSuggestions.map((u) => (
+                  <li key={u.id}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setQ(u.name);
+                        setPage(1);
+                        setSearch(u.name);
+                        setFocused(false);
+                      }}
+                      className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-brand-soft/50"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-foreground">{u.name}</p>
+                        <p className="truncate text-xs text-muted">
+                          {u.phone}
+                          {u.email ? ` · ${u.email}` : ''}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand">
+                        {u.role} · {u.status}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
         <Button type="submit" size="sm" variant="outline">
           Buscar
         </Button>

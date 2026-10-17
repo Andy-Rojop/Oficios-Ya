@@ -8,6 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import {
+  ContextualSearchInput,
+  type ContextualSuggestionItem,
+} from '@/components/search/contextual-search-input';
+import {
   SEARCH_SORTS,
   SORT_LABELS,
   toSearchParams,
@@ -15,6 +19,7 @@ import {
   type CatalogZone,
   type SearchFilters,
   type SearchSort,
+  type SearchWorkerCard,
 } from '@/lib/search';
 import { AVAILABILITY_LABELS, type Availability } from '@/lib/workers';
 
@@ -24,6 +29,7 @@ interface SearchFiltersFormProps {
   filters: SearchFilters;
   categories: CatalogCategory[];
   zones: CatalogZone[];
+  workers?: SearchWorkerCard[];
   /** En /categorias/[slug] la categoría ya viene fija en la ruta. */
   hideCategory?: boolean;
 }
@@ -45,6 +51,7 @@ export function SearchFiltersForm({
   filters,
   categories,
   zones,
+  workers = [],
   hideCategory = false,
 }: SearchFiltersFormProps) {
   const router = useRouter();
@@ -87,14 +94,23 @@ export function SearchFiltersForm({
   }
 
   function apply(
-    overrides: Partial<{ sort: SearchSort; coords: { lat: number; lng: number } | null }> = {},
+    overrides: Partial<{
+      q: string;
+      categoryId: string;
+      zoneId: string;
+      sort: SearchSort;
+      coords: { lat: number; lng: number } | null;
+    }> = {},
   ) {
+    const nextQ = overrides.q !== undefined ? overrides.q : q;
+    const nextCategoryId = overrides.categoryId !== undefined ? overrides.categoryId : categoryId;
+    const nextZoneId = overrides.zoneId !== undefined ? overrides.zoneId : zoneId;
     const nextSort = overrides.sort ?? sort;
     const nextCoords = overrides.coords === undefined ? coords : overrides.coords;
     const params = toSearchParams({
-      q: q.trim(),
-      categoryId: hideCategory ? undefined : categoryId,
-      zoneId,
+      q: nextQ.trim(),
+      categoryId: hideCategory ? undefined : nextCategoryId,
+      zoneId: nextZoneId,
       minRating: minRating ? Number(minRating) : undefined,
       availability: availability || undefined,
       priceMin: priceMin ? Number(priceMin) : undefined,
@@ -107,6 +123,23 @@ export function SearchFiltersForm({
     startTransition(() => {
       router.push(query ? `${basePath}?${query}` : basePath);
     });
+  }
+
+  function handleSelectSuggestion(item: ContextualSuggestionItem) {
+    setMessage(null);
+    if (item.kind === 'category' && item.categoryId && !hideCategory) {
+      setCategoryId(item.categoryId);
+      setQ('');
+      apply({ q: '', categoryId: item.categoryId });
+      return;
+    }
+    if (item.kind === 'zone' && item.zoneId) {
+      setZoneId(item.zoneId);
+      apply({ zoneId: item.zoneId });
+      return;
+    }
+    setQ(item.label);
+    apply({ q: item.label });
   }
 
   function onSubmit(event: FormEvent) {
@@ -175,14 +208,18 @@ export function SearchFiltersForm({
           <Label htmlFor="filter-q" className="sr-only">
             ¿Qué oficio necesita?
           </Label>
-          <Input
+          <ContextualSearchInput
             id="filter-q"
-            type="search"
             value={q}
-            onChange={(event) => setQ(event.target.value)}
-            placeholder="Ej. plomero, electricista, jardinería…"
-            maxLength={100}
-            enterKeyHint="search"
+            onChange={setQ}
+            onSelectSuggestion={handleSelectSuggestion}
+            categories={categories}
+            zones={zones}
+            workers={workers}
+            activeCategoryId={categoryId || filters.categoryId}
+            activeZoneId={zoneId || filters.zoneId}
+            activeAvailability={availability}
+            hideCategorySuggestions={hideCategory}
           />
         </div>
         <Button type="submit" disabled={pending}>

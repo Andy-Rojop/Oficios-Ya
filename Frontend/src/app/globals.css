@@ -31,8 +31,8 @@
   --color-accent: var(--accent);
   --color-accent-dark: var(--accent-dark);
   --color-accent-soft: var(--accent-soft);
-  --font-sans: var(--font-source-sans);
-  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-display: var(--font-jakarta), system-ui, sans-serif;
 }
 
 body {
