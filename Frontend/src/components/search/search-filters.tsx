@@ -11,6 +11,7 @@ import {
   ContextualSearchInput,
   type ContextualSuggestionItem,
 } from '@/components/search/contextual-search-input';
+import { parseValidPrice, sanitizeMoneyInput } from '@/lib/numeric-input';
 import {
   SEARCH_SORTS,
   SORT_LABELS,
@@ -107,14 +108,16 @@ export function SearchFiltersForm({
     const nextZoneId = overrides.zoneId !== undefined ? overrides.zoneId : zoneId;
     const nextSort = overrides.sort ?? sort;
     const nextCoords = overrides.coords === undefined ? coords : overrides.coords;
+    const parsedMin = priceMin ? parseValidPrice(priceMin, { allowZero: true }) : null;
+    const parsedMax = priceMax ? parseValidPrice(priceMax, { allowZero: true }) : null;
     const params = toSearchParams({
       q: nextQ.trim(),
       categoryId: hideCategory ? undefined : nextCategoryId,
       zoneId: nextZoneId,
       minRating: minRating ? Number(minRating) : undefined,
       availability: availability || undefined,
-      priceMin: priceMin ? Number(priceMin) : undefined,
-      priceMax: priceMax ? Number(priceMax) : undefined,
+      priceMin: parsedMin ?? undefined,
+      priceMax: parsedMax ?? undefined,
       sort: nextSort === 'rating' ? undefined : nextSort,
       lat: nextSort === 'near' ? nextCoords?.lat : undefined,
       lng: nextSort === 'near' ? nextCoords?.lng : undefined,
@@ -145,6 +148,14 @@ export function SearchFiltersForm({
   function onSubmit(event: FormEvent) {
     event.preventDefault();
     setMessage(null);
+    if (priceMin && parseValidPrice(priceMin, { allowZero: true }) === null) {
+      setMessage('Ingrese un precio mínimo válido (máximo 2 decimales).');
+      return;
+    }
+    if (priceMax && parseValidPrice(priceMax, { allowZero: true }) === null) {
+      setMessage('Ingrese un precio máximo válido (máximo 2 decimales).');
+      return;
+    }
     if (priceMin && priceMax && Number(priceMin) > Number(priceMax)) {
       setMessage('El precio mínimo no puede ser mayor al máximo.');
       return;
@@ -316,12 +327,11 @@ export function SearchFiltersForm({
             <Input
               aria-label="Precio mínimo en quetzales"
               inputMode="decimal"
-              type="number"
-              min={0}
-              step="any"
+              type="text"
+              maxLength={8}
               placeholder="Mín."
               value={priceMin}
-              onChange={(event) => setPriceMin(event.target.value)}
+              onChange={(event) => setPriceMin(sanitizeMoneyInput(event.target.value))}
             />
             <span aria-hidden className="text-muted">
               a
@@ -329,12 +339,11 @@ export function SearchFiltersForm({
             <Input
               aria-label="Precio máximo en quetzales"
               inputMode="decimal"
-              type="number"
-              min={0}
-              step="any"
+              type="text"
+              maxLength={8}
               placeholder="Máx."
               value={priceMax}
-              onChange={(event) => setPriceMax(event.target.value)}
+              onChange={(event) => setPriceMax(sanitizeMoneyInput(event.target.value))}
             />
           </div>
           <p className="text-xs text-muted">

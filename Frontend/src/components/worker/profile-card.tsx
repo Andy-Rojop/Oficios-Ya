@@ -10,6 +10,12 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getErrorMessage } from '@/lib/auth';
 import { useCategories } from '@/lib/catalog';
+import {
+  isValidGuatemalaDpi,
+  isValidGuatemalaNit,
+  sanitizeDigitsInput,
+  sanitizeNitInput,
+} from '@/lib/numeric-input';
 import { cn } from '@/lib/utils';
 import {
   AVAILABILITY_LABELS,
@@ -76,13 +82,13 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
     event.preventDefault();
     setSaved(false);
     const cleanDpi = dpi.replace(/\D/g, '');
-    if (cleanDpi.length !== 13) {
-      setError('El DPI debe tener 13 dígitos');
+    if (!isValidGuatemalaDpi(cleanDpi)) {
+      setError('Ingrese un número de DPI válido de 13 dígitos');
       return;
     }
-    const cleanNit = nit.trim();
-    if (cleanNit && !/^\d{1,12}-?[\dKk]$/.test(cleanNit)) {
-      setError('El NIT no es válido');
+    const cleanNit = nit.trim().toUpperCase();
+    if (!isValidGuatemalaNit(cleanNit)) {
+      setError('Ingrese un NIT válido (6 a 9 dígitos y verificador 0-9 o K, ej. 1234567-8)');
       return;
     }
     setError(null);
@@ -127,6 +133,7 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
         <FormField
           id="dpi"
           label="DPI (13 dígitos)"
+          hint="Solo los 13 números de su CUI, sin espacios ni guiones."
           error={error?.includes('DPI') ? error : undefined}
         >
           {(aria) => (
@@ -140,24 +147,29 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
               placeholder="1234567890101"
               onChange={(event) => {
                 setSaved(false);
-                setDpi(event.target.value.replace(/\D/g, '').slice(0, 13));
+                setDpi(sanitizeDigitsInput(event.target.value, 13));
               }}
             />
           )}
         </FormField>
 
-        <FormField id="nit" label="NIT (opcional)">
+        <FormField
+          id="nit"
+          label="NIT (opcional)"
+          hint="Números del NIT y dígito verificador (0-9 o K), con o sin guión."
+          error={error?.includes('NIT') ? error : undefined}
+        >
           {(aria) => (
             <Input
               {...aria}
               autoComplete="off"
-              maxLength={14}
+              maxLength={11}
               value={nit}
               disabled={locked || mutation.isPending}
               placeholder="1234567-8"
               onChange={(event) => {
                 setSaved(false);
-                setNit(event.target.value);
+                setNit(sanitizeNitInput(event.target.value));
               }}
             />
           )}
@@ -168,7 +180,9 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
             Su solicitud está en revisión. Le avisaremos cuando haya una decisión.
           </p>
         ) : null}
-        {error && !error.includes('DPI') ? <FormMessage tone="error">{error}</FormMessage> : null}
+        {error && !error.includes('DPI') && !error.includes('NIT') ? (
+          <FormMessage tone="error">{error}</FormMessage>
+        ) : null}
         {mutation.isError ? (
           <FormMessage tone="error">{getErrorMessage(mutation.error)}</FormMessage>
         ) : null}
@@ -390,14 +404,14 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
           {(aria) => (
             <Input
               {...aria}
-              type="number"
+              type="text"
               inputMode="numeric"
-              min={0}
-              max={60}
+              maxLength={2}
+              placeholder="Ej.: 5"
               value={experience}
               onChange={(event) => {
                 setSaved(false);
-                setExperience(event.target.value);
+                setExperience(sanitizeDigitsInput(event.target.value, 2));
               }}
             />
           )}

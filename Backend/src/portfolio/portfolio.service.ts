@@ -4,7 +4,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { UploadedImage } from '../storage/image-upload.interceptor';
 import { StorageService } from '../storage/storage.service';
 import { WorkersService } from '../workers/workers.service';
-import { CreatePortfolioItemDto, PortfolioItemResponseDto } from './dto/portfolio.dto';
+import {
+  CreatePortfolioItemDto,
+  PortfolioItemResponseDto,
+  UpdatePortfolioItemDto,
+} from './dto/portfolio.dto';
 
 export const MAX_PORTFOLIO_ITEMS = 30;
 
@@ -76,6 +80,33 @@ export class PortfolioService {
       await this.storage.deleteObjectSilently(imagePath);
       throw error;
     }
+  }
+
+  async update(
+    userId: string,
+    itemId: string,
+    dto: UpdatePortfolioItemDto,
+  ): Promise<PortfolioItemResponseDto> {
+    const profileId = await this.workers.requireProfileId(userId);
+    const existing = await this.prisma.portfolioItem.findFirst({
+      where: { id: itemId, workerProfileId: profileId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException('No encontramos esta foto del portafolio');
+    }
+
+    const updated = await this.prisma.portfolioItem.update({
+      where: { id: itemId },
+      data: {
+        ...(dto.title !== undefined ? { title: dto.title } : {}),
+        ...(dto.description !== undefined
+          ? { description: dto.description ? dto.description : null }
+          : {}),
+      },
+      select: PORTFOLIO_SELECT,
+    });
+    return this.toDto(updated);
   }
 
   async remove(userId: string, itemId: string): Promise<void> {

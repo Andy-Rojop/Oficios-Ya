@@ -7,10 +7,13 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
 import { PriceMode, PriceUnit } from '../../generated/prisma/enums';
+import { MAX_PRICE_AMOUNT } from '../service-pricing.util';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
@@ -40,7 +43,12 @@ export class CreateServiceDto {
 
   @ApiPropertyOptional({ nullable: true, description: 'GTQ. Obligatorio y > 0 salvo NEGOTIABLE' })
   @IsOptional()
-  @IsNumber({ allowNaN: false, allowInfinity: false }, { message: 'El precio debe ser un número' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 },
+    { message: 'El precio debe ser un número válido con máximo 2 decimales' },
+  )
+  @Min(0.01, { message: 'El precio debe ser mayor a cero' })
+  @Max(MAX_PRICE_AMOUNT, { message: 'El precio no es válido' })
   priceAmount?: number | null;
 
   @ApiPropertyOptional({ enum: ['JOB', 'HOUR', 'VISIT', 'METER'], default: 'JOB' })
@@ -84,7 +92,12 @@ export class UpdateServiceDto {
 
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
-  @IsNumber({ allowNaN: false, allowInfinity: false }, { message: 'El precio debe ser un número' })
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 },
+    { message: 'El precio debe ser un número válido con máximo 2 decimales' },
+  )
+  @Min(0.01, { message: 'El precio debe ser mayor a cero' })
+  @Max(MAX_PRICE_AMOUNT, { message: 'El precio no es válido' })
   priceAmount?: number | null;
 
   @ApiPropertyOptional({ enum: ['JOB', 'HOUR', 'VISIT', 'METER'] })

@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -16,7 +17,11 @@ import { RequireWorkerMode } from '../common/decorators/require-worker-mode.deco
 import { UUID_PIPE } from '../common/pipes/uuid.pipe';
 import type { AuthenticatedUser } from '../common/types/authenticated-user';
 import { ImageUploadInterceptor, type UploadedImage } from '../storage/image-upload.interceptor';
-import { CreatePortfolioItemDto, PortfolioItemResponseDto } from './dto/portfolio.dto';
+import {
+  CreatePortfolioItemDto,
+  PortfolioItemResponseDto,
+  UpdatePortfolioItemDto,
+} from './dto/portfolio.dto';
 import { PortfolioService } from './portfolio.service';
 
 @ApiTags('portfolio')
@@ -43,6 +48,16 @@ export class PortfolioController {
     @UploadedFile() file: UploadedImage | undefined,
   ): Promise<PortfolioItemResponseDto> {
     return this.portfolio.create(user.id, dto, file);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'RF-021: editar título o descripción de una foto del portafolio' })
+  update(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', UUID_PIPE) id: string,
+    @Body() dto: UpdatePortfolioItemDto,
+  ): Promise<PortfolioItemResponseDto> {
+    return this.portfolio.update(user.id, id, dto);
   }
 
   @Delete(':id')

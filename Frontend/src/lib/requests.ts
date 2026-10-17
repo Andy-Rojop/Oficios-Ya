@@ -190,9 +190,9 @@ export function formatDateTime(iso: string): string {
 /** Interpreta lo que escribió el usuario en un campo de monto. Devuelve null si no es válido. */
 export function parseAmount(text: string): number | null {
   const normalized = text.trim().replace(',', '.');
-  if (!/^\d{1,8}(\.\d{1,2})?$/.test(normalized)) return null;
+  if (!/^\d{1,5}(\.\d{1,2})?$/.test(normalized)) return null;
   const value = Number(normalized);
-  return value > 0 ? value : null;
+  return value > 0 && value <= 99_999.99 ? value : null;
 }
 
 /** La persona con la que se trata la solicitud, desde el punto de vista del usuario actual. */

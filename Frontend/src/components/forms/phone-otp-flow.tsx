@@ -169,6 +169,10 @@ export function PhoneOtpFlow({ onVerified, phoneHint }: PhoneOtpFlowProps) {
             maxLength={6}
             placeholder="123456"
             className="text-center text-lg tracking-[0.4em]"
+            onChange={(event) => {
+              event.target.value = event.target.value.replace(/\D/g, '').slice(0, 6);
+              void codeRegister.onChange(event);
+            }}
           />
         )}
       </FormField>

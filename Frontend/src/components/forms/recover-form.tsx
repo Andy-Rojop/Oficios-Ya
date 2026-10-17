@@ -20,7 +20,9 @@ const resetSchema = z
     newPassword: z
       .string()
       .min(8, 'La contraseña debe tener al menos 8 caracteres')
-      .max(72, 'La contraseña no puede superar 72 caracteres'),
+      .max(72, 'La contraseña no puede superar 72 caracteres')
+      .regex(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/, 'La contraseña debe incluir al menos una letra')
+      .regex(/\d/, 'La contraseña debe incluir al menos un número'),
     confirmPassword: z.string().min(1, 'Confirme su contraseña'),
   })
   .refine((values) => values.newPassword === values.confirmPassword, {
@@ -78,7 +80,7 @@ export function RecoverForm() {
       <FormField
         id="newPassword"
         label="Nueva contraseña"
-        hint="Mínimo 8 caracteres."
+        hint="Mínimo 8 caracteres, combinando letras y números."
         error={errors.newPassword?.message}
       >
         {(aria) => (

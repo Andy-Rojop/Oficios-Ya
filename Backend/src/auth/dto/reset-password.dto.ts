@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class ResetPasswordDto {
   @ApiProperty({ description: 'ID token de Firebase tras verificar el SMS' })
@@ -7,9 +7,12 @@ export class ResetPasswordDto {
   @IsNotEmpty({ message: 'El código de verificación es obligatorio' })
   firebaseIdToken: string;
 
-  @ApiProperty({ minLength: 8 })
+  @ApiProperty({ minLength: 8, description: 'Mínimo 8 caracteres, debe incluir letras y números' })
   @IsString({ message: 'La nueva contraseña es obligatoria' })
   @MinLength(8, { message: 'La nueva contraseña debe tener al menos 8 caracteres' })
   @MaxLength(72, { message: 'La nueva contraseña no puede superar 72 caracteres' })
+  @Matches(/^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).+$/, {
+    message: 'La nueva contraseña debe combinar letras y números',
+  })
   newPassword: string;
 }

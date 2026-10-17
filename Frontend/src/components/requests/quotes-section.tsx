@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { getErrorMessage } from '@/lib/auth';
+import { sanitizeMoneyInput } from '@/lib/numeric-input';
 import {
   formatDateTime,
   formatMoney,
@@ -161,14 +162,18 @@ function QuoteForm({ requestId, onSent }: { requestId: string; onSent: () => voi
         </label>
         <Input
           id="quote-amount"
+          type="text"
           inputMode="decimal"
+          maxLength={8}
           placeholder="Ej. 350 o 350.50"
           value={amountText}
           aria-invalid={amountText !== '' && amount === null}
-          onChange={(event) => setAmountText(event.target.value)}
+          onChange={(event) => setAmountText(sanitizeMoneyInput(event.target.value))}
         />
         {amountText !== '' && amount === null ? (
-          <p className="text-xs text-red-700">Escriba un monto válido, con máximo 2 decimales.</p>
+          <p className="text-xs text-red-700">
+            Ingrese un monto válido (mayor a Q0 y con máximo 2 decimales).
+          </p>
         ) : null}
       </div>
       <div className="space-y-1">

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 export const PhoneInput = React.forwardRef<
   HTMLInputElement,
   Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>
->(({ className, ...props }, ref) => (
+>(({ className, onChange, ...props }, ref) => (
   <div className="flex">
     <span
       aria-hidden="true"
@@ -17,10 +17,17 @@ export const PhoneInput = React.forwardRef<
     <input
       ref={ref}
       type="tel"
-      inputMode="tel"
+      inputMode="numeric"
       autoComplete="tel-national"
+      maxLength={9}
       placeholder="5555 1234"
       className={cn(inputClassName, 'rounded-l-none', className)}
+      onChange={(event) => {
+        const digits = event.target.value.replace(/\D/g, '').slice(0, 8);
+        event.target.value =
+          digits.length > 4 ? `${digits.slice(0, 4)} ${digits.slice(4)}` : digits;
+        onChange?.(event);
+      }}
       {...props}
     />
   </div>

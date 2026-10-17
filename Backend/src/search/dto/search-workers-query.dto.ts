@@ -85,20 +85,22 @@ export class SearchWorkersQueryDto {
   @Transform(emptyToUndefined)
   @IsOptional()
   @IsNumber(
-    { allowNaN: false, allowInfinity: false },
-    { message: 'El precio mínimo debe ser un número' },
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 },
+    { message: 'El precio mínimo debe ser un número con máximo 2 decimales' },
   )
   @Min(0, { message: 'El precio mínimo no puede ser negativo' })
+  @Max(99999999.99, { message: 'El precio mínimo no es válido' })
   priceMin?: number;
 
   @ApiPropertyOptional({ minimum: 0, description: 'GTQ. Solo servicios activos con precio' })
   @Transform(emptyToUndefined)
   @IsOptional()
   @IsNumber(
-    { allowNaN: false, allowInfinity: false },
-    { message: 'El precio máximo debe ser un número' },
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 },
+    { message: 'El precio máximo debe ser un número con máximo 2 decimales' },
   )
   @Min(0, { message: 'El precio máximo no puede ser negativo' })
+  @Max(99999999.99, { message: 'El precio máximo no es válido' })
   priceMax?: number;
 
   @ApiPropertyOptional({ enum: SEARCH_SORTS, default: 'rating' })

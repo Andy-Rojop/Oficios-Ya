@@ -60,12 +60,17 @@ export function ImagePicker({ id, label, file, onChange, disabled }: ImagePicker
           variant="outline"
           size="sm"
           disabled={disabled}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => {
+            if (inputRef.current) {
+              inputRef.current.value = '';
+              inputRef.current.click();
+            }
+          }}
         >
           {label}
         </Button>
         <span className="min-w-0 truncate text-sm text-muted">
-          {file ? file.name : 'Ninguna imagen seleccionada'}
+          {file ? `Seleccionada: ${file.name}` : 'Ninguna imagen seleccionada'}
         </span>
       </div>
       {error ? (

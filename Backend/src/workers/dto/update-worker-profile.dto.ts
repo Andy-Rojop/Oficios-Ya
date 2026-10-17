@@ -76,13 +76,17 @@ export class UpdateWorkerProfileDto {
   @IsOptional()
   @Transform(trimOrNull)
   @ValidateIf((_, value) => typeof value === 'string')
-  @Matches(/^\d{13}$/, { message: 'El DPI debe tener 13 dígitos' })
+  @Matches(/^(?!(\d)\1{12}$)\d{13}$/, {
+    message: 'Ingrese un número de DPI válido de 13 dígitos',
+  })
   dpi?: string | null;
 
   @ApiPropertyOptional({ nullable: true, description: 'PRIVADO. Nunca se expone públicamente' })
   @IsOptional()
   @Transform(trimOrNull)
   @ValidateIf((_, value) => typeof value === 'string')
-  @Matches(/^\d{1,12}-?[\dKk]$/, { message: 'El NIT no es válido' })
+  @Matches(/^(?!0+-?0*$)\d{5,9}-?[\dKk]$/, {
+    message: 'Ingrese un NIT válido (6 a 9 dígitos y verificador 0-9 o K)',
+  })
   nit?: string | null;
 }

@@ -30,7 +30,9 @@ const registerSchema = z
     password: z
       .string()
       .min(8, 'La contraseña debe tener al menos 8 caracteres')
-      .max(72, 'La contraseña no puede superar 72 caracteres'),
+      .max(72, 'La contraseña no puede superar 72 caracteres')
+      .regex(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/, 'La contraseña debe incluir al menos una letra')
+      .regex(/\d/, 'La contraseña debe incluir al menos un número'),
     confirmPassword: z.string().min(1, 'Confirme su contraseña'),
     zoneId: z.string().min(1, 'Seleccione su zona'),
     email: z.union([z.literal(''), z.email('Ingrese un correo válido').max(254)]),
@@ -399,7 +401,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
         <FormField
           id="password"
           label="Contraseña"
-          hint="Mínimo 8 caracteres."
+          hint="Mínimo 8 caracteres, combinando letras y números."
           error={errors.password?.message}
         >
           {(aria) => (

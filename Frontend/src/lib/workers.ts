@@ -202,6 +202,11 @@ export const workersApi = {
     if (input.description) form.append('description', input.description);
     return apiFetch<PortfolioItemDto>('/workers/me/portfolio', { method: 'POST', body: form });
   },
+  updatePortfolioItem: (id: string, input: { title?: string; description?: string | null }) =>
+    apiFetch<PortfolioItemDto>(`/workers/me/portfolio/${id}`, {
+      method: 'PATCH',
+      ...json(input),
+    }),
   deletePortfolioItem: (id: string) =>
     apiFetch<void>(`/workers/me/portfolio/${id}`, { method: 'DELETE' }),
 

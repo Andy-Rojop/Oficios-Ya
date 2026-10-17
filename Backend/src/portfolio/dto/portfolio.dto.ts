@@ -21,6 +21,24 @@ export class CreatePortfolioItemDto {
   description?: string;
 }
 
+/** PATCH /workers/me/portfolio/:id: actualiza título y descripción de una foto ya subida. */
+export class UpdatePortfolioItemDto {
+  @ApiPropertyOptional({ example: 'Estantes de distintas clases de maderas' })
+  @IsOptional()
+  @Transform(trim)
+  @IsString({ message: 'El título debe ser texto' })
+  @MinLength(2, { message: 'El título debe tener al menos 2 caracteres' })
+  @MaxLength(100, { message: 'El título no puede superar 100 caracteres' })
+  title?: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @Transform(trim)
+  @IsString({ message: 'La descripción debe ser texto' })
+  @MaxLength(500, { message: 'La descripción no puede superar 500 caracteres' })
+  description?: string | null;
+}
+
 export interface PortfolioItemSource {
   id: string;
   title: string;

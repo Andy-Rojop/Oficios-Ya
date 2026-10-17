@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getErrorMessage } from '@/lib/auth';
 import { useCategories } from '@/lib/catalog';
+import { MAX_VALID_PRICE_GTQ, parseValidPrice, sanitizeMoneyInput } from '@/lib/numeric-input';
 import {
   PRICE_MODE_LABELS,
   PRICE_UNIT_LABELS,
@@ -296,9 +297,9 @@ function ServiceForm({
 
     let priceAmount: number | null = null;
     if (!negotiable) {
-      priceAmount = Number(form.priceAmount);
-      if (form.priceAmount.trim() === '' || !Number.isFinite(priceAmount) || priceAmount <= 0) {
-        found.priceAmount = 'Ingrese un precio mayor a cero';
+      priceAmount = parseValidPrice(form.priceAmount);
+      if (priceAmount === null) {
+        found.priceAmount = `Ingrese un precio válido (mayor a Q0 y hasta Q${MAX_VALID_PRICE_GTQ.toLocaleString('es-GT')}, máximo 2 decimales)`;
       }
     }
 
@@ -384,14 +385,13 @@ function ServiceForm({
           {(aria) => (
             <Input
               {...aria}
-              type="number"
+              type="text"
               inputMode="decimal"
-              min={0}
-              step="0.01"
+              maxLength={8}
               disabled={negotiable}
               value={negotiable ? '' : form.priceAmount}
               placeholder={negotiable ? 'A convenir' : '0.00'}
-              onChange={(event) => set('priceAmount', event.target.value)}
+              onChange={(event) => set('priceAmount', sanitizeMoneyInput(event.target.value))}
             />
           )}
         </FormField>

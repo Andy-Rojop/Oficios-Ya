@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -27,10 +28,13 @@ export class RegisterDto {
   @MaxLength(100, { message: 'El nombre no puede superar 100 caracteres' })
   name: string;
 
-  @ApiProperty({ minLength: 8 })
+  @ApiProperty({ minLength: 8, description: 'Mínimo 8 caracteres, debe incluir letras y números' })
   @IsString({ message: 'La contraseña es obligatoria' })
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
   @MaxLength(72, { message: 'La contraseña no puede superar 72 caracteres' })
+  @Matches(/^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).+$/, {
+    message: 'La contraseña debe combinar letras y números',
+  })
   password: string;
 
   @ApiProperty({ description: 'ID de la zona (aldea, cantón, caserío...)' })
