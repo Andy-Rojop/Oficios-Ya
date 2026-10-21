@@ -134,6 +134,11 @@ export function mapLink(latitude: number, longitude: number): string {
   return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=17/${latitude}/${longitude}`;
 }
 
+/** Enlace directo a Google Maps para abrir el punto o iniciar navegación como en WhatsApp. */
+export function googleMapsLink(latitude: number, longitude: number): string {
+  return `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+}
+
 /** Ordena la bandeja por última actividad (más reciente primero). */
 export function sortConversations(list: ConversationSummary[]): ConversationSummary[] {
   return [...list].sort(

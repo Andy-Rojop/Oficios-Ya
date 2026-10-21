@@ -114,14 +114,16 @@ export function normalizeMessageInput(
       return { type: dto.type, content, imagePath: path, latitude: null, longitude: null };
     }
     case MessageType.ADDRESS: {
-      if (!content) throw new BadRequestException('Escriba la dirección y algunas referencias');
-      if (content.length > MESSAGE_ADDRESS_MAX_LENGTH) {
+      if (hasLat !== hasLng) {
+        throw new BadRequestException('Envíe la latitud y la longitud juntas, o ninguna');
+      }
+      if (!content && !hasLat) {
+        throw new BadRequestException('Seleccione una ubicación en el mapa o escriba su dirección');
+      }
+      if (content && content.length > MESSAGE_ADDRESS_MAX_LENGTH) {
         throw new BadRequestException(
           `La dirección no puede superar ${MESSAGE_ADDRESS_MAX_LENGTH} caracteres`,
         );
-      }
-      if (hasLat !== hasLng) {
-        throw new BadRequestException('Envíe la latitud y la longitud juntas, o ninguna');
       }
       return {
         type: dto.type,

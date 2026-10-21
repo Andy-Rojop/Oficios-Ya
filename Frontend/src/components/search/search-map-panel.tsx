@@ -180,8 +180,8 @@ export function SearchMapPanel({
             </h2>
             <p className="text-sm text-muted">
               {nearActive
-                ? 'De la más cercana a la más lejana. La distancia es al centro de la zona, nunca a una casa.'
-                : 'Marque el mapa para ver solo disponibles, ordenados por cercanía.'}
+                ? 'De la más cercana a la más lejana según su ubicación aproximada en el mapa.'
+                : 'Toque un punto del mapa o un marcador para ver quiénes están disponibles cerca.'}
             </p>
           </div>
           {items.length > 0 ? (

@@ -112,7 +112,7 @@ export class ReportCreatedDto {
 /** Texto corto para la bandeja de entrada (sin filtrar contenido sensible más allá del propio mensaje). */
 export function buildPreview(message: { type: MessageType; content: string | null }): string {
   if (message.type === 'IMAGE') return 'Foto';
-  if (message.type === 'ADDRESS') return 'Dirección compartida';
+  if (message.type === 'ADDRESS') return '📍 Ubicación compartida';
   const text = (message.content ?? '').replace(/\s+/g, ' ').trim();
   return text.length > PREVIEW_MAX_LENGTH ? `${text.slice(0, PREVIEW_MAX_LENGTH - 1)}…` : text;
 }

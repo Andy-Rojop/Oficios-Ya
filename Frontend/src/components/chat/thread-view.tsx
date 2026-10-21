@@ -490,7 +490,7 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
               <PhotoIcon />
             </ComposerIconButton>
             <ComposerIconButton
-              label="Compartir mi dirección"
+              label="Enviar ubicación"
               disabled={!summary || busy !== null}
               onClick={() => setAddressOpen(true)}
             >

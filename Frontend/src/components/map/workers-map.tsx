@@ -8,16 +8,18 @@ import {
   MapContainer,
   Popup,
   TileLayer,
+  Tooltip,
   useMap,
   useMapEvents,
 } from 'react-leaflet';
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { cn } from '@/lib/utils';
-import type { SearchWorkerCard } from '@/lib/search';
+import { formatCardPrice, type SearchWorkerCard } from '@/lib/search';
+import { AVAILABILITY_LABELS } from '@/lib/workers';
 
 /** Centro aproximado de El Asintal, Retalhuleu (si no hay zonas con coordenadas). */
-export const DEFAULT_MAP_CENTER: LatLngExpression = [14.5333, -91.7];
+export const DEFAULT_MAP_CENTER: [number, number] = [14.5333, -91.7];
 const MAX_LISTED_PER_ZONE = 4;
 
 export interface MapCenter {
@@ -30,6 +32,20 @@ interface ZonePoint {
   name: string;
   position: [number, number];
   workers: { id: string; headline: string }[];
+}
+
+export interface WorkerMapPoint {
+  id: string;
+  name: string;
+  headline: string;
+  categoryName: string | null;
+  zoneName: string;
+  position: [number, number];
+  availability: SearchWorkerCard['availability'];
+  ratingAverage: number;
+  ratingCount: number;
+  priceLabel: string;
+  distanceKm: number | null;
 }
 
 export interface WorkersMapProps {
@@ -45,9 +61,101 @@ export interface WorkersMapProps {
   hideCaption?: boolean;
 }
 
+/** Hash determinístico simple para dispersar puntos aproximados sin revelar dirección exacta. */
+function hashString(input: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
 /**
- * Agrupa por zona. Solo se usan los centros aproximados de zona que llegan en los resultados de
- * búsqueda; nunca hay direcciones exactas ni coordenadas de un trabajador.
+ * Calcula una ubicación aproximada individual para cada trabajador alrededor del centro
+ * de su zona más cercana (desplazamiento de ~150 m a ~450 m para que cada oficio tenga
+ * su propio punto visible en el mapa sin exponer una dirección exacta).
+ */
+export function buildWorkerMapPoints(
+  workers: SearchWorkerCard[],
+  referenceCenter?: MapCenter | null,
+): WorkerMapPoint[] {
+  // Primero elegimos la zona de referencia de cada trabajador
+  const chosenZoneByWorker = new Map<
+    string,
+    { id: string; name: string; lat: number; lng: number }
+  >();
+  const workersPerZone = new Map<string, string[]>();
+
+  for (const worker of workers) {
+    const validZones = worker.zones.filter(
+      (z): z is { id: string; name: string; lat: number; lng: number } =>
+        z.lat !== null && z.lng !== null,
+    );
+
+    let chosen: { id: string; name: string; lat: number; lng: number };
+    if (validZones.length === 0) {
+      chosen = {
+        id: 'default-asintal',
+        name: worker.zones[0]?.name ?? 'El Asintal (aprox.)',
+        lat: DEFAULT_MAP_CENTER[0],
+        lng: DEFAULT_MAP_CENTER[1],
+      };
+    } else if (referenceCenter) {
+      chosen = validZones.reduce((best, candidate) => {
+        const bestDist =
+          (best.lat - referenceCenter.lat) ** 2 + (best.lng - referenceCenter.lng) ** 2;
+        const candDist =
+          (candidate.lat - referenceCenter.lat) ** 2 + (candidate.lng - referenceCenter.lng) ** 2;
+        return candDist < bestDist ? candidate : best;
+      }, validZones[0]!);
+    } else {
+      chosen = validZones[0]!;
+    }
+
+    chosenZoneByWorker.set(worker.id, chosen);
+    const list = workersPerZone.get(chosen.id) ?? [];
+    list.push(worker.id);
+    workersPerZone.set(chosen.id, list);
+  }
+
+  return workers.map((worker) => {
+    const zone = chosenZoneByWorker.get(worker.id)!;
+    const siblings = workersPerZone.get(zone.id) ?? [worker.id];
+    const indexInZone = Math.max(0, siblings.indexOf(worker.id));
+    const hash = hashString(worker.id);
+
+    // Ángulo áureo + semilla por trabajador para separar visualmente cada pin dentro de la zona
+    const baseAngle = ((hash % 360) * Math.PI) / 180;
+    const angle = baseAngle + indexInZone * 2.399963229728653;
+    // Radio entre ~160 m (0.0015°) y ~420 m (0.0038°) alrededor del centro de la zona
+    const ring = Math.floor(indexInZone / 6);
+    const radiusDeg = 0.0015 + ((hash % 100) / 100) * 0.0016 + ring * 0.0012;
+
+    const latOffset = Math.sin(angle) * radiusDeg;
+    const lngOffset = Math.cos(angle) * radiusDeg;
+
+    return {
+      id: worker.id,
+      name: worker.name,
+      headline: worker.headline,
+      categoryName: worker.mainCategory?.name ?? null,
+      zoneName: zone.name,
+      position: [
+        Number((zone.lat + latOffset).toFixed(5)),
+        Number((zone.lng + lngOffset).toFixed(5)),
+      ],
+      availability: worker.availability,
+      ratingAverage: worker.ratingAverage,
+      ratingCount: worker.ratingCount,
+      priceLabel: formatCardPrice(worker),
+      distanceKm: worker.distanceKm,
+    };
+  });
+}
+
+/**
+ * Agrupa por zona. Se mantiene por compatibilidad con vistas o pruebas que consulten centros de zona.
  */
 export function groupWorkersByZone(workers: SearchWorkerCard[]): ZonePoint[] {
   const points = new Map<string, ZonePoint>();
@@ -59,18 +167,20 @@ export function groupWorkersByZone(workers: SearchWorkerCard[]): ZonePoint[] {
         point = { id: zone.id, name: zone.name, position: [zone.lat, zone.lng], workers: [] };
         points.set(zone.id, point);
       }
-      point.workers.push({ id: worker.id, headline: worker.headline });
+      if (point.workers.length < MAX_LISTED_PER_ZONE) {
+        point.workers.push({ id: worker.id, headline: worker.headline });
+      }
     }
   }
   return [...points.values()];
 }
 
 function FitToView({
-  points,
+  workerPoints,
   selectedCenter,
   userCenter,
 }: {
-  points: ZonePoint[];
+  workerPoints: WorkerMapPoint[];
   selectedCenter?: MapCenter | null;
   userCenter?: MapCenter | null;
 }) {
@@ -81,7 +191,7 @@ function FitToView({
   const userLng = userCenter?.lng;
 
   useEffect(() => {
-    const coords: [number, number][] = points.map((point) => point.position);
+    const coords: [number, number][] = workerPoints.map((point) => point.position);
     if (selectedLat !== undefined && selectedLng !== undefined) {
       coords.push([selectedLat, selectedLng]);
     }
@@ -89,10 +199,6 @@ function FitToView({
       coords.push([userLat, userLng]);
     }
 
-    if (selectedLat !== undefined && selectedLng !== undefined) {
-      map.flyTo([selectedLat, selectedLng], 14, { duration: 0.6 });
-      return;
-    }
     if (coords.length === 0) {
       map.setView(DEFAULT_MAP_CENTER, 13);
       return;
@@ -102,8 +208,8 @@ function FitToView({
       return;
     }
     const bounds: LatLngBoundsExpression = coords;
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-  }, [map, points, selectedLat, selectedLng, userLat, userLng]);
+    map.fitBounds(bounds, { padding: [44, 44], maxZoom: 14 });
+  }, [map, workerPoints, selectedLat, selectedLng, userLat, userLng]);
   return null;
 }
 
@@ -126,10 +232,14 @@ export default function WorkersMap({
   className,
   hideCaption = false,
 }: WorkersMapProps) {
-  const points = useMemo(() => groupWorkersByZone(workers), [workers]);
+  const referenceCenter = selectedCenter ?? userCenter;
+  const workerPoints = useMemo(
+    () => buildWorkerMapPoints(workers, referenceCenter),
+    [workers, referenceCenter],
+  );
   const initialCenter: LatLngExpression = selectedCenter
     ? [selectedCenter.lat, selectedCenter.lng]
-    : (points[0]?.position ?? DEFAULT_MAP_CENTER);
+    : (workerPoints[0]?.position ?? DEFAULT_MAP_CENTER);
 
   return (
     <div className={cn(fill ? 'h-full w-full' : 'space-y-2')}>
@@ -151,18 +261,22 @@ export default function WorkersMap({
               : 'h-72 sm:h-96'),
           className,
         )}
-        aria-label="Mapa de zonas donde trabajan los resultados"
+        aria-label="Mapa de ubicaciones aproximadas de trabajadores"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {!fill ? (
-          <FitToView points={points} selectedCenter={selectedCenter} userCenter={userCenter} />
+          <FitToView
+            workerPoints={workerPoints}
+            selectedCenter={selectedCenter}
+            userCenter={userCenter}
+          />
         ) : null}
         {interactive ? <MapClickHandler onSelectPoint={onSelectPoint} /> : null}
 
-        {fill && points.length === 0 ? (
+        {fill && workerPoints.length === 0 ? (
           <CircleMarker
             center={DEFAULT_MAP_CENTER}
             radius={14}
@@ -216,63 +330,90 @@ export default function WorkersMap({
               }}
             >
               <Popup>
-                <p className="text-sm font-semibold">Área elegida</p>
-                <p className="text-xs text-muted">Disponibles, del más cercano al más lejano</p>
+                <p className="text-sm font-semibold">Punto consultado</p>
+                <p className="text-xs text-muted">Disponibles ordenados del más cercano al más lejano</p>
               </Popup>
             </CircleMarker>
           </>
         ) : null}
 
-        {points.map((point) => (
-          <CircleMarker
-            key={point.id}
-            center={point.position}
-            radius={Math.min(10 + point.workers.length * 2, 26)}
-            pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#1e3a5f', fillOpacity: 0.88 }}
-            eventHandlers={
-              interactive && onSelectPoint
-                ? {
-                    click: (event) => {
-                      event.originalEvent?.stopPropagation();
-                      onSelectPoint(point.position[0], point.position[1]);
-                    },
-                  }
-                : undefined
-            }
-          >
-            <Popup>
-              <div className="space-y-1 text-sm">
-                <p className="font-semibold">{point.name}</p>
-                <p className="text-xs text-muted">
-                  {point.workers.length}{' '}
-                  {point.workers.length === 1 ? 'trabajador' : 'trabajadores'}
-                </p>
-                <ul className="list-inside list-disc">
-                  {point.workers.slice(0, MAX_LISTED_PER_ZONE).map((worker) => (
-                    <li key={worker.id}>
-                      <Link href={`/trabajador/${worker.id}`} className="text-brand underline">
-                        {worker.headline}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-                {point.workers.length > MAX_LISTED_PER_ZONE ? (
-                  <p className="text-xs text-muted">
-                    y {point.workers.length - MAX_LISTED_PER_ZONE} más
+        {workerPoints.map((worker) => {
+          const fillColor =
+            worker.availability === 'AVAILABLE'
+              ? '#1e3a5f'
+              : worker.availability === 'BUSY'
+                ? '#b45309'
+                : '#64748b';
+
+          return (
+            <CircleMarker
+              key={worker.id}
+              center={worker.position}
+              radius={10}
+              pathOptions={{
+                color: '#ffffff',
+                weight: 2.5,
+                fillColor,
+                fillOpacity: 0.94,
+              }}
+              eventHandlers={{
+                click: (event) => {
+                  event.originalEvent?.stopPropagation();
+                },
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -8]} opacity={0.96}>
+                <div className="text-xs">
+                  <p className="font-semibold text-foreground">{worker.headline}</p>
+                  <p className="text-muted">
+                    {worker.name} · {worker.priceLabel}
                   </p>
-                ) : null}
-              </div>
-            </Popup>
-          </CircleMarker>
-        ))}
+                </div>
+              </Tooltip>
+              <Popup>
+                <div className="min-w-[190px] space-y-1.5 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5">
+                    {worker.categoryName ? (
+                      <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand">
+                        {worker.categoryName}
+                      </span>
+                    ) : null}
+                    <span className="rounded-full bg-[#e7f6ee] px-2 py-0.5 text-[11px] font-semibold text-[#1f6b4a]">
+                      {AVAILABILITY_LABELS[worker.availability]}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-semibold leading-tight text-foreground">{worker.headline}</p>
+                    <p className="text-xs text-muted">{worker.name}</p>
+                  </div>
+                  <p className="text-xs text-foreground">
+                    ★ {worker.ratingAverage.toFixed(1)}
+                    {worker.ratingCount > 0 ? ` (${worker.ratingCount})` : ''} ·{' '}
+                    <span className="font-semibold">{worker.priceLabel}</span>
+                  </p>
+                  <p className="text-[11px] text-muted">
+                    Ubicación aprox.: {worker.zoneName}
+                    {worker.distanceKm !== null ? ` (~${worker.distanceKm.toFixed(1)} km)` : ''}
+                  </p>
+                  <Link
+                    href={`/trabajador/${worker.id}`}
+                    className="inline-block pt-0.5 text-xs font-semibold text-brand underline"
+                  >
+                    Ver perfil de {worker.name.split(' ')[0]} →
+                  </Link>
+                </div>
+              </Popup>
+            </CircleMarker>
+          );
+        })}
       </MapContainer>
       {!hideCaption ? (
         <p className="text-xs text-muted">
-          {points.length === 0
-            ? 'Ninguna de estas zonas tiene ubicación en el mapa todavía.'
+          {workerPoints.length === 0
+            ? 'No hay trabajadores con ubicación aproximada en este filtro todavía.'
             : interactive
-              ? 'Toque el mapa para ver a quienes están disponibles, ordenados por cercanía. Los pines son centros de zona, nunca una dirección exacta.'
-              : 'El mapa muestra el centro aproximado de cada zona, nunca la dirección de una persona.'}
+              ? 'Cada punto azul representa la ubicación aproximada de un trabajador según su zona. Pase el cursor o toque un punto para ver su oficio y tarifa.'
+              : 'El mapa muestra la ubicación aproximada de cada trabajador en su zona (protegiendo su dirección exacta).'}
         </p>
       ) : null}
     </div>
