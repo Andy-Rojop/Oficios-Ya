@@ -125,7 +125,7 @@ function WorkerPanel() {
         <ul className="relative mt-6 grid gap-2 sm:grid-cols-3">
           <QuickLink
             href="/solicitudes"
-            label="Solicitudes"
+            label="Mis solicitudes"
             hint="Pedidos de clientes"
             Icon={Inbox}
           />

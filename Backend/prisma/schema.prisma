@@ -54,6 +54,11 @@ enum PriceUnit {
   HOUR
   VISIT
   METER
+  SQUARE_METER
+  PERSON
+  DEVICE
+  INSTALLATION
+  OTHER
 }
 
 enum RequestStatus {

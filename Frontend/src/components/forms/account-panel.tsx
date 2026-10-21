@@ -26,6 +26,7 @@ import {
 } from '@/lib/auth';
 import { useZones } from '@/lib/catalog';
 import { signOutFirebase } from '@/lib/firebase';
+import { sanitizeEmailInput } from '@/lib/numeric-input';
 import { formatPhoneDisplay } from '@/lib/phone';
 import { cn } from '@/lib/utils';
 
@@ -166,7 +167,8 @@ function ModeCard({ user }: { user: UserDto }) {
       <div className="space-y-1">
         <CardTitle>Modo de uso</CardTitle>
         <CardDescription>
-          Cliente ve Buscar. Trabajador ve el Panel. Puede cambiar cuando quiera.
+          Su cuenta tiene dos perfiles asociados. Al cambiar, cambia el color, el menú y la
+          pantalla de inicio (cliente o trabajador).
         </CardDescription>
       </div>
       <div role="radiogroup" aria-label="Modo de uso" className="grid gap-3 sm:grid-cols-2">
@@ -184,9 +186,11 @@ function ModeCard({ user }: { user: UserDto }) {
               }}
               className={cn(
                 'relative flex items-start gap-3 rounded-2xl border-2 bg-surface p-4 text-left transition disabled:opacity-60',
-                selected
-                  ? 'border-accent shadow-[0_6px_20px_rgba(30,58,95,0.12)]'
-                  : 'border-border hover:border-brand/30 hover:bg-brand-soft/60',
+                selected && value === 'CLIENT'
+                  ? 'border-foreground bg-foreground text-white shadow-[0_6px_20px_rgba(26,35,50,0.18)]'
+                  : selected && value === 'WORKER'
+                    ? 'border-[#2563eb] bg-[#2563eb] text-white shadow-[0_6px_20px_rgba(37,99,235,0.25)]'
+                    : 'border-border hover:border-brand/30 hover:bg-brand-soft/60',
               )}
             >
               {selected ? (
@@ -197,14 +201,18 @@ function ModeCard({ user }: { user: UserDto }) {
               <span
                 className={cn(
                   'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-                  selected ? 'bg-accent text-white' : 'bg-brand-soft text-brand',
+                  selected ? 'bg-white/15 text-white' : 'bg-brand-soft text-brand',
                 )}
               >
                 <Icon aria-hidden className="h-5 w-5" />
               </span>
               <span className="pr-6">
-                <span className="block text-sm font-semibold text-foreground">{label}</span>
-                <span className="block text-xs text-muted">{description}</span>
+                <span className={cn('block text-sm font-semibold', selected ? 'text-white' : 'text-foreground')}>
+                  {label}
+                </span>
+                <span className={cn('block text-xs', selected ? 'text-white/80' : 'text-muted')}>
+                  {description}
+                </span>
               </span>
             </button>
           );
@@ -218,7 +226,10 @@ function ModeCard({ user }: { user: UserDto }) {
 }
 
 const emailSchema = z.object({
-  email: z.union([z.literal(''), z.email('Ingrese un correo válido').max(254)]),
+  email: z.union([
+    z.literal(''),
+    z.email('Ingrese un correo válido, por ejemplo nombre@correo.com').max(80),
+  ]),
 });
 type EmailValues = z.infer<typeof emailSchema>;
 
@@ -258,7 +269,20 @@ function EmailCard({ user }: { user: UserDto }) {
           <CardDescription>Opcional. Déjalo vacío para quitarlo.</CardDescription>
         </div>
         <FormField id="email" label="Correo" error={errors.email?.message}>
-          {(aria) => <Input {...aria} type="email" autoComplete="email" {...register('email')} />}
+          {(aria) => (
+            <Input
+              {...aria}
+              type="email"
+              autoComplete="email"
+              maxLength={80}
+              inputMode="email"
+              {...register('email', {
+                onChange: (event) => {
+                  event.target.value = sanitizeEmailInput(event.target.value);
+                },
+              })}
+            />
+          )}
         </FormField>
         {error ? <FormMessage tone="error">{error}</FormMessage> : null}
         {message ? <FormMessage tone="success">{message}</FormMessage> : null}

@@ -15,6 +15,6 @@ export class UpdateEmailDto {
   })
   @ValidateIf((dto: UpdateEmailDto) => dto.email !== null)
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
-  @MaxLength(254, { message: 'El correo electrónico es demasiado largo' })
+  @MaxLength(80, { message: 'El correo electrónico es demasiado largo' })
   email: string | null;
 }

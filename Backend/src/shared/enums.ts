@@ -46,6 +46,11 @@ export enum PriceUnit {
   HOUR = 'HOUR',
   VISIT = 'VISIT',
   METER = 'METER',
+  SQUARE_METER = 'SQUARE_METER',
+  PERSON = 'PERSON',
+  DEVICE = 'DEVICE',
+  INSTALLATION = 'INSTALLATION',
+  OTHER = 'OTHER',
 }
 
 export enum RequestStatus {

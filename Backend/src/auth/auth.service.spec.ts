@@ -130,7 +130,7 @@ describe('AuthService', () => {
 
     it('rechaza una contraseña incorrecta con mensaje genérico', async () => {
       await expect(service.login({ phone: PHONE, password: 'wrong' })).rejects.toThrow(
-        new UnauthorizedException('Teléfono o contraseña incorrectos'),
+        new UnauthorizedException('Teléfono y/o contraseña incorrectos'),
       );
       expect(state.failedLoginAttempts).toBe(1);
     });

@@ -4,7 +4,7 @@ import { fetchCatalogCategories, fetchSearchWorkers } from '@/lib/search';
 export default async function HomePage() {
   const [categories, search] = await Promise.all([
     fetchCatalogCategories({ cache: 'force-cache' }).catch(() => []),
-    fetchSearchWorkers({ sort: 'rating', limit: 8 }, { cache: 'no-store' }).catch(() => ({
+    fetchSearchWorkers({ sort: 'rating', limit: 12 }, { cache: 'no-store' }).catch(() => ({
       items: [],
       nextCursor: null,
     })),

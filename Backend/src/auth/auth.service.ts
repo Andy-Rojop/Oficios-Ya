@@ -30,7 +30,7 @@ export interface AuthResult {
   tokens: AuthTokens;
 }
 
-const INVALID_CREDENTIALS = 'Teléfono o contraseña incorrectos';
+const INVALID_CREDENTIALS = 'Teléfono y/o contraseña incorrectos';
 const INVALID_SESSION = 'Su sesión ya no es válida. Inicie sesión de nuevo';
 
 function isUniqueViolation(error: unknown): boolean {

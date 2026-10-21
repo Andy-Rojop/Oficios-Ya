@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { AccountStatus, PriceMode } from '../generated/prisma/enums';
+import { AccountStatus, Availability, PriceMode } from '../generated/prisma/enums';
 import type { Prisma } from '../generated/prisma/client';
 import type { DecimalLike } from '../workers/dto/worker-profile-response.dto';
 import { decimalToNumber } from '../workers/dto/worker-profile-response.dto';
@@ -10,6 +10,14 @@ const MAX_TERMS = 5;
 /** Sentinela para "sin precio" / "sin coordenadas": van al final en orden ascendente. */
 export const SORT_LAST = 1e12;
 const EARTH_RADIUS_KM = 6371;
+/** Separa disponibles, ocupados y no disponibles por encima del resto de criterios. */
+const AVAILABILITY_SORT_WEIGHT = 1e15;
+
+function availabilityRank(availability: Availability): number {
+  if (availability === Availability.AVAILABLE) return 0;
+  if (availability === Availability.BUSY) return 1;
+  return 2;
+}
 
 // --- WHERE ----------------------------------------------------------------------------------
 
@@ -95,6 +103,7 @@ export function buildSearchWhere(query: SearchWorkersQueryDto): Prisma.WorkerPro
 
 export interface CandidateRow {
   id: string;
+  availability: Availability;
   ratingAverage: DecimalLike;
   ratingCount: number;
   createdAt: Date;
@@ -127,9 +136,12 @@ export function resolveSort(
   return sort;
 }
 
-/** Dirección de cada orden: true = descendente. */
-export function isDescending(sort: SearchSort): boolean {
-  return sort === 'rating' || sort === 'recent';
+/**
+ * El valor de orden ya incorpora disponibilidad (ascendente) y el criterio
+ * secundario. Siempre se compara de menor a mayor.
+ */
+export function isDescending(_sort: SearchSort): boolean {
+  return false;
 }
 
 export function minReferencePrice(services: CandidateRow['services']): number | null {
@@ -167,24 +179,32 @@ export function computeSortValue(
   sort: SearchSort,
   coords: { lat: number; lng: number } | null,
 ): { sortValue: number; distanceKm: number | null } {
+  let distanceKm: number | null = null;
+  let sortValue: number;
   switch (sort) {
     case 'rating': {
-      // Promedio (2 decimales) y, a igualdad, más reseñas primero.
       const average = Math.round(decimalToNumber(row.ratingAverage) * 100);
-      return {
-        sortValue: average * 1_000_000 + Math.min(row.ratingCount, 999_999),
-        distanceKm: null,
-      };
+      sortValue = average * 1_000_000 + Math.min(row.ratingCount, 999_999);
+      break;
     }
     case 'recent':
-      return { sortValue: row.createdAt.getTime(), distanceKm: null };
+      sortValue = row.createdAt.getTime();
+      break;
     case 'price':
-      return { sortValue: minReferencePrice(row.services) ?? SORT_LAST, distanceKm: null };
+      sortValue = minReferencePrice(row.services) ?? SORT_LAST;
+      break;
     case 'near': {
-      const distance = coords ? nearestDistanceKm(row.zones, coords.lat, coords.lng) : null;
-      return { sortValue: distance === null ? SORT_LAST : distance, distanceKm: distance };
+      distanceKm = coords ? nearestDistanceKm(row.zones, coords.lat, coords.lng) : null;
+      sortValue = distanceKm === null ? SORT_LAST : distanceKm;
+      break;
     }
   }
+  const secondaryDescending = sort === 'rating' || sort === 'recent';
+  const secondary = secondaryDescending ? 1e14 - sortValue : sortValue;
+  return {
+    sortValue: availabilityRank(row.availability) * AVAILABILITY_SORT_WEIGHT + secondary,
+    distanceKm,
+  };
 }
 
 /** Orden total: valor de orden y, a igualdad, id ascendente (estable entre páginas). */

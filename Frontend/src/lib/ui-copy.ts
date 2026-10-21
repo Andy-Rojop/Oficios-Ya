@@ -8,7 +8,7 @@ export const UI_COPY = {
   cancel: 'Cancelar',
   save: 'Guardar',
   search: 'Buscar',
-  login: 'Ingresar',
+  login: 'Iniciar sesión',
   register: 'Registrarse',
   logout: 'Cerrar sesión',
   contact: 'Contactar',

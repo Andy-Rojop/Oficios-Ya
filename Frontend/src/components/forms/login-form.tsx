@@ -142,6 +142,7 @@ export function LoginForm() {
             {...aria}
             type="password"
             autoComplete="current-password"
+            maxLength={15}
             {...register('password')}
           />
         )}

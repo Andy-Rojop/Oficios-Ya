@@ -57,34 +57,14 @@ export function sanitizeDigitsInput(raw: string, maxLength: number): string {
   return raw.replace(/\D/g, '').slice(0, maxLength);
 }
 
-/**
- * Filtra un NIT de Guatemala mientras el usuario escribe:
- * - Solo dígitos en el cuerpo (7 a 9 dígitos habituales, tope 12)
- * - Un guión opcional antes del dígito verificador (0-9 o K en mayúscula)
- */
+/** Solo caracteres habituales de un correo, con tope de 80. */
+export function sanitizeEmailInput(raw: string): string {
+  return raw.replace(/[^a-zA-Z0-9.@_+-]/g, '').slice(0, 80);
+}
+
+/** NIT de Guatemala: 9 dígitos seguidos, sin guiones ni espacios. */
 export function sanitizeNitInput(raw: string): string {
-  const upper = raw.toUpperCase().replace(/[^0-9K-]/g, '');
-  if (!upper) return '';
-
-  // Solo se permite 'K' o '-' al final (en la posición del verificador)
-  const parts = upper.split('-');
-  const bodyDigits = (parts[0] ?? '').replace(/\D/g, '').slice(0, 9);
-
-  if (parts.length > 1) {
-    const verifier = parts
-      .slice(1)
-      .join('')
-      .replace(/[^0-9K]/g, '')
-      .slice(0, 1);
-    return bodyDigits ? `${bodyDigits}-${verifier}` : '';
-  }
-
-  // Sin guión: dígitos seguidos opcionalmente de una K final
-  const trailingK = (parts[0] ?? '').endsWith('K') ? 'K' : '';
-  if (trailingK && bodyDigits.length >= 1) {
-    return `${bodyDigits.slice(0, 8)}K`;
-  }
-  return bodyDigits;
+  return raw.replace(/\D/g, '').slice(0, 9);
 }
 
 /**
@@ -103,15 +83,9 @@ export function isValidGuatemalaDpi(raw: string): boolean {
   return true;
 }
 
-/**
- * Valida un NIT de Guatemala:
- * - Entre 6 y 9 dígitos de base + guión opcional + verificador (0-9 o K)
- */
+/** Valida un NIT de Guatemala: exactamente 9 dígitos, opcional. */
 export function isValidGuatemalaNit(raw: string): boolean {
-  const clean = raw.trim().toUpperCase();
-  if (!clean) return true; // Es opcional
-  if (!/^\d{5,9}-?[\dK]$/.test(clean)) return false;
-  const onlyDigits = clean.replace(/\D/g, '');
-  if (/^0+$/.test(onlyDigits)) return false;
-  return true;
+  const clean = raw.trim();
+  if (!clean) return true;
+  return /^\d{9}$/.test(clean) && !/^0+$/.test(clean);
 }

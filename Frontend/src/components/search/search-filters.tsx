@@ -22,7 +22,6 @@ import {
   type SearchSort,
   type SearchWorkerCard,
 } from '@/lib/search';
-import { AVAILABILITY_LABELS, type Availability } from '@/lib/workers';
 
 interface SearchFiltersFormProps {
   /** Ruta que se renderiza al aplicar: /buscar o /categorias/[slug]. */
@@ -64,7 +63,6 @@ export function SearchFiltersForm({
   const [minRating, setMinRating] = useState(
     filters.minRating !== undefined ? String(filters.minRating) : '',
   );
-  const [availability, setAvailability] = useState<Availability | ''>(filters.availability ?? '');
   const [priceMin, setPriceMin] = useState(
     filters.priceMin !== undefined ? String(filters.priceMin) : '',
   );
@@ -81,11 +79,10 @@ export function SearchFiltersForm({
 
   // El mapa escribe disponibilidad, orden y coordenadas en la URL. Se ajustan en el render
   // para que "Aplicar filtros" no borre el punto que acaba de elegir.
-  const urlKey = `${filters.availability ?? ''}|${filters.sort ?? ''}|${filters.lat ?? ''}|${filters.lng ?? ''}`;
+  const urlKey = `${filters.sort ?? ''}|${filters.lat ?? ''}|${filters.lng ?? ''}`;
   const [syncedKey, setSyncedKey] = useState(urlKey);
   if (syncedKey !== urlKey) {
     setSyncedKey(urlKey);
-    setAvailability(filters.availability ?? '');
     setSort(filters.sort ?? 'rating');
     setCoords(
       filters.lat !== undefined && filters.lng !== undefined
@@ -115,7 +112,6 @@ export function SearchFiltersForm({
       categoryId: hideCategory ? undefined : nextCategoryId,
       zoneId: nextZoneId,
       minRating: minRating ? Number(minRating) : undefined,
-      availability: availability || undefined,
       priceMin: parsedMin ?? undefined,
       priceMax: parsedMax ?? undefined,
       sort: nextSort === 'rating' ? undefined : nextSort,
@@ -199,7 +195,6 @@ export function SearchFiltersForm({
     setCategoryId('');
     setZoneId('');
     setMinRating('');
-    setAvailability('');
     setPriceMin('');
     setPriceMax('');
     setSort('rating');
@@ -229,7 +224,6 @@ export function SearchFiltersForm({
             workers={workers}
             activeCategoryId={categoryId || filters.categoryId}
             activeZoneId={zoneId || filters.zoneId}
-            activeAvailability={availability}
             hideCategorySuggestions={hideCategory}
           />
         </div>
@@ -300,22 +294,6 @@ export function SearchFiltersForm({
             {RATING_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="filter-availability">Disponibilidad</Label>
-          <Select
-            id="filter-availability"
-            value={availability}
-            onChange={(event) => setAvailability(event.target.value as Availability | '')}
-          >
-            <option value="">Cualquiera</option>
-            {(Object.keys(AVAILABILITY_LABELS) as Availability[]).map((value) => (
-              <option key={value} value={value}>
-                {AVAILABILITY_LABELS[value]}
               </option>
             ))}
           </Select>

@@ -28,10 +28,10 @@ export class RegisterDto {
   @MaxLength(100, { message: 'El nombre no puede superar 100 caracteres' })
   name: string;
 
-  @ApiProperty({ minLength: 8, description: 'Mínimo 8 caracteres, debe incluir letras y números' })
+  @ApiProperty({ minLength: 8, maxLength: 15, description: 'Entre 8 y 15 caracteres, letras y números' })
   @IsString({ message: 'La contraseña es obligatoria' })
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
-  @MaxLength(72, { message: 'La contraseña no puede superar 72 caracteres' })
+  @MaxLength(15, { message: 'La contraseña no puede superar 15 caracteres' })
   @Matches(/^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).+$/, {
     message: 'La contraseña debe combinar letras y números',
   })
@@ -49,7 +49,7 @@ export class RegisterDto {
     return trimmed === '' ? undefined : trimmed;
   })
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
-  @MaxLength(254, { message: 'El correo electrónico es demasiado largo' })
+  @MaxLength(80, { message: 'El correo electrónico es demasiado largo' })
   email?: string;
 
   @ApiProperty({ example: true })

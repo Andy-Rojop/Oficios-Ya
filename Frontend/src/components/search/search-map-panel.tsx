@@ -67,10 +67,7 @@ export function SearchMapPanel({
     if (asUserLocation) setUserCenter(coords);
     setMessage(null);
     const alreadyThere =
-      filters.sort === 'near' &&
-      filters.availability === 'AVAILABLE' &&
-      filters.lat === coords.lat &&
-      filters.lng === coords.lng;
+      filters.sort === 'near' && filters.lat === coords.lat && filters.lng === coords.lng;
     if (alreadyThere) {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
@@ -81,7 +78,6 @@ export function SearchMapPanel({
       categoryId: filters.categoryId,
       zoneId: filters.zoneId,
       minRating: filters.minRating,
-      availability: 'AVAILABLE',
       priceMin: filters.priceMin,
       priceMax: filters.priceMax,
       sort: 'near',
@@ -176,12 +172,12 @@ export function SearchMapPanel({
               className="text-lg font-semibold text-foreground sm:text-xl"
               style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
-              {nearActive ? 'Personas disponibles' : 'Resultados'}
+              {nearActive ? 'Personas cerca de este punto' : 'Resultados'}
             </h2>
             <p className="text-sm text-muted">
               {nearActive
-                ? 'De la más cercana a la más lejana según su ubicación aproximada en el mapa.'
-                : 'Toque un punto del mapa o un marcador para ver quiénes están disponibles cerca.'}
+                ? 'Primero quienes están disponibles, luego ocupados y al final no disponibles. Dentro de cada grupo, de la más cercana a la más lejana.'
+                : 'Toque un punto del mapa para ordenar por cercanía. Siempre se muestran primero los disponibles.'}
             </p>
           </div>
           {items.length > 0 ? (

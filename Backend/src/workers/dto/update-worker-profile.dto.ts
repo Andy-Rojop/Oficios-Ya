@@ -85,8 +85,8 @@ export class UpdateWorkerProfileDto {
   @IsOptional()
   @Transform(trimOrNull)
   @ValidateIf((_, value) => typeof value === 'string')
-  @Matches(/^(?!0+-?0*$)\d{5,9}-?[\dKk]$/, {
-    message: 'Ingrese un NIT válido (6 a 9 dígitos y verificador 0-9 o K)',
+  @Matches(/^(?!0{9})\d{9}$/, {
+    message: 'Ingrese un NIT de 9 dígitos, sin guiones ni espacios',
   })
   nit?: string | null;
 }

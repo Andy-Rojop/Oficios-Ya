@@ -10,6 +10,7 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getErrorMessage } from '@/lib/auth';
 import { useCategories } from '@/lib/catalog';
+import { COHERENT_TEXT_MESSAGE, isCoherentText } from '@/lib/coherent-text';
 import {
   isValidGuatemalaDpi,
   isValidGuatemalaNit,
@@ -63,7 +64,7 @@ function useInvalidateWorker() {
 export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
   const queryClient = useQueryClient();
   const [dpi, setDpi] = useState(profile.dpi ?? '');
-  const [nit, setNit] = useState(profile.nit ?? '');
+  const [nit, setNit] = useState(sanitizeNitInput(profile.nit ?? ''));
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -88,7 +89,7 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
     }
     const cleanNit = nit.trim().toUpperCase();
     if (!isValidGuatemalaNit(cleanNit)) {
-      setError('Ingrese un NIT válido (6 a 9 dígitos y verificador 0-9 o K, ej. 1234567-8)');
+      setError('Ingrese un NIT de 9 dígitos, sin guiones ni espacios');
       return;
     }
     setError(null);
@@ -156,17 +157,18 @@ export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
         <FormField
           id="nit"
           label="NIT (opcional)"
-          hint="Números del NIT y dígito verificador (0-9 o K), con o sin guión."
+          hint="Ingrese NIT sin guiones ni espacios. Solo 9 dígitos."
           error={error?.includes('NIT') ? error : undefined}
         >
           {(aria) => (
             <Input
               {...aria}
               autoComplete="off"
-              maxLength={11}
+              inputMode="numeric"
+              maxLength={9}
               value={nit}
               disabled={locked || mutation.isPending}
-              placeholder="1234567-8"
+              placeholder="123456789"
               onChange={(event) => {
                 setSaved(false);
                 setNit(sanitizeNitInput(event.target.value));
@@ -230,11 +232,11 @@ export function AvailabilityCard({ profile }: { profile: OwnWorkerProfile }) {
               }}
               className={cn(
                 'rounded-2xl border px-3 py-4 text-sm font-semibold transition disabled:opacity-60',
-                selected && option === 'AVAILABLE' && 'border-accent bg-accent text-white shadow-sm',
-                selected && option === 'BUSY' && 'border-[#b45309] bg-[#b45309] text-white shadow-sm',
+                selected && option === 'AVAILABLE' && 'border-[#2563eb] bg-[#2563eb] text-white shadow-sm',
+                selected && option === 'BUSY' && 'border-[#eab308] bg-[#eab308] text-[#422006] shadow-sm',
                 selected &&
                   option === 'UNAVAILABLE' &&
-                  'border-brand bg-brand text-white shadow-sm',
+                  'border-[#ea580c] bg-[#ea580c] text-white shadow-sm',
                 !selected && 'border-border bg-surface hover:border-brand/20 hover:bg-brand-soft',
               )}
             >
@@ -300,9 +302,11 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
 
   function validate(): Record<string, string> {
     const found: Record<string, string> = {};
-    if (headline.trim().length < 3) found.headline = 'Escriba su oficio (mínimo 3 caracteres)';
+    if (headline.trim().length < 3) found.headline = 'Escriba el nombre de su oficio (mínimo 3 caracteres)';
+    else if (!isCoherentText(headline, 3)) found.headline = COHERENT_TEXT_MESSAGE;
     if (description.trim().length < 10)
       found.description = 'Describa su experiencia (mínimo 10 caracteres)';
+    else if (!isCoherentText(description, 8)) found.description = COHERENT_TEXT_MESSAGE;
     if (experience !== '') {
       const years = Number(experience);
       if (!Number.isInteger(years) || years < 0 || years > 60) {
@@ -346,13 +350,18 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
           <CardDescription>Así lo verán los clientes en su perfil público.</CardDescription>
         </div>
 
-        <FormField id="headline" label="Oficio principal" error={errors.headline}>
+        <FormField
+          id="headline"
+          label="Nombre de su oficio"
+          hint="Así lo encontrarán los clientes. Ejemplo: Carpintero, electricista o limpia peceras."
+          error={errors.headline}
+        >
           {(aria) => (
             <Input
               {...aria}
               value={headline}
               maxLength={100}
-              placeholder="Ej.: Carpintero con experiencia"
+              placeholder="Ej.: Carpintero"
               onChange={(event) => {
                 setSaved(false);
                 setHeadline(event.target.value);
@@ -385,7 +394,7 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
           id="description"
           label="Descripción"
           error={errors.description}
-          hint="Cuente qué hace y por qué confiar en usted."
+          hint="Opcional ampliar: cuente qué hace, materiales o zona que cubre."
         >
           {(aria) => (
             <Textarea

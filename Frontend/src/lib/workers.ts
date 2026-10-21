@@ -3,7 +3,16 @@ import type { CategoryDto, ZoneDto } from './catalog';
 
 export type Availability = 'AVAILABLE' | 'BUSY' | 'UNAVAILABLE';
 export type PriceMode = 'FIXED' | 'FROM' | 'NEGOTIABLE';
-export type PriceUnit = 'JOB' | 'HOUR' | 'VISIT' | 'METER';
+export type PriceUnit =
+  | 'JOB'
+  | 'HOUR'
+  | 'VISIT'
+  | 'METER'
+  | 'SQUARE_METER'
+  | 'PERSON'
+  | 'DEVICE'
+  | 'INSTALLATION'
+  | 'OTHER';
 export type IdentityStatus = 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 export const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -40,7 +49,7 @@ export const AVAILABILITY_LABELS: Record<Availability, string> = {
 
 export const PRICE_MODE_LABELS: Record<PriceMode, string> = {
   FIXED: 'Precio fijo',
-  FROM: 'Desde',
+  FROM: 'Precio aproximado',
   NEGOTIABLE: 'A convenir',
 };
 
@@ -49,6 +58,11 @@ export const PRICE_UNIT_LABELS: Record<PriceUnit, string> = {
   HOUR: 'Por hora',
   VISIT: 'Por visita',
   METER: 'Por metro',
+  SQUARE_METER: 'Por metro cuadrado',
+  PERSON: 'Por persona',
+  DEVICE: 'Por dispositivo',
+  INSTALLATION: 'Por instalación',
+  OTHER: 'Otro',
 };
 
 /** Igual a OwnWorkerProfileDto del backend. */
@@ -224,6 +238,6 @@ export function formatServicePrice(
   const amount = Number.isInteger(service.priceAmount)
     ? service.priceAmount.toFixed(0)
     : service.priceAmount.toFixed(2);
-  const unit = PRICE_UNIT_LABELS[service.priceUnit].toLowerCase();
-  return `${service.priceMode === 'FROM' ? 'Desde ' : ''}Q${amount} ${unit}`;
+  const unit = (PRICE_UNIT_LABELS[service.priceUnit] ?? '').toLowerCase();
+  return `${service.priceMode === 'FROM' ? 'Desde ' : ''}Q${amount}${unit ? ` ${unit}` : ''}`;
 }

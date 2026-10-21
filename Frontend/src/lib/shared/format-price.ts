@@ -5,6 +5,11 @@ const UNIT_LABELS: Record<PriceUnit, string> = {
   [PriceUnit.HOUR]: 'por hora',
   [PriceUnit.VISIT]: 'por visita',
   [PriceUnit.METER]: 'por metro',
+  [PriceUnit.SQUARE_METER]: 'por metro cuadrado',
+  [PriceUnit.PERSON]: 'por persona',
+  [PriceUnit.DEVICE]: 'por dispositivo',
+  [PriceUnit.INSTALLATION]: 'por instalación',
+  [PriceUnit.OTHER]: '',
 };
 
 function formatQuetzales(amount: number): string {
@@ -33,8 +38,8 @@ export function formatReferencePrice(
   const money = formatQuetzales(amount);
 
   if (mode === PriceMode.FROM) {
-    return `Desde ${money} ${unitLabel}`;
+    return unitLabel ? `Desde ${money} ${unitLabel}` : `Desde ${money}`;
   }
 
-  return `${money} ${unitLabel}`;
+  return unitLabel ? `${money} ${unitLabel}` : money;
 }

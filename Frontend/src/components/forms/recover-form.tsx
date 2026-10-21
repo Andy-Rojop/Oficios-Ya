@@ -14,15 +14,11 @@ import { Input } from '@/components/ui/input';
 import { getErrorMessage, resetPassword } from '@/lib/auth';
 import { signOutFirebase } from '@/lib/firebase';
 import { formatPhoneDisplay } from '@/lib/phone';
+import { PASSWORD_HINT, PASSWORD_MAX, passwordField } from '@/lib/password';
 
 const resetSchema = z
   .object({
-    newPassword: z
-      .string()
-      .min(8, 'La contraseña debe tener al menos 8 caracteres')
-      .max(72, 'La contraseña no puede superar 72 caracteres')
-      .regex(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/, 'La contraseña debe incluir al menos una letra')
-      .regex(/\d/, 'La contraseña debe incluir al menos un número'),
+    newPassword: passwordField('La nueva contraseña'),
     confirmPassword: z.string().min(1, 'Confirme su contraseña'),
   })
   .refine((values) => values.newPassword === values.confirmPassword, {
@@ -80,7 +76,7 @@ export function RecoverForm() {
       <FormField
         id="newPassword"
         label="Nueva contraseña"
-        hint="Mínimo 8 caracteres, combinando letras y números."
+        hint={PASSWORD_HINT}
         error={errors.newPassword?.message}
       >
         {(aria) => (
@@ -88,6 +84,7 @@ export function RecoverForm() {
             {...aria}
             type="password"
             autoComplete="new-password"
+            maxLength={PASSWORD_MAX}
             {...register('newPassword')}
           />
         )}
@@ -103,6 +100,7 @@ export function RecoverForm() {
             {...aria}
             type="password"
             autoComplete="new-password"
+            maxLength={PASSWORD_MAX}
             {...register('confirmPassword')}
           />
         )}

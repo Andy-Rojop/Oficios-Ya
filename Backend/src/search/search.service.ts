@@ -31,6 +31,7 @@ const MIN_SUGGESTION_LENGTH = 2;
 /** Solo lo necesario para ordenar: sin descripción, sin datos privados. */
 const CANDIDATE_SELECT = {
   id: true,
+  availability: true,
   ratingAverage: true,
   ratingCount: true,
   createdAt: true,

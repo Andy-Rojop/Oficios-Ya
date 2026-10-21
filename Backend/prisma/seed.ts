@@ -40,9 +40,18 @@ const INITIAL_CATEGORIES = [
  * No inventar nombres de aldeas reales sin confirmación oficial.
  */
 const EXAMPLE_ZONES = [
-  { name: 'Zona ejemplo centro', type: 'sector', latitude: 14.533, longitude: -91.7 },
-  { name: 'Zona ejemplo norte', type: 'sector', latitude: 14.55, longitude: -91.69 },
-  { name: 'Zona ejemplo sur', type: 'sector', latitude: 14.52, longitude: -91.71 },
+  {
+    name: 'Parte alta (centro de El Asintal)',
+    type: 'parte_alta',
+    latitude: 14.533,
+    longitude: -91.7,
+  },
+  {
+    name: 'Parte baja (Sibaná, Santa Elena, Xab)',
+    type: 'parte_baja',
+    latitude: 14.505,
+    longitude: -91.72,
+  },
 ] as const;
 
 async function main() {
@@ -73,8 +82,13 @@ async function main() {
     });
   }
 
+  await prisma.zone.updateMany({
+    where: { name: { startsWith: 'Zona ejemplo' } },
+    data: { active: false },
+  });
+
   const zoneCentro = await prisma.zone.findUniqueOrThrow({
-    where: { name: 'Zona ejemplo centro' },
+    where: { name: 'Parte alta (centro de El Asintal)' },
   });
   const plomeria = await prisma.category.findUniqueOrThrow({ where: { slug: 'plomeria' } });
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, LIMITS.BCRYPT_COST);
@@ -215,7 +229,7 @@ async function main() {
     where: { slug: 'carpinteria' },
   });
   const zoneNorte = await prisma.zone.findUniqueOrThrow({
-    where: { name: 'Zona ejemplo norte' },
+    where: { name: 'Parte baja (Sibaná, Santa Elena, Xab)' },
   });
 
   // Más trabajadores demo para la vista de cliente

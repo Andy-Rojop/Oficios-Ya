@@ -17,6 +17,8 @@ import { ME_QUERY_KEY, getErrorMessage, register as registerAccount } from '@/li
 import { useZones } from '@/lib/catalog';
 import { signOutFirebase } from '@/lib/firebase';
 import { formatPhoneDisplay } from '@/lib/phone';
+import { sanitizeEmailInput } from '@/lib/numeric-input';
+import { PASSWORD_HINT, PASSWORD_MAX, passwordField } from '@/lib/password';
 import { UI_COPY } from '@/lib/ui-copy';
 import { cn } from '@/lib/utils';
 
@@ -27,15 +29,15 @@ const registerSchema = z
       .trim()
       .min(2, 'El nombre debe tener al menos 2 caracteres')
       .max(100, 'El nombre no puede superar 100 caracteres'),
-    password: z
-      .string()
-      .min(8, 'La contraseña debe tener al menos 8 caracteres')
-      .max(72, 'La contraseña no puede superar 72 caracteres')
-      .regex(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/, 'La contraseña debe incluir al menos una letra')
-      .regex(/\d/, 'La contraseña debe incluir al menos un número'),
+    password: passwordField(),
     confirmPassword: z.string().min(1, 'Confirme su contraseña'),
     zoneId: z.string().min(1, 'Seleccione su zona'),
-    email: z.union([z.literal(''), z.email('Ingrese un correo válido').max(254)]),
+    email: z.union([
+      z.literal(''),
+      z
+        .email('Ingrese un correo válido, por ejemplo nombre@correo.com')
+        .max(80, 'El correo no puede superar 80 caracteres'),
+    ]),
     acceptTerms: z.boolean().refine((value) => value, 'Debe aceptar los términos y condiciones'),
     startAsWorker: z.boolean(),
   })
@@ -401,7 +403,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
         <FormField
           id="password"
           label="Contraseña"
-          hint="Mínimo 8 caracteres, combinando letras y números."
+          hint={PASSWORD_HINT}
           error={errors.password?.message}
         >
           {(aria) => (
@@ -409,6 +411,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
               {...aria}
               type="password"
               autoComplete="new-password"
+              maxLength={PASSWORD_MAX}
               {...register('password')}
             />
           )}
@@ -424,6 +427,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
               {...aria}
               type="password"
               autoComplete="new-password"
+              maxLength={PASSWORD_MAX}
               {...register('confirmPassword')}
             />
           )}
@@ -432,7 +436,7 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
         <FormField
           id="zoneId"
           label="Zona donde vive"
-          hint="Aldea, cantón o caserío de El Asintal."
+          hint="Parte alta (centro) o parte baja (Sibaná, Santa Elena, Xab)."
           error={
             errors.zoneId?.message ??
             (zones.isError ? 'No se pudieron cargar las zonas.' : undefined)
@@ -453,10 +457,23 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
         <FormField
           id="email"
           label="Correo electrónico (opcional)"
-          hint="No es necesario para usar OficiosYa."
+          hint="Opcional. Ejemplo: nombre@correo.com"
           error={errors.email?.message}
         >
-          {(aria) => <Input {...aria} type="email" autoComplete="email" {...register('email')} />}
+          {(aria) => (
+            <Input
+              {...aria}
+              type="email"
+              autoComplete="email"
+              maxLength={80}
+              inputMode="email"
+              {...register('email', {
+                onChange: (event) => {
+                  event.target.value = sanitizeEmailInput(event.target.value);
+                },
+              })}
+            />
+          )}
         </FormField>
 
         <div>

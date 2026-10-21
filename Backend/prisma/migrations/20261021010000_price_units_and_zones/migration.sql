@@ -1,0 +1,6 @@
+-- Nuevas unidades de precio solicitadas por QA.
+ALTER TYPE "PriceUnit" ADD VALUE 'SQUARE_METER';
+ALTER TYPE "PriceUnit" ADD VALUE 'PERSON';
+ALTER TYPE "PriceUnit" ADD VALUE 'DEVICE';
+ALTER TYPE "PriceUnit" ADD VALUE 'INSTALLATION';
+ALTER TYPE "PriceUnit" ADD VALUE 'OTHER';

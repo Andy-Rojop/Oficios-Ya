@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getErrorMessage } from '@/lib/auth';
 import { useCategories } from '@/lib/catalog';
+import { COHERENT_TEXT_MESSAGE, isCoherentText } from '@/lib/coherent-text';
 import { MAX_VALID_PRICE_GTQ, parseValidPrice, sanitizeMoneyInput } from '@/lib/numeric-input';
 import {
   PRICE_MODE_LABELS,
@@ -25,7 +26,7 @@ import {
 } from '@/lib/workers';
 import { ImagePicker } from './image-picker';
 
-const PRICE_MODES = Object.keys(PRICE_MODE_LABELS) as PriceMode[];
+const PRICE_MODES: PriceMode[] = ['FIXED', 'FROM'];
 const PRICE_UNITS = Object.keys(PRICE_UNIT_LABELS) as PriceUnit[];
 const MAX_PHOTOS = 5;
 
@@ -292,8 +293,10 @@ function ServiceForm({
     const categoryId = form.categoryId || categories.data?.[0]?.id || '';
     if (!categoryId) found.categoryId = 'Elige una categoría';
     if (form.name.trim().length < 3) found.name = 'Escriba un nombre (mínimo 3 caracteres)';
+    else if (!isCoherentText(form.name, 3)) found.name = COHERENT_TEXT_MESSAGE;
     if (form.description.trim().length < 10)
       found.description = 'Describa el servicio (mínimo 10 caracteres)';
+    else if (!isCoherentText(form.description, 8)) found.description = COHERENT_TEXT_MESSAGE;
 
     let priceAmount: number | null = null;
     if (!negotiable) {
@@ -396,7 +399,11 @@ function ServiceForm({
           )}
         </FormField>
 
-        <FormField id="service-price-unit" label="Unidad">
+        <FormField
+          id="service-price-unit"
+          label="Unidad"
+          hint="Si no encaja, elija Otro y detállalo en la descripción."
+        >
           {(aria) => (
             <Select
               {...aria}

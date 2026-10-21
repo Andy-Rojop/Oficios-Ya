@@ -54,7 +54,7 @@ export function RequestsView() {
           className="text-2xl font-semibold"
           style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
-          Solicitudes
+          Mis solicitudes
         </h1>
         <p className="text-sm text-muted">
           {asWorker
