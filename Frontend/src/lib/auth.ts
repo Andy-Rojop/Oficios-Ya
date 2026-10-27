@@ -94,12 +94,19 @@ export function updateProfile(input: { name?: string; zoneId?: string }): Promis
 
 /** Usuario autenticado; `data` es undefined (error 401) si no hay sesión. */
 export function useMe() {
-  return useQuery<UserDto, Error>({
+  const query = useQuery<UserDto, Error>({
     queryKey: ME_QUERY_KEY,
     queryFn: fetchMe,
     retry: false,
     staleTime: 60_000,
   });
+
+  // TanStack Query conserva `data` tras un error. Si el 401 dejara el usuario viejo,
+  // iOS entra en bucle: /cuenta → /ingresar (“Entrando…”) → /cuenta.
+  const data =
+    query.isError && isUnauthorized(query.error) ? undefined : query.data;
+
+  return { ...query, data };
 }
 
 /** Guarda el usuario devuelto por login/register/etc. en la caché de TanStack Query. */

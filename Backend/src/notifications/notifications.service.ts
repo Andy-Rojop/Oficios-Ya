@@ -54,6 +54,51 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * Chat: una sola notificación no leída por conversación (actualiza título/cuerpo si ya existe).
+   * Evita llenar Avisos con un ítem por cada mensaje.
+   */
+  async notifyChatMessage(userId: string, input: NotifyInput & { link: string }): Promise<void> {
+    try {
+      const existing = await this.prisma.notification.findFirst({
+        where: {
+          userId,
+          type: input.type,
+          link: input.link,
+          readAt: null,
+        },
+        select: { id: true },
+      });
+
+      const created = existing
+        ? ((await this.prisma.notification.update({
+            where: { id: existing.id },
+            data: {
+              title: input.title,
+              body: input.body,
+              createdAt: new Date(),
+            },
+            select: NOTIFICATION_SELECT,
+          })) as NotificationDto)
+        : ((await this.prisma.notification.create({
+            data: {
+              userId,
+              type: input.type,
+              title: input.title,
+              body: input.body,
+              link: input.link,
+            },
+            select: NOTIFICATION_SELECT,
+          })) as NotificationDto);
+
+      this.realtime.emitToUser(userId, NOTIFICATION_NEW_EVENT, created);
+    } catch (error) {
+      this.logger.warn(
+        `No se pudo notificar mensaje de chat: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
   /** Notificaciones propias, más recientes primero, con el total de no leídas. */
   async list(userId: string, query: ListNotificationsQueryDto): Promise<NotificationsPageDto> {
     const limit = query.limit ?? NOTIFICATIONS_DEFAULT_LIMIT;

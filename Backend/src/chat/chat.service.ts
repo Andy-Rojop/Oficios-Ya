@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { AccountStatus, MessageType, ReportStatus, ReportTarget } from '../generated/prisma/enums';
+import { NotificationType } from '../notifications/notifications.constants';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { UploadedImage } from '../storage/image-upload.interceptor';
 import { StorageService } from '../storage/storage.service';
@@ -147,6 +149,7 @@ export class ChatService {
     private readonly access: ConversationAccessService,
     private readonly storage: StorageService,
     private readonly realtime: ChatRealtimeService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // --- Conversaciones --------------------------------------------------------------------
@@ -289,6 +292,19 @@ export class ChatService {
     this.realtime.emitToUser(userId, ChatServerEvent.MESSAGE_NEW, response);
     this.realtime.emitToUser(peerId, ChatServerEvent.MESSAGE_NEW, response);
     await this.notifyConversationUpdated(conversation.id, [userId, peerId]);
+
+    const sender = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    const preview = buildPreview({ type: response.type, content: response.content });
+    await this.notifications.notifyChatMessage(peerId, {
+      type: NotificationType.CHAT_MESSAGE,
+      title: 'Nuevo mensaje',
+      body: `${sender?.name ?? 'Alguien'}: ${preview}`,
+      link: `/mensajes/${conversation.id}`,
+    });
+
     return response;
   }
 

@@ -45,12 +45,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!me.data || !isStaffRole(me.data.role)) {
+  const user = me.data;
+  if (!user || !isStaffRole(user.role)) {
     return <p className="text-muted">Comprobando permisos…</p>;
   }
 
   const links = ADMIN_NAV.filter(
-    (item) => !('adminOnly' in item && item.adminOnly) || me.data.role === 'ADMIN',
+    (item) => !('adminOnly' in item && item.adminOnly) || user.role === 'ADMIN',
   );
 
   return (

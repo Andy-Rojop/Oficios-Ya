@@ -63,13 +63,18 @@ export function LoginForm() {
     defaultValues: { phone: '', password: '' },
   });
 
-  // Redirección suave si ya hay sesión o acabamos de guardar el usuario en caché.
+  // Redirección si ya hay sesión (o acabamos de guardar el usuario en caché).
+  // No esperar `isFetching`: en iOS un refetch largo dejaba “Entrando…” congelado.
   useEffect(() => {
-    if (redirected.current || me.isLoading || me.isFetching || !me.data) return;
+    if (redirected.current || me.isLoading || !me.data) return;
     redirected.current = true;
 
     void (async () => {
       let current = me.data;
+      if (!current) {
+        redirected.current = false;
+        return;
+      }
       try {
         if (mode && current.activeMode !== mode) {
           current = await switchMode(mode);
@@ -84,10 +89,11 @@ export function LoginForm() {
         );
       } catch (err) {
         redirected.current = false;
+        queryClient.setQueryData(ME_QUERY_KEY, undefined);
         setError(getErrorMessage(err));
       }
     })();
-  }, [me.data, me.isLoading, me.isFetching, mode, nextParam, queryClient, router]);
+  }, [me.data, me.isLoading, mode, nextParam, queryClient, router]);
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
@@ -109,7 +115,8 @@ export function LoginForm() {
   });
 
   const roleLabel = mode === 'WORKER' ? 'trabajador' : mode === 'CLIENT' ? 'cliente' : null;
-  const checkingSession = (me.isLoading || Boolean(me.data)) && !error;
+  // Solo “Entrando…” en carga inicial o con sesión válida lista para redirigir.
+  const checkingSession = (me.isLoading || Boolean(me.data)) && !error && !isSubmitting;
 
   if (checkingSession && !error) {
     return <p className="text-center text-sm text-muted">Entrando…</p>;

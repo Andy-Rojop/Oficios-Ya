@@ -9,16 +9,29 @@ import { isStaffRole } from '@/lib/admin';
 import { useLogout, useMe } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 
+const AUTH_PATHS = ['/ingresar', '/registro', '/recuperar', '/roles'];
+
+function isAuthPath(pathname: string): boolean {
+  return AUTH_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
   const { data: user, isLoading, isFetching } = useMe();
   const logout = useLogout();
+  const authScreen = isAuthPath(pathname);
+  // En login/registro no mostrar chrome de sesión (evita Avisos/Salir sobre “Entrando…”).
+  const sessionUser = authScreen ? undefined : user;
 
-  const showGuest = !user && !isLoading && !isFetching;
-  const workerChrome = user?.activeMode === 'WORKER';
+  const showGuest = (!sessionUser && !isLoading && !isFetching) || authScreen;
+  const workerChrome = sessionUser?.activeMode === 'WORKER';
   const desktopLinks = [
-    ...(user ? linksForMode(user.activeMode) : showGuest ? GUEST_LINKS : []),
-    ...(isStaffRole(user?.role)
+    ...(sessionUser
+      ? linksForMode(sessionUser.activeMode)
+      : showGuest
+        ? GUEST_LINKS
+        : []),
+    ...(isStaffRole(sessionUser?.role)
       ? [{ href: '/admin', label: 'Admin', shortLabel: 'Admin', icon: 'account' as const }]
       : []),
   ];
@@ -27,7 +40,7 @@ export function SiteHeader() {
     <header
       className={cn(
         'sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)]',
-        user?.activeMode === 'WORKER'
+        sessionUser?.activeMode === 'WORKER'
           ? 'border-[#1e3a5f]/30 bg-[#1e3a5f] text-white'
           : 'border-border bg-surface',
       )}
@@ -35,30 +48,33 @@ export function SiteHeader() {
       {/* flex-nowrap: Salir nunca baja de línea; queda siempre a la derecha. */}
       <div className="mx-auto flex h-12 w-full max-w-6xl flex-nowrap items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-6">
         <Link
-          href={user?.activeMode === 'WORKER' ? '/panel' : '/'}
+          href={sessionUser?.activeMode === 'WORKER' ? '/panel' : '/'}
           className={cn(
             'shrink-0 text-base font-bold tracking-tight sm:text-lg',
-            user?.activeMode === 'WORKER' ? 'text-white' : 'text-foreground',
+            sessionUser?.activeMode === 'WORKER' ? 'text-white' : 'text-foreground',
           )}
           style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
           OficiosYa
         </Link>
 
-        {user ? (
+        {sessionUser ? (
           <span
             className={cn(
               'hidden shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white lg:inline-flex',
-              user.activeMode === 'WORKER' ? 'bg-[#2563eb]' : 'bg-accent',
+              sessionUser.activeMode === 'WORKER' ? 'bg-[#2563eb]' : 'bg-accent',
             )}
           >
-            {user.activeMode === 'WORKER' ? 'Trabajador' : 'Cliente'}
+            {sessionUser.activeMode === 'WORKER' ? 'Trabajador' : 'Cliente'}
           </span>
         ) : null}
 
         <div className="ml-auto flex min-w-0 flex-nowrap items-center justify-end gap-0.5 sm:gap-1">
-          {/* Enlaces solo desktop / invitados. En móvil con sesión: barra inferior. */}
-          <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
+          {/* Desktop + landscape (la barra inferior se oculta en horizontal). */}
+          <nav
+            aria-label="Principal"
+            className="hidden max-w-[55vw] items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] landscape:flex md:flex md:max-w-none md:gap-1 [&::-webkit-scrollbar]:hidden"
+          >
             {desktopLinks.map((link) => {
               const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
@@ -67,7 +83,7 @@ export function SiteHeader() {
                   href={link.href}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'shrink-0 rounded-full px-3.5 py-2.5 text-sm font-medium transition',
+                    'shrink-0 rounded-full px-2.5 py-2 text-sm font-medium transition sm:px-3.5 sm:py-2.5',
                     workerChrome
                       ? active
                         ? 'bg-white text-[#1e3a5f]'
@@ -77,7 +93,8 @@ export function SiteHeader() {
                         : 'text-muted hover:bg-brand-soft hover:text-foreground',
                   )}
                 >
-                  {link.label}
+                  <span className="md:hidden">{link.shortLabel ?? link.label}</span>
+                  <span className="hidden md:inline">{link.label}</span>
                 </Link>
               );
             })}
@@ -85,7 +102,7 @@ export function SiteHeader() {
 
           {/* Invitados en móvil: Entrar / Registrarse visibles arriba. */}
           {showGuest ? (
-            <nav aria-label="Acceso" className="flex items-center gap-0.5 md:hidden">
+            <nav aria-label="Acceso" className="flex items-center gap-0.5 landscape:hidden md:hidden">
               {GUEST_LINKS.map((link) => (
                 <Link
                   key={link.href}
@@ -98,9 +115,9 @@ export function SiteHeader() {
             </nav>
           ) : null}
 
-          <NotificationBell enabled={Boolean(user)} workerChrome={workerChrome} />
+          <NotificationBell enabled={Boolean(sessionUser)} workerChrome={workerChrome} />
 
-          {user ? (
+          {sessionUser ? (
             <button
               type="button"
               disabled={logout.isPending}

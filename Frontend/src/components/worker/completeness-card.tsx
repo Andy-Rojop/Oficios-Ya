@@ -18,6 +18,31 @@ export function CompletenessCard() {
 
   const doneCount = data.items.filter((item) => item.done).length;
 
+  // Al 100%: solo el porcentaje (no el checklist ni el bloque grande).
+  if (data.complete) {
+    return (
+      <section className="flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent-soft/80 px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-dark">
+            Completitud
+          </p>
+          <p className="truncate text-sm font-semibold text-foreground">Perfil listo</p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p
+            className="text-2xl font-semibold tabular-nums text-accent-dark"
+            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+          >
+            {data.percentage}%
+          </p>
+          <p className="text-[11px] font-medium text-muted">
+            {doneCount}/{data.items.length}
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border bg-surface p-5 shadow-[0_8px_28px_rgba(26,35,50,0.06)] sm:p-6">
       <div
@@ -39,25 +64,15 @@ export function CompletenessCard() {
               className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
               style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
-              {data.complete ? 'Perfil listo al 100%' : `Su perfil está al ${data.percentage}%`}
+              Su perfil está al {data.percentage}%
             </h2>
             <p className="text-sm text-muted">
-              {data.complete
-                ? 'Los clientes confían más en perfiles completos. Ya está visible con todo.'
-                : 'Complete estos pasos para que más clientes lo encuentren.'}
+              Complete estos pasos para que más clientes lo encuentren.
             </p>
           </div>
-          <div
-            className={cn(
-              'rounded-2xl px-4 py-3 text-center',
-              data.complete ? 'bg-accent-soft' : 'bg-brand-soft',
-            )}
-          >
+          <div className="rounded-2xl bg-brand-soft px-4 py-3 text-center">
             <p
-              className={cn(
-                'text-3xl font-semibold tabular-nums',
-                data.complete ? 'text-accent-dark' : 'text-brand',
-              )}
+              className="text-3xl font-semibold tabular-nums text-brand"
               style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
               {data.percentage}%
@@ -77,10 +92,7 @@ export function CompletenessCard() {
           className="h-3 w-full overflow-hidden rounded-full bg-brand-soft"
         >
           <div
-            className={cn(
-              'h-full rounded-full transition-all',
-              data.complete ? 'bg-accent' : 'bg-brand',
-            )}
+            className="h-full rounded-full bg-brand transition-all"
             style={{ width: `${data.percentage}%` }}
           />
         </div>

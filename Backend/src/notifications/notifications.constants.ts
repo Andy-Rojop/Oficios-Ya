@@ -6,6 +6,8 @@ export const NotificationType = {
   REVIEW_REPLY: 'REVIEW_REPLY',
   IDENTITY_DECISION: 'IDENTITY_DECISION',
   REPORT_UPDATE: 'REPORT_UPDATE',
+  /** Mensaje nuevo en el chat (un aviso no leído por conversación). */
+  CHAT_MESSAGE: 'CHAT_MESSAGE',
 } as const;
 
 /** Evento Socket.IO (namespace `/chat`, sala `user:{id}`) que avisa de una notificación nueva. */
