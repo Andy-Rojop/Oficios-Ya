@@ -79,13 +79,13 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
       </section>
 
       {spotlight.length > 0 ? (
-        <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden bg-[#0c121c] text-white">
+        <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden bg-[#e8eef6]">
           <div
-            className="pointer-events-none absolute inset-0 opacity-40"
+            className="pointer-events-none absolute inset-0"
             aria-hidden
             style={{
               backgroundImage:
-                'radial-gradient(ellipse 80% 50% at 20% 0%, rgba(37,99,235,0.35), transparent 55%), radial-gradient(ellipse 60% 40% at 90% 100%, rgba(16,185,129,0.14), transparent 50%)',
+                'radial-gradient(ellipse 70% 55% at 10% 0%, rgba(37,99,235,0.12), transparent 55%), radial-gradient(ellipse 50% 40% at 100% 80%, rgba(14,116,144,0.1), transparent 50%)',
             }}
           />
 
@@ -94,71 +94,69 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               <LoginAwareLink
                 key={worker.id}
                 href={`/trabajador/${worker.id}`}
-                className="group relative h-[min(70vh,32rem)] w-[82vw] max-w-[320px] shrink-0 snap-center overflow-hidden rounded-[1.75rem] bg-[#1a2332] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.65)] sm:h-[34rem] sm:w-[280px] sm:snap-start"
+                className="group flex w-[78vw] max-w-[300px] shrink-0 snap-center flex-col overflow-hidden rounded-[1.5rem] bg-white shadow-[0_12px_40px_-18px_rgba(26,35,50,0.35)] ring-1 ring-[#1a2332]/8 transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_48px_-16px_rgba(26,35,50,0.4)] sm:w-[260px] sm:snap-start"
               >
-                {worker.photoUrl ? (
-                  <Image
-                    src={worker.photoUrl}
-                    alt=""
-                    fill
-                    sizes="320px"
-                    priority={index === 0}
-                    className="object-cover transition duration-700 group-hover:scale-[1.04]"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#243248] via-[#1a2332] to-[#0c121c]">
-                    <span className="absolute left-1/2 top-[38%] -translate-x-1/2 text-8xl font-semibold text-white/15">
+                <span className="relative block aspect-[4/5] w-full overflow-hidden bg-brand-soft">
+                  {worker.photoUrl ? (
+                    <Image
+                      src={worker.photoUrl}
+                      alt=""
+                      fill
+                      sizes="300px"
+                      priority={index === 0}
+                      className="object-cover transition duration-700 group-hover:scale-[1.04]"
+                    />
+                  ) : (
+                    <span className="flex h-full items-center justify-center bg-gradient-to-br from-[#d7e3f4] to-[#e8eef6] text-6xl font-semibold text-[#1e3a5f]/35">
                       {(worker.name || '?').charAt(0).toUpperCase()}
                     </span>
-                  </div>
-                )}
-                <span
-                  className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10"
-                  aria-hidden
-                />
-                <span className="absolute left-4 top-4 flex items-center gap-2">
-                  {worker.availability === 'AVAILABLE' ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-900/40">
-                      Disponible
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-                      {AVAILABILITY_LABELS[worker.availability]}
-                    </span>
                   )}
+                  <span className="absolute left-3 top-3">
+                    {worker.availability === 'AVAILABLE' ? (
+                      <span className="rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm">
+                        Disponible
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-foreground shadow-sm">
+                        {AVAILABILITY_LABELS[worker.availability]}
+                      </span>
+                    )}
+                  </span>
                 </span>
-                <span className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5">
-                  <span className="text-2xl font-semibold leading-tight tracking-tight text-white">
+
+                <span className="flex flex-1 flex-col gap-2 p-4">
+                  <span
+                    className="line-clamp-2 text-lg font-semibold leading-snug text-foreground"
+                    style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+                  >
                     {worker.name}
                   </span>
-                  <span className="line-clamp-2 text-sm text-white/80">
+                  <span className="line-clamp-1 text-sm text-muted">
                     {worker.headline || worker.mainCategory?.name}
                   </span>
-                  <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-white">
+                  <span className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
                     {worker.mainCategory ? (
-                      <span className="rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
+                      <span className="rounded-full bg-accent-soft px-2 py-0.5 font-medium text-accent-dark">
                         {worker.mainCategory.name}
                       </span>
                     ) : null}
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
-                      <Star aria-hidden className="h-3 w-3 fill-amber-300 text-amber-300" />
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#fff8e8] px-2 py-0.5 font-medium text-[#8a6a12]">
+                      <Star aria-hidden className="h-3 w-3 fill-amber-400 text-amber-400" />
                       {worker.ratingAverage.toFixed(1)}
-                      {worker.ratingCount > 0 ? (
-                        <span className="text-white/70">({worker.ratingCount})</span>
-                      ) : null}
+                      {worker.ratingCount > 0 ? ` (${worker.ratingCount})` : ''}
                     </span>
                     {worker.distanceKm != null ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 font-medium text-foreground">
                         <MapPin aria-hidden className="h-3 w-3" />
                         ~{worker.distanceKm.toFixed(1)} km
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-2 flex items-center justify-between gap-3">
-                    <span className="text-base font-semibold text-white">
+                  <span className="mt-auto flex items-center justify-between gap-2 pt-2">
+                    <span className="text-sm font-semibold text-foreground">
                       {formatCardPrice(worker)}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-2 text-xs font-bold uppercase tracking-wide text-white transition group-hover:bg-accent-dark">
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition group-hover:bg-accent-dark">
                       Ver perfil
                       <ChevronRight aria-hidden className="h-3.5 w-3.5" />
                     </span>
