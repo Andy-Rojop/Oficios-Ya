@@ -1,9 +1,11 @@
+import Image from 'next/image';
 import Link from 'next/link';
+import { ChevronRight, MapPin, Star } from 'lucide-react';
 import { LoginAwareLink } from '@/components/auth/login-aware-link';
 import { HomeCollage } from '@/components/client/home-collage';
 import { HomeSearchForm } from '@/components/search/home-search-form';
-import { SearchWorkerCardView } from '@/components/search/search-worker-card';
-import type { CatalogCategory, SearchWorkerCard } from '@/lib/search';
+import { formatCardPrice, type CatalogCategory, type SearchWorkerCard } from '@/lib/search';
+import { AVAILABILITY_LABELS } from '@/lib/workers';
 
 interface ClientHomeProps {
   userName?: string | null;
@@ -11,10 +13,16 @@ interface ClientHomeProps {
   workers: SearchWorkerCard[];
 }
 
-/** Portada + CTA + listado. Sin bloque “en vivo”. */
+/**
+ * Portada + carrusel de perfiles grandes.
+ * Sin bloque “En vivo” (anillos) ni listado “Todos los trabajadores”.
+ */
 export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
   const greeting = userName ? `Hola, ${userName.split(' ')[0]}` : null;
-  const availableCount = workers.filter((w) => w.availability === 'AVAILABLE').length;
+  const spotlight = [
+    ...workers.filter((w) => w.availability === 'AVAILABLE'),
+    ...workers.filter((w) => w.availability !== 'AVAILABLE'),
+  ].slice(0, 5);
 
   return (
     <div className="pb-10">
@@ -70,96 +78,97 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
         </div>
       </section>
 
-      <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 bg-accent">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-7 sm:flex-row sm:items-center sm:px-6 sm:py-8">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/70">
-              ¿Lo necesita hoy?
-            </p>
-            <h3
-              className="mt-1 text-xl font-semibold text-white sm:text-2xl"
-              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-            >
-              Busque por mapa, oficio o nombre
-            </h3>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <LoginAwareLink
-              href="/buscar"
-              className="inline-flex h-11 items-center rounded-xl bg-white px-5 text-sm font-semibold text-accent transition hover:bg-white/90"
-            >
-              Buscar ahora
-            </LoginAwareLink>
-            <Link
-              href="/registro"
-              className="inline-flex h-11 items-center rounded-xl border border-white/35 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
-            >
-              Soy trabajador
-            </Link>
-          </div>
-        </div>
-      </section>
+      {spotlight.length > 0 ? (
+        <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden bg-[#0c121c] text-white">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-40"
+            aria-hidden
+            style={{
+              backgroundImage:
+                'radial-gradient(ellipse 80% 50% at 20% 0%, rgba(37,99,235,0.35), transparent 55%), radial-gradient(ellipse 60% 40% at 90% 100%, rgba(16,185,129,0.14), transparent 50%)',
+            }}
+          />
 
-      <section className="mx-auto mt-10 max-w-6xl space-y-5 px-0 sm:mt-12">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="max-w-xl">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-accent">
-              {availableCount > 0
-                ? `${availableCount} disponible${availableCount === 1 ? '' : 's'} ahora`
-                : 'Directorio'}
-            </p>
-            <h2
-              className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
-              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-            >
-              Todos los trabajadores
-            </h2>
-            <p className="mt-1.5 text-sm text-muted">
-              Primero disponibles, luego ocupados y al final no disponibles.
-            </p>
-          </div>
-          <LoginAwareLink
-            href="/buscar"
-            className="inline-flex h-11 items-center rounded-xl bg-foreground px-4 text-sm font-semibold text-white transition hover:bg-brand-dark"
-          >
-            Ver todos
-          </LoginAwareLink>
-        </div>
-
-        {workers.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface px-5 py-12 text-center sm:px-8">
-            <p
-              className="text-xl font-semibold text-foreground"
-              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-            >
-              Pronto verá oficios aquí
-            </p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-              Mientras tanto busque por categoría o regístrese para ofrecer su oficio.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <div className="relative flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-10 pt-8 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-5 sm:px-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] sm:pb-12 sm:pt-10 [&::-webkit-scrollbar]:hidden">
+            {spotlight.map((worker, index) => (
               <LoginAwareLink
-                href="/buscar"
-                className="inline-flex h-11 items-center rounded-xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+                key={worker.id}
+                href={`/trabajador/${worker.id}`}
+                className="group relative h-[min(70vh,32rem)] w-[82vw] max-w-[320px] shrink-0 snap-center overflow-hidden rounded-[1.75rem] bg-[#1a2332] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.65)] sm:h-[34rem] sm:w-[280px] sm:snap-start"
               >
-                Buscar oficios
+                {worker.photoUrl ? (
+                  <Image
+                    src={worker.photoUrl}
+                    alt=""
+                    fill
+                    sizes="320px"
+                    priority={index === 0}
+                    className="object-cover transition duration-700 group-hover:scale-[1.04]"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#243248] via-[#1a2332] to-[#0c121c]">
+                    <span className="absolute left-1/2 top-[38%] -translate-x-1/2 text-8xl font-semibold text-white/15">
+                      {(worker.name || '?').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <span
+                  className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10"
+                  aria-hidden
+                />
+                <span className="absolute left-4 top-4 flex items-center gap-2">
+                  {worker.availability === 'AVAILABLE' ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-900/40">
+                      Disponible
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                      {AVAILABILITY_LABELS[worker.availability]}
+                    </span>
+                  )}
+                </span>
+                <span className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5">
+                  <span className="text-2xl font-semibold leading-tight tracking-tight text-white">
+                    {worker.name}
+                  </span>
+                  <span className="line-clamp-2 text-sm text-white/80">
+                    {worker.headline || worker.mainCategory?.name}
+                  </span>
+                  <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-white">
+                    {worker.mainCategory ? (
+                      <span className="rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
+                        {worker.mainCategory.name}
+                      </span>
+                    ) : null}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
+                      <Star aria-hidden className="h-3 w-3 fill-amber-300 text-amber-300" />
+                      {worker.ratingAverage.toFixed(1)}
+                      {worker.ratingCount > 0 ? (
+                        <span className="text-white/70">({worker.ratingCount})</span>
+                      ) : null}
+                    </span>
+                    {worker.distanceKm != null ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
+                        <MapPin aria-hidden className="h-3 w-3" />
+                        ~{worker.distanceKm.toFixed(1)} km
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="mt-2 flex items-center justify-between gap-3">
+                    <span className="text-base font-semibold text-white">
+                      {formatCardPrice(worker)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-2 text-xs font-bold uppercase tracking-wide text-white transition group-hover:bg-accent-dark">
+                      Ver perfil
+                      <ChevronRight aria-hidden className="h-3.5 w-3.5" />
+                    </span>
+                  </span>
+                </span>
               </LoginAwareLink>
-              <Link
-                href="/registro"
-                className="inline-flex h-11 items-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold transition hover:bg-brand-soft"
-              >
-                Registrarme
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {workers.map((worker) => (
-              <SearchWorkerCardView key={worker.id} worker={worker} />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      ) : null}
     </div>
   );
 }
