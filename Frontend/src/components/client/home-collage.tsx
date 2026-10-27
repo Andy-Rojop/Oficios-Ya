@@ -19,65 +19,71 @@ interface CollageTile {
   span?: 'wide' | 'tall' | 'normal';
 }
 
-const TILE_BY_SLUG: Record<
-  string,
-  { image: string; Icon: LucideIcon; span: CollageTile['span'] }
-> = {
+/** Fotos de oficio reutilizables fuera del collage (carrusel del home, etc.). */
+export const OFICIO_VISUALS: Record<string, { image: string; Icon: LucideIcon }> = {
   carpinteria: {
     image:
       'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=900&q=70',
     Icon: Drill,
-    span: 'wide',
   },
   electricidad: {
     image:
       'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=70',
     Icon: Plug,
-    span: 'normal',
   },
   plomeria: {
     image:
       'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=70',
     Icon: Wrench,
-    span: 'tall',
   },
   pintura: {
     image:
       'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=70',
     Icon: Paintbrush,
-    span: 'normal',
   },
   albanileria: {
     image:
       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=70',
     Icon: Hammer,
-    span: 'normal',
   },
   jardineria: {
     image:
       'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=70',
     Icon: Flower2,
-    span: 'normal',
   },
   herreria: {
     image:
       'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=70',
     Icon: Wrench,
-    span: 'normal',
   },
   mecanica: {
     image:
       'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=800&q=70',
     Icon: Wrench,
-    span: 'normal',
   },
 };
 
-const FALLBACK_IMAGES = [
+const TILE_BY_SLUG: Record<
+  string,
+  { image: string; Icon: LucideIcon; span: CollageTile['span'] }
+> = {
+  carpinteria: { ...OFICIO_VISUALS.carpinteria!, span: 'wide' },
+  electricidad: { ...OFICIO_VISUALS.electricidad!, span: 'normal' },
+  plomeria: { ...OFICIO_VISUALS.plomeria!, span: 'tall' },
+  pintura: { ...OFICIO_VISUALS.pintura!, span: 'normal' },
+  albanileria: { ...OFICIO_VISUALS.albanileria!, span: 'normal' },
+  jardineria: { ...OFICIO_VISUALS.jardineria!, span: 'normal' },
+  herreria: { ...OFICIO_VISUALS.herreria!, span: 'normal' },
+  mecanica: { ...OFICIO_VISUALS.mecanica!, span: 'normal' },
+};
+
+export const FALLBACK_OFICIO_IMAGES = [
   'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=70',
   'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=800&q=70',
   'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=70',
 ];
+
+const FALLBACK_IMAGES = FALLBACK_OFICIO_IMAGES;
 
 function buildTiles(categories: CatalogCategory[]): CollageTile[] {
   const preferred = ['carpinteria', 'electricidad', 'plomeria', 'pintura', 'albanileria', 'jardineria'];
