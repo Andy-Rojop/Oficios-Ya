@@ -141,6 +141,14 @@ html[data-mode='worker'] body {
   }
 }
 
+@keyframes home-live-ping {
+  75%,
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-\[home-fade-up_0\.7s_ease-out_both\],
   .animate-\[home-fade-up_0\.7s_ease-out_0\.08s_both\],
@@ -148,7 +156,9 @@ html[data-mode='worker'] body {
   .animate-\[home-fade-up_0\.7s_ease-out_0\.16s_both\],
   .animate-\[home-fade-up_0\.7s_ease-out_0\.24s_both\],
   .animate-\[home-fade-up_0\.7s_ease-out_0\.32s_both\],
-  .animate-\[home-map-drift_18s_ease-in-out_infinite_alternate\] {
+  .animate-\[home-map-drift_18s_ease-in-out_infinite_alternate\],
+  .animate-\[home-live-ping_1\.6s_cubic-bezier\(0\,0\,0\.2\,1\)_infinite\],
+  .animate-\[home-live-ping_1\.6s_ease-out_infinite\] {
     animation: none !important;
   }
 }

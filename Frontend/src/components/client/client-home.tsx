@@ -1,20 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  ChevronRight,
-  Drill,
-  Flower2,
-  Hammer,
-  MapPin,
-  MessageCircle,
-  Paintbrush,
-  Plug,
-  Scissors,
-  Search,
-  Star,
-  Wrench,
-  type LucideIcon,
-} from 'lucide-react';
+import { ChevronRight, MapPin, Star, Zap } from 'lucide-react';
 import { LoginAwareLink } from '@/components/auth/login-aware-link';
 import { HomeCollage } from '@/components/client/home-collage';
 import { HomeSearchForm } from '@/components/search/home-search-form';
@@ -28,68 +14,20 @@ interface ClientHomeProps {
   workers: SearchWorkerCard[];
 }
 
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  albañileria: Hammer,
-  albanileria: Hammer,
-  carpinteria: Drill,
-  electricidad: Plug,
-  herreria: Wrench,
-  jardineria: Flower2,
-  mecanica: Wrench,
-  pintura: Paintbrush,
-  plomeria: Wrench,
-  costura: Scissors,
-};
-
-/** Colores sólidos por oficio — sin fotos, sin competir con la portada. */
-const CATEGORY_TILE: Record<string, { bg: string; ink: string }> = {
-  albanileria: { bg: '#c45c26', ink: '#fff7f0' },
-  albañileria: { bg: '#c45c26', ink: '#fff7f0' },
-  carpinteria: { bg: '#8b5a2b', ink: '#fff8f0' },
-  electricidad: { bg: '#c9a227', ink: '#1a1400' },
-  herreria: { bg: '#4a5568', ink: '#f7fafc' },
-  jardineria: { bg: '#2f6b4f', ink: '#f0faf4' },
-  mecanica: { bg: '#334155', ink: '#f1f5f9' },
-  pintura: { bg: '#0e7490', ink: '#ecfeff' },
-  plomeria: { bg: '#1d4ed8', ink: '#eff6ff' },
-  costura: { bg: '#9d174d', ink: '#fdf2f8' },
-};
-
-const TILE_FALLBACKS = [
-  { bg: '#1e3a5f', ink: '#e8eef6' },
-  { bg: '#0f766e', ink: '#ecfdf5' },
-  { bg: '#7c2d12', ink: '#fff7ed' },
-  { bg: '#1e40af', ink: '#eff6ff' },
-];
-
-function normalizeSlug(slug: string) {
-  return slug
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-}
-
-function categoryIcon(slug: string): LucideIcon {
-  return CATEGORY_ICONS[normalizeSlug(slug)] ?? Hammer;
-}
-
-function categoryTile(slug: string, index: number) {
-  return CATEGORY_TILE[normalizeSlug(slug)] ?? TILE_FALLBACKS[index % TILE_FALLBACKS.length]!;
-}
-
 /**
- * Portada intacta. Debajo: oficios con icono/color (estilo TaskRabbit,
- * sin repetir fotos del collage) + destacados + lista con más ritmo.
+ * Portada intacta. El “plus” va en las personas: disponibles ahora,
+ * en vivo, a pantalla casi completa — sin bloque de categorías.
  */
 export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
   const greeting = userName ? `Hola, ${userName.split(' ')[0]}` : null;
-  const availableCount = workers.filter((w) => w.availability === 'AVAILABLE').length;
+  const available = workers.filter((w) => w.availability === 'AVAILABLE');
   const spotlight = [
-    ...workers.filter((w) => w.availability === 'AVAILABLE'),
+    ...available,
     ...workers.filter((w) => w.availability !== 'AVAILABLE'),
-  ].slice(0, 4);
+  ].slice(0, 5);
   const spotlightIds = new Set(spotlight.map((w) => w.id));
   const rest = workers.filter((w) => !spotlightIds.has(w.id));
+  const liveCount = available.length;
 
   return (
     <div className="pb-10">
@@ -146,217 +84,250 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
         </div>
       </section>
 
-      {/* —— Oficios: iconos + color (TaskRabbit), cero fotos —— */}
-      {categories.length > 0 ? (
-        <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 bg-[#f3f6fa]">
-          <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 sm:pt-10">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">
-                  Elija un oficio
-                </p>
-                <h2
-                  className="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
-                  style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-                >
-                  ¿Qué necesita hoy?
-                </h2>
-              </div>
-              <LoginAwareLink
-                href="/buscar"
-                className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-accent transition hover:text-accent-dark sm:inline-flex"
+      {/* —— PLUS: disponibles en vivo (personas, no categorías) —— */}
+      <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden bg-[#0c121c] text-white">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-40"
+          aria-hidden
+          style={{
+            backgroundImage:
+              'radial-gradient(ellipse 80% 50% at 20% 0%, rgba(37,99,235,0.45), transparent 55%), radial-gradient(ellipse 60% 40% at 90% 100%, rgba(16,185,129,0.18), transparent 50%)',
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.14]"
+          aria-hidden
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
+            maskImage: 'linear-gradient(to bottom, black, transparent 92%)',
+          }}
+        />
+
+        <div className="relative mx-auto max-w-6xl px-4 pt-9 sm:px-6 sm:pt-12">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-lg">
+              <p className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-[home-live-ping_1.6s_cubic-bezier(0,0,0.2,1)_infinite] rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                En vivo · El Asintal
+              </p>
+              <h2
+                className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl"
+                style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
               >
-                Ver todos
-                <ChevronRight aria-hidden className="h-4 w-4" />
-              </LoginAwareLink>
+                {liveCount > 0
+                  ? `${liveCount} disponible${liveCount === 1 ? '' : 's'} ahora`
+                  : 'Trabajadores cerca de usted'}
+              </h2>
+              <p className="mt-2 text-sm text-white/65 sm:text-base">
+                Deslice y toque un perfil. Chat directo, sin intermediarios.
+              </p>
             </div>
+            <LoginAwareLink
+              href="/buscar"
+              className="inline-flex h-11 items-center gap-1 rounded-full bg-white px-5 text-sm font-semibold text-foreground transition hover:bg-white/90"
+            >
+              Abrir mapa
+              <ChevronRight aria-hidden className="h-4 w-4" />
+            </LoginAwareLink>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3 px-4 pb-8 sm:grid-cols-4 sm:gap-4 sm:px-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] sm:pb-10">
-            {categories.map((category, index) => {
-              const Icon = categoryIcon(category.slug);
-              const tile = categoryTile(category.slug, index);
-              return (
+          {/* Stories / anillos rápidos */}
+          {spotlight.length > 0 ? (
+            <div className="mt-6 flex gap-4 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {spotlight.map((worker) => (
                 <LoginAwareLink
-                  key={category.id}
-                  href={`/categorias/${category.slug}`}
-                  className="group relative flex min-h-[7.5rem] flex-col justify-between overflow-hidden rounded-2xl p-4 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:min-h-[8.5rem] sm:p-5"
-                  style={{ backgroundColor: tile.bg, color: tile.ink }}
+                  key={`ring-${worker.id}`}
+                  href={`/trabajador/${worker.id}`}
+                  className="flex w-16 shrink-0 flex-col items-center gap-1.5"
                 >
                   <span
-                    className="pointer-events-none absolute -right-3 -top-3 h-20 w-20 rounded-full bg-black/10 transition duration-500 group-hover:scale-125"
-                    aria-hidden
-                  />
-                  <span className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-black/15 backdrop-blur-[2px]">
-                    <Icon aria-hidden className="h-5 w-5" strokeWidth={2.25} />
+                    className={
+                      worker.availability === 'AVAILABLE'
+                        ? 'rounded-full bg-gradient-to-tr from-emerald-400 via-sky-400 to-blue-500 p-[2.5px]'
+                        : 'rounded-full bg-white/25 p-[2.5px]'
+                    }
+                  >
+                    <span className="relative block h-14 w-14 overflow-hidden rounded-full bg-[#1a2332] ring-2 ring-[#0c121c]">
+                      {worker.photoUrl ? (
+                        <Image
+                          src={worker.photoUrl}
+                          alt=""
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-full items-center justify-center text-lg font-semibold text-white/50">
+                          {(worker.name || '?').charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </span>
                   </span>
-                  <span className="relative mt-3">
-                    <span className="block text-base font-semibold leading-tight sm:text-lg">
-                      {category.name}
-                    </span>
-                    <span className="mt-1 inline-flex items-center gap-0.5 text-xs font-semibold opacity-85">
-                      Ver cerca
-                      <ChevronRight aria-hidden className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
-                    </span>
+                  <span className="w-full truncate text-center text-[11px] font-medium text-white/80">
+                    {worker.name.split(' ')[0]}
                   </span>
                 </LoginAwareLink>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
-
-      {/* —— Cómo funciona: ritmo / plus entre bloques —— */}
-      <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 border-y border-border/80 bg-white">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:grid-cols-3 sm:gap-8 sm:px-6 sm:py-10">
-          {[
-            {
-              Icon: Search,
-              step: '1',
-              title: 'Busque el oficio',
-              text: 'Toque una categoría o escriba lo que necesita.',
-            },
-            {
-              Icon: MapPin,
-              step: '2',
-              title: 'Elija cerca de usted',
-              text: 'Vea quién está disponible ahora en El Asintal.',
-            },
-            {
-              Icon: MessageCircle,
-              step: '3',
-              title: 'Escriba y acuerde',
-              text: 'Chat directo con el trabajador, sin rodeos.',
-            },
-          ].map(({ Icon, step, title, text }) => (
-            <div key={step} className="flex gap-3 sm:block sm:text-center">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-white sm:mx-auto">
-                <Icon aria-hidden className="h-5 w-5" />
-              </div>
-              <div className="sm:mt-3">
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-accent">
-                  Paso {step}
-                </p>
-                <h3
-                  className="mt-0.5 text-base font-semibold text-foreground"
-                  style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-                >
-                  {title}
-                </h3>
-                <p className="mt-1 text-sm text-muted">{text}</p>
-              </div>
+              ))}
             </div>
-          ))}
+          ) : null}
         </div>
-      </section>
 
-      {/* —— Destacados: personas (no stock de oficios) —— */}
-      {spotlight.length > 0 ? (
-        <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 bg-foreground text-white">
-          <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 sm:pt-10">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#7db4ff]">
-                  <Star aria-hidden className="h-3.5 w-3.5 fill-current" />
-                  {availableCount > 0
-                    ? `${availableCount} disponible${availableCount === 1 ? '' : 's'} ahora`
-                    : 'Cerca de usted'}
-                </p>
-                <h2
-                  className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
-                  style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-                >
-                  Destacados cerca
-                </h2>
-                <p className="mt-1 text-sm text-white/65">
-                  Deslice para ver quién puede atenderle hoy.
-                </p>
-              </div>
-              <LoginAwareLink
-                href="/buscar"
-                className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-white/80 transition hover:text-white sm:inline-flex"
-              >
-                Ver todos
-                <ChevronRight aria-hidden className="h-4 w-4" />
-              </LoginAwareLink>
-            </div>
-          </div>
-
-          <div className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-9 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-4 sm:px-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] sm:pb-11 [&::-webkit-scrollbar]:hidden">
-            {spotlight.map((worker) => (
+        {/* Tarjetas cine: casi a pantalla */}
+        {spotlight.length > 0 ? (
+          <div className="relative mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-11 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-5 sm:px-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] sm:pb-14 [&::-webkit-scrollbar]:hidden">
+            {spotlight.map((worker, index) => (
               <LoginAwareLink
                 key={worker.id}
                 href={`/trabajador/${worker.id}`}
-                className="group relative h-[22rem] w-[72vw] max-w-[260px] shrink-0 snap-start overflow-hidden rounded-3xl bg-[#2a3548] sm:h-[24rem] sm:w-[240px]"
+                className="group relative h-[min(70vh,32rem)] w-[82vw] max-w-[320px] shrink-0 snap-center overflow-hidden rounded-[1.75rem] bg-[#1a2332] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.65)] sm:h-[34rem] sm:w-[280px] sm:snap-start"
               >
                 {worker.photoUrl ? (
                   <Image
                     src={worker.photoUrl}
                     alt=""
                     fill
-                    sizes="260px"
-                    className="object-cover transition duration-500 group-hover:scale-105"
+                    sizes="320px"
+                    priority={index === 0}
+                    className="object-cover transition duration-700 group-hover:scale-[1.04]"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#2a3548] to-[#1a2332]">
-                    <span className="text-5xl font-semibold text-white/25">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#243248] via-[#1a2332] to-[#0c121c]">
+                    <span className="absolute left-1/2 top-[38%] -translate-x-1/2 text-8xl font-semibold text-white/15">
                       {(worker.name || '?').charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
                 <span
-                  className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"
+                  className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10"
                   aria-hidden
                 />
-                <span
-                  className={
-                    worker.availability === 'AVAILABLE'
-                      ? 'absolute left-3 top-3 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white'
-                      : 'absolute left-3 top-3 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm'
-                  }
-                >
-                  {AVAILABILITY_LABELS[worker.availability]}
+                <span className="absolute left-4 top-4 flex items-center gap-2">
+                  {worker.availability === 'AVAILABLE' ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-lg shadow-emerald-900/40">
+                      <span className="h-1.5 w-1.5 animate-[home-live-ping_1.6s_ease-out_infinite] rounded-full bg-white" />
+                      Disponible
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                      {AVAILABILITY_LABELS[worker.availability]}
+                    </span>
+                  )}
                 </span>
-                <span className="absolute inset-x-0 bottom-0 flex flex-col gap-1.5 p-4">
-                  <span className="text-lg font-semibold leading-tight text-white">
+                <span className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5">
+                  <span className="text-2xl font-semibold leading-tight tracking-tight text-white">
                     {worker.name}
                   </span>
-                  <span className="line-clamp-1 text-sm text-white/80">
-                    {worker.mainCategory?.name ?? worker.headline}
+                  <span className="line-clamp-2 text-sm text-white/80">
+                    {worker.headline || worker.mainCategory?.name}
                   </span>
-                  <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-white/90">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 backdrop-blur-sm">
+                  <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-white">
+                    {worker.mainCategory ? (
+                      <span className="rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
+                        {worker.mainCategory.name}
+                      </span>
+                    ) : null}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
                       <Star aria-hidden className="h-3 w-3 fill-amber-300 text-amber-300" />
                       {worker.ratingAverage.toFixed(1)}
+                      {worker.ratingCount > 0 ? (
+                        <span className="text-white/70">({worker.ratingCount})</span>
+                      ) : null}
                     </span>
-                    <span className="font-semibold">{formatCardPrice(worker)}</span>
+                    {worker.distanceKm != null ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur-sm">
+                        <MapPin aria-hidden className="h-3 w-3" />
+                        ~{worker.distanceKm.toFixed(1)} km
+                      </span>
+                    ) : null}
                   </span>
-                  <span className="mt-1 inline-flex w-fit items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
-                    Ver perfil
-                    <ChevronRight aria-hidden className="h-3.5 w-3.5" />
+                  <span className="mt-2 flex items-center justify-between gap-3">
+                    <span className="text-base font-semibold text-white">
+                      {formatCardPrice(worker)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-2 text-xs font-bold uppercase tracking-wide text-white transition group-hover:bg-accent-dark">
+                      Ver perfil
+                      <ChevronRight aria-hidden className="h-3.5 w-3.5" />
+                    </span>
                   </span>
                 </span>
               </LoginAwareLink>
             ))}
           </div>
-        </section>
-      ) : null}
+        ) : (
+          <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-8 sm:px-6">
+            <div className="rounded-3xl border border-white/10 bg-white/5 px-6 py-12 text-center backdrop-blur-sm">
+              <Zap aria-hidden className="mx-auto h-8 w-8 text-emerald-300" />
+              <p
+                className="mt-3 text-xl font-semibold"
+                style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+              >
+                Pronto habrá gente disponible aquí
+              </p>
+              <p className="mx-auto mt-2 max-w-md text-sm text-white/65">
+                Sea el primero en ofrecer su oficio en El Asintal.
+              </p>
+              <Link
+                href="/registro"
+                className="mt-6 inline-flex h-11 items-center rounded-full bg-white px-5 text-sm font-semibold text-foreground"
+              >
+                Ofrecer un oficio
+              </Link>
+            </div>
+          </div>
+        )}
+      </section>
 
-      {/* —— Lista completa —— */}
+      {/* —— CTA fuerte —— */}
+      <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 bg-accent">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-7 sm:flex-row sm:items-center sm:px-6 sm:py-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/70">
+              ¿Lo necesita hoy?
+            </p>
+            <h3
+              className="mt-1 text-xl font-semibold text-white sm:text-2xl"
+              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+            >
+              Busque por mapa, oficio o nombre
+            </h3>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <LoginAwareLink
+              href="/buscar"
+              className="inline-flex h-11 items-center rounded-xl bg-white px-5 text-sm font-semibold text-accent transition hover:bg-white/90"
+            >
+              Buscar ahora
+            </LoginAwareLink>
+            <Link
+              href="/registro"
+              className="inline-flex h-11 items-center rounded-xl border border-white/35 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+            >
+              Soy trabajador
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* —— Lista —— */}
       <section className="mx-auto mt-10 max-w-6xl space-y-5 px-0 sm:mt-12">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="max-w-xl">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-accent">
-              Todos los perfiles
+              Directorio
             </p>
             <h2
               className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl"
               style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
             >
-              Trabajadores disponibles
+              Todos los trabajadores
             </h2>
             <p className="mt-1.5 text-sm text-muted">
-              Primero quienes están disponibles, luego ocupados y al final no disponibles.
+              Primero disponibles, luego ocupados y al final no disponibles.
             </p>
           </div>
           <LoginAwareLink
@@ -402,7 +373,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               <p className="rounded-xl border border-dashed border-border bg-surface/60 px-4 py-6 text-center text-sm text-muted">
                 Esos son todos por ahora.{' '}
                 <LoginAwareLink href="/buscar" className="font-semibold text-accent hover:underline">
-                  Buscar más oficios
+                  Explorar en el mapa
                 </LoginAwareLink>
               </p>
             ) : null}
