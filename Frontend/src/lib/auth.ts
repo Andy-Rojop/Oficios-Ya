@@ -87,6 +87,11 @@ export function updateEmail(email: string | null): Promise<UserDto> {
   return apiFetch<UserDto>('/users/me/email', { method: 'PATCH', body: JSON.stringify({ email }) });
 }
 
+/** RF-006: actualizar nombre y/o zona de la cuenta. */
+export function updateProfile(input: { name?: string; zoneId?: string }): Promise<UserDto> {
+  return apiFetch<UserDto>('/users/me', { method: 'PATCH', body: JSON.stringify(input) });
+}
+
 /** Usuario autenticado; `data` es undefined (error 401) si no hay sesión. */
 export function useMe() {
   return useQuery<UserDto, Error>({

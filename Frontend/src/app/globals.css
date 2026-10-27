@@ -40,6 +40,29 @@ body {
   overflow-x: clip;
 }
 
+/* Safe areas iOS / PWA (notch + home indicator). */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --header-h: 3rem;
+  --bottom-nav-h: 4.5rem;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --header-h: 3.5rem;
+  }
+}
+
+/* Targets táctiles cómodos en controles pequeños. */
+@media (pointer: coarse) {
+  button,
+  [role='button'],
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 html[data-mode='worker'] {
   --background: #eef2f8;
   --brand: #1e3a5f;
@@ -58,7 +81,9 @@ body {
     linear-gradient(180deg, #f7f8fa 0%, var(--background) 55%, #e8ebf0 100%);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh;
+  /* Evita que iOS “rebote” el layout al abrir el teclado en inputs. */
+  overscroll-behavior-y: none;
 }
 
 html[data-mode='worker'] body {

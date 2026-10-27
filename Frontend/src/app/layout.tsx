@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
-import { ModeTheme } from '@/components/layout/mode-theme';
-import { SiteHeader } from '@/components/layout/site-header';
+import { AppShell } from '@/components/layout/app-shell';
 import { Providers } from '@/components/providers';
 import './globals.css';
 
@@ -38,6 +37,8 @@ export const viewport: Viewport = {
   themeColor: '#1e3a5f',
   width: 'device-width',
   initialScale: 1,
+  viewportFit: 'cover',
+  maximumScale: 5,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -45,9 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="es-GT" className={`${plusJakartaSans.variable} h-full`}>
       <body className="min-h-full antialiased">
         <Providers>
-          <ModeTheme />
-          <SiteHeader />
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

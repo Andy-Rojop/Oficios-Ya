@@ -257,8 +257,8 @@ export default function WorkersMap({
             : 'overflow-hidden rounded-2xl border border-border shadow-[0_10px_30px_rgba(26,35,50,0.08)]',
           !fill &&
             (interactive
-              ? 'h-[min(58vh,480px)] min-h-[300px] cursor-crosshair'
-              : 'h-72 sm:h-96'),
+              ? 'h-[36vh] min-h-[220px] cursor-crosshair sm:h-[45vh] lg:h-[min(58vh,480px)] lg:min-h-[300px]'
+              : 'h-56 sm:h-72 md:h-96'),
           className,
         )}
         aria-label="Mapa de ubicaciones aproximadas de trabajadores"

@@ -23,12 +23,14 @@ export function InboxView() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const me = useMe();
-  const { connected } = useChatSocket();
+  const { connected, statusLabel } = useChatSocket();
 
   const conversations = useQuery<ConversationSummary[], Error>({
     queryKey: CHAT_QUERY_KEYS.conversations,
     queryFn: chatApi.listConversations,
     refetchOnMount: 'always',
+    retry: 1,
+    // La bandeja no debe depender del WebSocket: si el socket falla, igual se listan por HTTP.
   });
 
   // Mensajes nuevos de cualquier conversación: actualiza la bandeja en vivo.
@@ -84,7 +86,7 @@ export function InboxView() {
   })();
 
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+    <section className="mx-auto flex w-full max-w-2xl flex-col overflow-hidden border-border bg-surface sm:rounded-2xl sm:border sm:shadow-sm">
       <header className="border-b border-border px-4 pb-3 pt-4">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-[1.65rem] font-semibold tracking-tight">Mensajes</h1>
@@ -100,7 +102,7 @@ export function InboxView() {
             ) : (
               <WifiOff aria-hidden className="h-3.5 w-3.5" />
             )}
-            {connected ? 'En línea' : 'Conectando…'}
+            {statusLabel}
           </span>
         </div>
         <div className="relative mt-3">
@@ -226,7 +228,7 @@ function ConversationRow({
     <li className="group">
       <Link
         href={`/mensajes/${conversation.id}`}
-        className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-black/[0.04] sm:px-4"
+        className="flex min-h-[4.25rem] items-center gap-3 px-3 py-3 transition-colors hover:bg-black/[0.04] active:bg-black/[0.06] sm:px-4"
       >
         <ChatAvatar name={peer.name} className="h-12 w-12 text-lg" />
         <span className="min-w-0 flex-1 border-b border-border/80 py-1 group-last:border-b-0">
@@ -277,7 +279,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-full px-3 py-1 text-sm font-medium transition-colors',
+        'min-h-11 rounded-full px-4 py-2 text-sm font-medium transition-colors',
         active ? 'bg-brand text-white' : 'bg-background text-foreground hover:bg-brand-soft',
       )}
     >

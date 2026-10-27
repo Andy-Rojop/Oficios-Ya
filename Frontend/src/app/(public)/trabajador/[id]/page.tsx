@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { ProtectedLogin } from '@/components/auth/require-login';
 import { Card, CardTitle } from '@/components/ui/card';
 import { OwnProfileActions } from '@/components/worker/own-profile-actions';
 import { WorkerContactCard } from '@/components/worker/worker-contact-card';
@@ -72,6 +73,7 @@ export default async function TrabajadorPage({ params }: PageProps) {
   const hasSchedule = profile.schedule !== null;
 
   return (
+    <ProtectedLogin>
     <article className="mx-auto w-full max-w-3xl space-y-5">
       <Card className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -236,6 +238,7 @@ export default async function TrabajadorPage({ params }: PageProps) {
         </Link>
       </p>
     </article>
+    </ProtectedLogin>
   );
 }
 

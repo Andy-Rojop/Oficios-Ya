@@ -287,7 +287,7 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
   const canSend = summary?.canSend ?? false;
 
   return (
-    <section className="mx-auto flex h-[calc(100dvh-8.5rem)] min-h-[26rem] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+    <section className="mx-auto flex h-[calc(100dvh-var(--header-h)-var(--safe-top)-var(--safe-bottom))] min-h-[22rem] w-full max-w-2xl flex-col overflow-hidden border-border bg-surface sm:h-[calc(100dvh-8.5rem)] sm:min-h-[26rem] sm:rounded-2xl sm:border sm:shadow-sm">
       <header className="relative flex items-center gap-1 border-b border-border bg-[#f0f2f5] px-2 py-2">
         <Link
           href="/mensajes"
@@ -444,7 +444,7 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
           : null}
       </div>
 
-      <footer className="border-t border-border bg-[#f0f2f5] px-2 py-2">
+      <footer className="border-t border-border bg-[#f0f2f5] px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:pb-2">
         {summary && !canSend ? (
           <div className="flex flex-wrap items-center justify-between gap-2 py-1 text-sm">
             <p className="text-muted">

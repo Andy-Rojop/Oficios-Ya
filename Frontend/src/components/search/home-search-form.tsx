@@ -8,6 +8,7 @@ import {
   ContextualSearchInput,
   type ContextualSuggestionItem,
 } from '@/components/search/contextual-search-input';
+import { useMe } from '@/lib/auth';
 import type { CatalogCategory, SearchWorkerCard } from '@/lib/search';
 import { cn } from '@/lib/utils';
 
@@ -24,37 +25,42 @@ export function HomeSearchForm({
   workers = [],
 }: HomeSearchFormProps) {
   const router = useRouter();
+  const { data: user, isLoading, isFetching } = useMe();
   const [q, setQ] = useState('');
+
+  function go(href: string) {
+    const needsLogin = !isLoading && !isFetching && !user;
+    router.push(needsLogin ? `/ingresar?next=${encodeURIComponent(href)}` : href);
+  }
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
     const trimmed = q.trim();
-    const href = trimmed ? `/buscar?q=${encodeURIComponent(trimmed)}` : '/buscar';
-    router.push(href);
+    go(trimmed ? `/buscar?q=${encodeURIComponent(trimmed)}` : '/buscar');
   }
 
   function handleSelectSuggestion(item: ContextualSuggestionItem) {
     if (item.kind === 'category' && item.categoryId) {
-      router.push(`/buscar?categoryId=${encodeURIComponent(item.categoryId)}`);
+      go(`/buscar?categoryId=${encodeURIComponent(item.categoryId)}`);
       return;
     }
     if (item.kind === 'category' && item.slug) {
-      router.push(`/categorias/${encodeURIComponent(item.slug)}`);
+      go(`/categorias/${encodeURIComponent(item.slug)}`);
       return;
     }
     if (item.kind === 'worker' && item.workerId) {
-      router.push(`/trabajador/${encodeURIComponent(item.workerId)}`);
+      go(`/trabajador/${encodeURIComponent(item.workerId)}`);
       return;
     }
     setQ(item.label);
-    router.push(`/buscar?q=${encodeURIComponent(item.label)}`);
+    go(`/buscar?q=${encodeURIComponent(item.label)}`);
   }
 
   if (variant === 'hero') {
     return (
       <form
         onSubmit={onSubmit}
-        className="flex w-full max-w-sm items-center gap-1.5 rounded-xl bg-surface p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.22)]"
+        className="flex w-full max-w-sm flex-col gap-2 rounded-xl bg-surface p-2 shadow-[0_8px_24px_rgba(0,0,0,0.22)] sm:flex-row sm:items-center sm:gap-1.5"
         role="search"
       >
         <Label htmlFor="home-search-q" className="sr-only">
@@ -70,7 +76,7 @@ export function HomeSearchForm({
           categories={categories}
           workers={workers}
         />
-        <Button type="submit" size="sm" className="shrink-0 rounded-lg px-3.5">
+        <Button type="submit" className="h-11 w-full shrink-0 rounded-lg px-4 sm:w-auto">
           Buscar
         </Button>
       </form>

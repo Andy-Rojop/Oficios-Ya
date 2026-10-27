@@ -15,7 +15,9 @@ function MapLoading({ interactive = false, fill = false }: { interactive?: boole
           ? 'h-full min-h-[min(62vh,560px)] rounded-none border-0'
           : 'rounded-2xl border border-border',
         !fill &&
-          (interactive ? 'h-[55vh] min-h-[280px] lg:min-h-[420px]' : 'h-72 sm:h-96'),
+          (interactive
+            ? 'h-[36vh] min-h-[220px] sm:h-[45vh] lg:h-[55vh] lg:min-h-[420px]'
+            : 'h-56 sm:h-72 md:h-96'),
       )}
     >
       Cargando mapa…

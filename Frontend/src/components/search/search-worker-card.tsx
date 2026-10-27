@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import { LoginAwareLink } from '@/components/auth/login-aware-link';
 import { AVAILABILITY_LABELS } from '@/lib/workers';
 import { formatCardPrice, type SearchWorkerCard } from '@/lib/search';
 
@@ -12,7 +12,7 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
 
   return (
     <article className="overflow-hidden rounded-2xl border border-border bg-surface transition hover:border-foreground/20 hover:shadow-md">
-      <Link href={`/trabajador/${worker.id}`} className="flex gap-3 p-3 sm:gap-4 sm:p-4">
+      <LoginAwareLink href={`/trabajador/${worker.id}`} className="flex gap-3 p-3 sm:gap-4 sm:p-4">
         <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-soft sm:h-24 sm:w-24">
           {worker.photoUrl ? (
             <Image src={worker.photoUrl} alt="" fill sizes="96px" className="object-cover" />
@@ -70,7 +70,7 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
             </p>
           ) : null}
         </div>
-      </Link>
+      </LoginAwareLink>
     </article>
   );
 }

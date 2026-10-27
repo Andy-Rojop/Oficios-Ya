@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ProtectedDiscovery } from '@/components/auth/require-login';
 import { SearchFiltersForm } from '@/components/search/search-filters';
 import { SearchMapPanel } from '@/components/search/search-map-panel';
 import { ApiError } from '@/lib/api-client';
@@ -51,34 +52,36 @@ export default async function BuscarPage({ searchParams }: PageProps) {
   const nextCursor = result.data?.nextCursor ?? null;
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-2">
-        <h1
-          className="text-2xl font-semibold sm:text-3xl"
-          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-        >
-          Buscar trabajadores
-        </h1>
-        <p className="max-w-2xl text-muted">
-          Toque el mapa para ver a las personas disponibles, de la más cercana a la más lejana.
-          Los pines son centros de zona, nunca una dirección exacta.
-        </p>
-      </header>
+    <ProtectedDiscovery>
+      <section className="space-y-6">
+        <header className="space-y-2">
+          <h1
+            className="text-2xl font-semibold sm:text-3xl"
+            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+          >
+            Buscar trabajadores
+          </h1>
+          <p className="max-w-2xl text-muted">
+            Toque el mapa para ver a las personas disponibles, de la más cercana a la más lejana.
+            Los pines son centros de zona, nunca una dirección exacta.
+          </p>
+        </header>
 
-      <SearchFiltersForm
-        basePath="/buscar"
-        filters={filters}
-        categories={categories}
-        zones={zones}
-        workers={items}
-      />
+        <SearchFiltersForm
+          basePath="/buscar"
+          filters={filters}
+          categories={categories}
+          zones={zones}
+          workers={items}
+        />
 
-      <SearchMapPanel
-        filters={filters}
-        items={items}
-        nextCursor={nextCursor}
-        error={result.error}
-      />
-    </section>
+        <SearchMapPanel
+          filters={filters}
+          items={items}
+          nextCursor={nextCursor}
+          error={result.error}
+        />
+      </section>
+    </ProtectedDiscovery>
   );
 }

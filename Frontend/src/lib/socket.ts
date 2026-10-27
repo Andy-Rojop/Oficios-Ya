@@ -22,8 +22,25 @@ type Ack<T> = { ok: true; data: T } | { ok: false; statusCode: number; error: st
 let socket: Socket | null = null;
 let refreshing = false;
 
+/**
+ * Origen del backend para Socket.IO.
+ * Si falta `NEXT_PUBLIC_WS_URL` en Vercel, se deriva de `NEXT_PUBLIC_API_URL`
+ * (mismo host Railway, sin `/api/v1`). Así el teléfono no intenta `localhost`.
+ */
 function getWsUrl(): string {
-  return (process.env.NEXT_PUBLIC_WS_URL ?? 'http://localhost:4000').replace(/\/+$/, '');
+  const explicit = process.env.NEXT_PUBLIC_WS_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, '');
+
+  const api = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (api) {
+    try {
+      return new URL(api).origin;
+    } catch {
+      // ignore
+    }
+  }
+
+  return 'http://localhost:4000';
 }
 
 /**

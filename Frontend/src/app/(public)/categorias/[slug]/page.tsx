@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ProtectedDiscovery } from '@/components/auth/require-login';
 import { SearchFiltersForm } from '@/components/search/search-filters';
 import { SearchMapPanel } from '@/components/search/search-map-panel';
 import { ApiError } from '@/lib/api-client';
@@ -64,43 +65,45 @@ export default async function CategoriaPage({ params, searchParams }: PageProps)
   }
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-sm text-muted">
-          <Link href="/buscar" className="text-brand hover:underline">
-            Buscar
-          </Link>
-          {' / '}
-          {category.name}
-        </p>
-        <h1
-          className="text-2xl font-semibold sm:text-3xl"
-          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-        >
-          {category.name}
-        </h1>
-        <p className="max-w-2xl text-muted">
-          Toque el mapa para ver a quienes están disponibles en {category.name}, del más cercano
-          al más lejano. Los pines son centros de zona, nunca una dirección exacta.
-        </p>
-      </header>
+    <ProtectedDiscovery>
+      <section className="space-y-6">
+        <header className="space-y-2">
+          <p className="text-sm text-muted">
+            <Link href="/buscar" className="text-brand hover:underline">
+              Buscar
+            </Link>
+            {' / '}
+            {category.name}
+          </p>
+          <h1
+            className="text-2xl font-semibold sm:text-3xl"
+            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+          >
+            {category.name}
+          </h1>
+          <p className="max-w-2xl text-muted">
+            Toque el mapa para ver a quienes están disponibles en {category.name}, del más cercano
+            al más lejano. Los pines son centros de zona, nunca una dirección exacta.
+          </p>
+        </header>
 
-      <SearchFiltersForm
-        basePath={`/categorias/${category.slug}`}
-        filters={filters}
-        categories={categories}
-        zones={zones}
-        workers={items}
-        hideCategory
-      />
+        <SearchFiltersForm
+          basePath={`/categorias/${category.slug}`}
+          filters={filters}
+          categories={categories}
+          zones={zones}
+          workers={items}
+          hideCategory
+        />
 
-      <SearchMapPanel
-        basePath={`/categorias/${category.slug}`}
-        filters={filters}
-        items={items}
-        nextCursor={nextCursor}
-        error={error}
-      />
-    </section>
+        <SearchMapPanel
+          basePath={`/categorias/${category.slug}`}
+          filters={filters}
+          items={items}
+          nextCursor={nextCursor}
+          error={error}
+        />
+      </section>
+    </ProtectedDiscovery>
   );
 }

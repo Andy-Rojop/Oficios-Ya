@@ -9,6 +9,7 @@ import {
   Wrench,
   type LucideIcon,
 } from 'lucide-react';
+import { LoginAwareLink } from '@/components/auth/login-aware-link';
 import { HomeCollage } from '@/components/client/home-collage';
 import { HomeSearchForm } from '@/components/search/home-search-form';
 import { SearchWorkerCardView } from '@/components/search/search-worker-card';
@@ -69,7 +70,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
   return (
     <div className="space-y-14 pb-8">
       <section className="relative left-1/2 z-20 w-screen max-w-[100vw] -translate-x-1/2 -mt-6">
-        <div className="relative min-h-[min(68vh,620px)] bg-foreground">
+        <div className="relative min-h-[min(62vh,560px)] bg-foreground sm:min-h-[min(68vh,620px)]">
           <HomeCollage categories={categories} />
 
           <div
@@ -77,7 +78,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
             aria-hidden
           />
 
-          <div className="relative z-10 mx-auto flex min-h-[min(68vh,620px)] w-full max-w-6xl flex-col justify-end px-4 pb-8 pt-20 sm:px-6 sm:pb-10">
+          <div className="relative z-10 mx-auto flex min-h-[min(62vh,560px)] w-full max-w-6xl flex-col justify-end px-4 pb-8 pt-16 sm:min-h-[min(68vh,620px)] sm:px-6 sm:pb-10 sm:pt-20">
             <div className="max-w-md">
               <p className="animate-[home-fade-up_0.7s_ease-out_both] text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
                 El Asintal, Retalhuleu
@@ -102,15 +103,15 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2 animate-[home-fade-up_0.7s_ease-out_0.32s_both]">
-                <Link
+                <LoginAwareLink
                   href="/buscar"
-                  className="inline-flex h-9 items-center rounded-lg bg-accent px-3.5 text-sm font-semibold text-white transition hover:bg-accent-dark"
+                  className="inline-flex h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-dark"
                 >
                   Ver trabajadores
-                </Link>
+                </LoginAwareLink>
                 <Link
                   href="/registro"
-                  className="inline-flex h-9 items-center rounded-lg border border-white/30 bg-white/10 px-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+                  className="inline-flex h-11 items-center rounded-xl border border-white/30 bg-white/10 px-4 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
                 >
                   Ofrecer un oficio
                 </Link>
@@ -139,7 +140,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               const Icon = categoryIcon(category.slug);
               return (
                 <li key={category.id}>
-                  <Link
+                  <LoginAwareLink
                     href={`/categorias/${category.slug}`}
                     className="group flex h-full flex-col gap-3 rounded-2xl border border-border bg-surface p-4 transition duration-200 hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)]"
                     style={{ animationDelay: `${index * 40}ms` }}
@@ -150,13 +151,13 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
                     <span className="text-sm font-semibold leading-snug text-foreground">
                       {category.name}
                     </span>
-                  </Link>
+                  </LoginAwareLink>
                 </li>
               );
             })}
             {customOficios.map((oficio, index) => (
               <li key={`custom-${oficio}`}>
-                <Link
+                <LoginAwareLink
                   href={`/buscar?q=${encodeURIComponent(oficio)}`}
                   className="group flex h-full flex-col gap-3 rounded-2xl border border-dashed border-border bg-surface p-4 transition duration-200 hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)]"
                   style={{ animationDelay: `${(categories.length + index) * 40}ms` }}
@@ -165,7 +166,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
                     <Wrench aria-hidden className="h-5 w-5" />
                   </span>
                   <span className="text-sm font-semibold leading-snug text-foreground">{oficio}</span>
-                </Link>
+                </LoginAwareLink>
               </li>
             ))}
           </ul>
@@ -185,12 +186,12 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               Primero quienes están disponibles, luego ocupados y al final no disponibles.
             </p>
           </div>
-          <Link
+          <LoginAwareLink
             href="/buscar"
             className="inline-flex h-10 items-center rounded-xl bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand-dark"
           >
             Ver todos
-          </Link>
+          </LoginAwareLink>
         </div>
 
         {workers.length === 0 ? (
@@ -205,12 +206,12 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               Mientras tanto busque por categoría o regístrese para ofrecer su oficio.
             </p>
             <div className="relative mt-6 flex flex-wrap justify-center gap-3">
-              <Link
+              <LoginAwareLink
                 href="/buscar"
                 className="inline-flex h-11 items-center rounded-xl bg-brand px-5 text-sm font-semibold text-white transition hover:bg-brand-dark"
               >
                 Buscar oficios
-              </Link>
+              </LoginAwareLink>
               <Link
                 href="/registro"
                 className="inline-flex h-11 items-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold transition hover:bg-brand-soft"

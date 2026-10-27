@@ -12,12 +12,14 @@ import { PhoneOtpFlow, type PhoneVerification } from '@/components/forms/phone-o
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import {
   ME_QUERY_KEY,
   changePhone,
   getErrorMessage,
   isUnauthorized,
   updateEmail,
+  updateProfile,
   useLogout,
   useMe,
   useSwitchMode,
@@ -118,9 +120,119 @@ export function AccountPanel() {
   );
 }
 
+const profileSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .max(100, 'El nombre no puede superar 100 caracteres'),
+  zoneId: z.string().min(1, 'Seleccione su zona'),
+});
+type ProfileValues = z.infer<typeof profileSchema>;
+
 function ProfileCard({ user }: { user: UserDto }) {
+  const queryClient = useQueryClient();
   const zones = useZones();
   const zone = zones.data?.find((item) => item.id === user.zoneId);
+  const [editing, setEditing] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting, isDirty },
+  } = useForm<ProfileValues>({
+    resolver: zodResolver(profileSchema),
+    mode: 'onChange',
+    defaultValues: {
+      name: user.name,
+      zoneId: user.zoneId ?? '',
+    },
+  });
+
+  useEffect(() => {
+    reset({ name: user.name, zoneId: user.zoneId ?? '' });
+  }, [user.name, user.zoneId, reset]);
+
+  const onSubmit = handleSubmit(async (values) => {
+    setMessage(null);
+    setError(null);
+    try {
+      const updated = await updateProfile({
+        name: values.name,
+        zoneId: values.zoneId,
+      });
+      queryClient.setQueryData(ME_QUERY_KEY, updated);
+      reset({ name: updated.name, zoneId: updated.zoneId ?? '' });
+      setEditing(false);
+      setMessage('Perfil actualizado.');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  });
+
+  if (editing) {
+    return (
+      <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
+        <div className="space-y-1">
+          <CardTitle>Editar perfil</CardTitle>
+          <CardDescription>
+            Actualice su nombre y zona. Teléfono y correo se cambian en las secciones de abajo.
+          </CardDescription>
+        </div>
+        <form onSubmit={onSubmit} noValidate className="space-y-4">
+          <FormField id="profile-name" label="Nombre" error={errors.name?.message}>
+            {(aria) => (
+              <Input
+                {...aria}
+                autoComplete="name"
+                maxLength={100}
+                {...register('name')}
+              />
+            )}
+          </FormField>
+          <FormField
+            id="profile-zone"
+            label="Zona"
+            error={
+              errors.zoneId?.message ??
+              (zones.isError ? 'No se pudieron cargar las zonas.' : undefined)
+            }
+          >
+            {(aria) => (
+              <Select {...aria} {...register('zoneId')} disabled={zones.isLoading}>
+                <option value="">{zones.isLoading ? 'Cargando zonas…' : 'Seleccione su zona'}</option>
+                {(zones.data ?? []).map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </FormField>
+          {error ? <FormMessage tone="error">{error}</FormMessage> : null}
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={isSubmitting || !isDirty}>
+              {isSubmitting ? 'Guardando…' : 'Guardar cambios'}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                reset({ name: user.name, zoneId: user.zoneId ?? '' });
+                setError(null);
+                setEditing(false);
+              }}
+            >
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </Card>
+    );
+  }
 
   const rows: { label: string; value: string; Icon: typeof Phone }[] = [
     { label: 'Nombre', value: user.name, Icon: UserRound },
@@ -135,10 +247,24 @@ function ProfileCard({ user }: { user: UserDto }) {
 
   return (
     <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
-      <div className="space-y-1">
-        <CardTitle>Mi perfil</CardTitle>
-        <CardDescription>Información principal de su cuenta en OficiosYa.</CardDescription>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <CardTitle>Mi perfil</CardTitle>
+          <CardDescription>Información principal de su cuenta en OficiosYa.</CardDescription>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setMessage(null);
+            setError(null);
+            setEditing(true);
+          }}
+        >
+          Editar perfil
+        </Button>
       </div>
+      {message ? <FormMessage tone="success">{message}</FormMessage> : null}
       <dl className="grid gap-3 sm:grid-cols-2">
         {rows.map(({ label, value, Icon }) => (
           <div
@@ -167,8 +293,9 @@ function ModeCard({ user }: { user: UserDto }) {
       <div className="space-y-1">
         <CardTitle>Modo de uso</CardTitle>
         <CardDescription>
-          Su cuenta tiene dos perfiles asociados. Al cambiar, cambia el color, el menú y la
-          pantalla de inicio (cliente o trabajador).
+          Una sola cuenta con dos modos asociados y menús separados. Cliente sirve para buscar y
+          contratar; Trabajador, para ofrecer servicios y gestionar su panel. Al cambiar, cambian
+          el color, el menú y la pantalla de inicio.
         </CardDescription>
       </div>
       <div role="radiogroup" aria-label="Modo de uso" className="grid gap-3 sm:grid-cols-2">
@@ -233,8 +360,10 @@ const emailSchema = z.object({
 });
 type EmailValues = z.infer<typeof emailSchema>;
 
+/** Misma lógica de revelado que el teléfono: resumen + botón para abrir el formulario. */
 function EmailCard({ user }: { user: UserDto }) {
   const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -245,8 +374,13 @@ function EmailCard({ user }: { user: UserDto }) {
     formState: { errors, isSubmitting, isDirty },
   } = useForm<EmailValues>({
     resolver: zodResolver(emailSchema),
+    mode: 'onChange',
     defaultValues: { email: user.email ?? '' },
   });
+
+  useEffect(() => {
+    reset({ email: user.email ?? '' });
+  }, [user.email, reset]);
 
   const onSubmit = handleSubmit(async ({ email }) => {
     setMessage(null);
@@ -255,6 +389,7 @@ function EmailCard({ user }: { user: UserDto }) {
       const updated = await updateEmail(email === '' ? null : email);
       queryClient.setQueryData(ME_QUERY_KEY, updated);
       reset({ email: updated.email ?? '' });
+      setOpen(false);
       setMessage(updated.email ? 'Correo guardado.' : 'Correo eliminado.');
     } catch (err) {
       setError(getErrorMessage(err));
@@ -262,34 +397,68 @@ function EmailCard({ user }: { user: UserDto }) {
   });
 
   return (
-    <Card className="rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
-      <form onSubmit={onSubmit} noValidate className="space-y-4">
-        <div className="space-y-1">
-          <CardTitle>Correo electrónico</CardTitle>
-          <CardDescription>Opcional. Déjalo vacío para quitarlo.</CardDescription>
-        </div>
-        <FormField id="email" label="Correo" error={errors.email?.message}>
-          {(aria) => (
-            <Input
-              {...aria}
-              type="email"
-              autoComplete="email"
-              maxLength={80}
-              inputMode="email"
-              {...register('email', {
-                onChange: (event) => {
-                  event.target.value = sanitizeEmailInput(event.target.value);
-                },
-              })}
-            />
-          )}
-        </FormField>
-        {error ? <FormMessage tone="error">{error}</FormMessage> : null}
-        {message ? <FormMessage tone="success">{message}</FormMessage> : null}
-        <Button type="submit" disabled={isSubmitting || !isDirty}>
-          {isSubmitting ? 'Guardando…' : 'Guardar correo'}
+    <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
+      <div className="space-y-1">
+        <CardTitle>Correo electrónico</CardTitle>
+        <CardDescription>
+          Actual:{' '}
+          <span className="font-medium text-foreground">{user.email ?? 'Sin correo'}</span>.
+          Opcional; déjelo vacío para quitarlo.
+        </CardDescription>
+      </div>
+
+      {message && !open ? <FormMessage tone="success">{message}</FormMessage> : null}
+
+      {!open ? (
+        <Button
+          variant="outline"
+          onClick={() => {
+            setMessage(null);
+            setError(null);
+            reset({ email: user.email ?? '' });
+            setOpen(true);
+          }}
+        >
+          {user.email ? 'Cambiar correo' : 'Agregar correo'}
         </Button>
-      </form>
+      ) : (
+        <form onSubmit={onSubmit} noValidate className="space-y-4">
+          <FormField id="email" label="Correo" error={errors.email?.message}>
+            {(aria) => (
+              <Input
+                {...aria}
+                type="email"
+                autoComplete="email"
+                maxLength={80}
+                inputMode="email"
+                {...register('email', {
+                  onChange: (event) => {
+                    event.target.value = sanitizeEmailInput(event.target.value);
+                  },
+                })}
+              />
+            )}
+          </FormField>
+          <p className="text-xs text-muted">Máximo 80 caracteres. Ejemplo: nombre@correo.com</p>
+          {error ? <FormMessage tone="error">{error}</FormMessage> : null}
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={isSubmitting || !isDirty || Boolean(errors.email)}>
+              {isSubmitting ? 'Guardando…' : 'Guardar correo'}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                reset({ email: user.email ?? '' });
+                setError(null);
+                setOpen(false);
+              }}
+            >
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      )}
     </Card>
   );
 }
@@ -337,14 +506,14 @@ function PhoneChangeCard({ currentPhone }: { currentPhone: string }) {
   return (
     <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
       <div className="space-y-1">
-        <CardTitle>Cambiar teléfono</CardTitle>
+        <CardTitle>Teléfono</CardTitle>
         <CardDescription>
           Actual: <span className="font-medium text-foreground">{formatPhoneDisplay(currentPhone)}</span>
           . Verificaremos el número nuevo con SMS.
         </CardDescription>
       </div>
 
-      {done ? <FormMessage tone="success">Teléfono actualizado.</FormMessage> : null}
+      {done && !open ? <FormMessage tone="success">Teléfono actualizado.</FormMessage> : null}
 
       {!open ? (
         <Button
@@ -354,7 +523,7 @@ function PhoneChangeCard({ currentPhone }: { currentPhone: string }) {
             setOpen(true);
           }}
         >
-          Cambiar mi número
+          Cambiar teléfono
         </Button>
       ) : !verification ? (
         <div className="space-y-3">

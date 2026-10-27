@@ -22,6 +22,7 @@ import {
   type SearchSort,
   type SearchWorkerCard,
 } from '@/lib/search';
+import { cn } from '@/lib/utils';
 
 interface SearchFiltersFormProps {
   /** Ruta que se renderiza al aplicar: /buscar o /categorias/[slug]. */
@@ -351,11 +352,17 @@ export function SearchFiltersForm({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" variant="default" size="sm" disabled={pending}>
+      <div
+        className={cn(
+          'flex flex-wrap gap-2',
+          open &&
+            'sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-border bg-surface px-4 py-3 shadow-[0_-6px_16px_rgba(26,35,50,0.06)] md:bottom-3 lg:static lg:z-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none',
+        )}
+      >
+        <Button type="submit" variant="default" disabled={pending} className="min-h-11 flex-1 sm:flex-none">
           Aplicar filtros
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={clearAll} disabled={pending}>
+        <Button type="button" variant="ghost" onClick={clearAll} disabled={pending} className="min-h-11">
           Limpiar
         </Button>
       </div>

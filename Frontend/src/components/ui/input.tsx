@@ -30,7 +30,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           tabIndex={-1}
           onClick={() => setShowPassword((prev) => !prev)}
           aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-muted transition hover:bg-brand-soft/60 hover:text-foreground"
+          className="absolute right-1.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-muted transition hover:bg-brand-soft/60 hover:text-foreground"
         >
           {showPassword ? (
             <EyeOff aria-hidden className="h-4 w-4" />

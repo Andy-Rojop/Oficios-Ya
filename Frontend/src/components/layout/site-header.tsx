@@ -3,131 +3,124 @@
 import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { GUEST_LINKS, linksForMode } from '@/components/layout/nav-links';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { isStaffRole } from '@/lib/admin';
-import { useLogout, useMe, type ActiveMode } from '@/lib/auth';
+import { useLogout, useMe } from '@/lib/auth';
 import { cn } from '@/lib/utils';
-
-interface NavLink {
-  href: string;
-  label: string;
-}
-
-const GUEST_LINKS: NavLink[] = [
-  { href: '/ingresar', label: 'Iniciar sesión' },
-  { href: '/registro', label: 'Registrarse' },
-];
-
-/** Enlaces de cliente: descubrir oficios y gestionar pedidos. */
-const CLIENT_LINKS: NavLink[] = [
-  { href: '/buscar', label: 'Buscar' },
-  { href: '/mensajes', label: 'Mensajes' },
-  { href: '/solicitudes', label: 'Mis solicitudes' },
-  { href: '/cuenta', label: 'Cuenta' },
-];
-
-/** El trabajador también busca oficios cercanos en el mapa. */
-const WORKER_LINKS: NavLink[] = [
-  { href: '/panel', label: 'Panel' },
-  { href: '/buscar', label: 'Buscar' },
-  { href: '/mensajes', label: 'Mensajes' },
-  { href: '/solicitudes', label: 'Mis solicitudes' },
-  { href: '/cuenta', label: 'Cuenta' },
-];
-
-function linksForMode(mode: ActiveMode | undefined): NavLink[] {
-  return mode === 'WORKER' ? WORKER_LINKS : CLIENT_LINKS;
-}
 
 export function SiteHeader() {
   const pathname = usePathname();
   const { data: user, isLoading, isFetching } = useMe();
   const logout = useLogout();
 
-  // Si ya hay usuario en caché, no vaciar el menú mientras se revalida.
   const showGuest = !user && !isLoading && !isFetching;
   const workerChrome = user?.activeMode === 'WORKER';
-  const links: NavLink[] = [
+  const desktopLinks = [
     ...(user ? linksForMode(user.activeMode) : showGuest ? GUEST_LINKS : []),
-    ...(isStaffRole(user?.role) ? [{ href: '/admin', label: 'Admin' }] : []),
+    ...(isStaffRole(user?.role)
+      ? [{ href: '/admin', label: 'Admin', shortLabel: 'Admin', icon: 'account' as const }]
+      : []),
   ];
 
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 border-b backdrop-blur-md',
+        'sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)]',
         user?.activeMode === 'WORKER'
-          ? 'border-[#1e3a5f]/30 bg-[#1e3a5f]/95 text-white'
-          : 'border-border bg-surface/95',
+          ? 'border-[#1e3a5f]/30 bg-[#1e3a5f] text-white'
+          : 'border-border bg-surface',
       )}
     >
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 sm:px-6">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link
-            href="/"
+      {/* flex-nowrap: Salir nunca baja de línea; queda siempre a la derecha. */}
+      <div className="mx-auto flex h-12 w-full max-w-6xl flex-nowrap items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-6">
+        <Link
+          href={user?.activeMode === 'WORKER' ? '/panel' : '/'}
+          className={cn(
+            'shrink-0 text-base font-bold tracking-tight sm:text-lg',
+            user?.activeMode === 'WORKER' ? 'text-white' : 'text-foreground',
+          )}
+          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+        >
+          OficiosYa
+        </Link>
+
+        {user ? (
+          <span
             className={cn(
-              'text-lg font-bold tracking-tight',
-              user?.activeMode === 'WORKER' ? 'text-white' : 'text-foreground',
+              'hidden shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white lg:inline-flex',
+              user.activeMode === 'WORKER' ? 'bg-[#2563eb]' : 'bg-accent',
             )}
-            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
           >
-            OficiosYa
-          </Link>
-          {user ? (
-            <span
-              className={cn(
-                'hidden rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white sm:inline-flex',
-                user.activeMode === 'WORKER' ? 'bg-[#2563eb]' : 'bg-accent',
-              )}
-            >
-              {user.activeMode === 'WORKER' ? 'Trabajador' : 'Cliente'}
-            </span>
+            {user.activeMode === 'WORKER' ? 'Trabajador' : 'Cliente'}
+          </span>
+        ) : null}
+
+        <div className="ml-auto flex min-w-0 flex-nowrap items-center justify-end gap-0.5 sm:gap-1">
+          {/* Enlaces solo desktop / invitados. En móvil con sesión: barra inferior. */}
+          <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
+            {desktopLinks.map((link) => {
+              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'shrink-0 rounded-full px-3.5 py-2.5 text-sm font-medium transition',
+                    workerChrome
+                      ? active
+                        ? 'bg-white text-[#1e3a5f]'
+                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                      : active
+                        ? 'bg-foreground text-white'
+                        : 'text-muted hover:bg-brand-soft hover:text-foreground',
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Invitados en móvil: Entrar / Registrarse visibles arriba. */}
+          {showGuest ? (
+            <nav aria-label="Acceso" className="flex items-center gap-0.5 md:hidden">
+              {GUEST_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="shrink-0 rounded-full px-3 py-2.5 text-sm font-medium text-muted hover:bg-brand-soft hover:text-foreground"
+                >
+                  {link.shortLabel ?? link.label}
+                </Link>
+              ))}
+            </nav>
           ) : null}
-        </div>
-        <nav aria-label="Principal" className="flex flex-wrap items-center gap-0.5 sm:gap-1">
-          <NotificationBell enabled={Boolean(user)} />
-          {links.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'rounded-full px-3 py-2 text-sm font-medium transition sm:px-3.5',
-                  workerChrome
-                    ? active
-                      ? 'bg-white text-[#1e3a5f]'
-                      : 'text-white/80 hover:bg-white/10 hover:text-white'
-                    : active
-                      ? 'bg-foreground text-white'
-                      : 'text-muted hover:bg-brand-soft hover:text-foreground',
-                )}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+
+          <NotificationBell enabled={Boolean(user)} workerChrome={workerChrome} />
+
           {user ? (
             <button
               type="button"
               disabled={logout.isPending}
               onClick={() => logout.mutate()}
+              title="Cerrar sesión"
               className={cn(
-                'ml-0.5 inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium transition disabled:opacity-60 sm:px-3.5',
+                'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition disabled:opacity-60 sm:w-auto sm:gap-1.5 sm:px-3.5',
                 workerChrome
                   ? 'border-white/25 text-white hover:bg-white/10'
                   : 'border-border text-muted hover:bg-brand-soft hover:text-foreground',
               )}
             >
-              <LogOut aria-hidden className="h-3.5 w-3.5" />
+              <LogOut aria-hidden className="h-4 w-4" />
               <span className="hidden sm:inline">
                 {logout.isPending ? 'Cerrando…' : 'Cerrar sesión'}
               </span>
-              <span className="sm:hidden">{logout.isPending ? '…' : 'Salir'}</span>
+              <span className="sr-only">Cerrar sesión</span>
             </button>
           ) : null}
-        </nav>
+        </div>
       </div>
     </header>
   );
