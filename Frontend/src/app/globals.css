@@ -37,7 +37,8 @@
 
 html,
 body {
-  overflow-x: clip;
+  /* `clip` en iOS Safari a veces congela el scroll; `hidden` es más seguro. */
+  overflow-x: hidden;
 }
 
 /* Safe areas iOS / PWA (notch + home indicator). */
@@ -82,8 +83,6 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
   min-height: 100dvh;
-  /* Evita que iOS “rebote” el layout al abrir el teclado en inputs. */
-  overscroll-behavior-y: none;
 }
 
 html[data-mode='worker'] body {

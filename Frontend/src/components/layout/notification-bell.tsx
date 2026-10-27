@@ -15,7 +15,11 @@ import {
 import { CHAT_EVENTS, connectChatSocket, getChatSocket } from '@/lib/socket';
 import { cn } from '@/lib/utils';
 
-/** Panel de avisos vía portal: en móvil hoja centrada; en desktop bajo el botón. */
+/**
+ * Panel de avisos vía portal.
+ * En iOS NO se bloquea `body.overflow` (deja la página congelada) ni se
+ * re-renderiza en cada scroll.
+ */
 export function NotificationBell({
   enabled,
   workerChrome = false,
@@ -50,28 +54,37 @@ export function NotificationBell({
     };
   }, [enabled, queryClient]);
 
+  // Solo posicionar en desktop; en móvil el panel va centrado y fijo.
   useLayoutEffect(() => {
     if (!open || !buttonRef.current) return;
 
+    const media = window.matchMedia('(min-width: 640px)');
+
     function place() {
       const button = buttonRef.current;
-      if (!button) return;
-      const rect = button.getBoundingClientRect();
-      const isDesktop = window.matchMedia('(min-width: 640px)').matches;
-      if (isDesktop) {
-        setDesktopPos({
-          top: rect.bottom + 8,
-          right: Math.max(8, window.innerWidth - rect.right),
-        });
-      } else {
-        setDesktopPos(null);
+      if (!button || !media.matches) {
+        setDesktopPos((prev) => (prev === null ? prev : null));
+        return;
       }
+      const rect = button.getBoundingClientRect();
+      const next = {
+        top: rect.bottom + 8,
+        right: Math.max(8, window.innerWidth - rect.right),
+      };
+      setDesktopPos((prev) =>
+        prev && prev.top === next.top && prev.right === next.right ? prev : next,
+      );
     }
 
     place();
+    media.addEventListener('change', place);
     window.addEventListener('resize', place);
-    window.addEventListener('scroll', place, true);
+    // Scroll solo en desktop (en iPhone el scroll + setState congelaba la UI).
+    if (media.matches) {
+      window.addEventListener('scroll', place, true);
+    }
     return () => {
+      media.removeEventListener('change', place);
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
@@ -79,31 +92,11 @@ export function NotificationBell({
 
   useEffect(() => {
     if (!open) return;
-    const onPointer = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node;
-      if (buttonRef.current?.contains(target) || panelRef.current?.contains(target)) return;
-      setOpen(false);
-    };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('mousedown', onPointer);
-    document.addEventListener('touchstart', onPointer);
     document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onPointer);
-      document.removeEventListener('touchstart', onPointer);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previous;
-    };
+    return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
   if (!enabled) return null;
@@ -131,12 +124,11 @@ export function NotificationBell({
                   : undefined
               }
               className={cn(
-                'fixed z-[70] flex max-h-[min(70vh,28rem)] w-[min(100vw-1.5rem,24rem)] flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-xl',
-                // Móvil: centrado bajo el header.
+                'fixed z-[70] flex max-h-[min(70vh,28rem)] flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-xl',
+                // Sin translate-x: en iOS el compositing de fixed+transform a veces congela el scroll.
                 !desktopPos &&
-                  'left-1/2 top-[max(4.5rem,calc(var(--safe-top)+3.75rem))] -translate-x-1/2',
-                // Desktop: posición por style (top/right).
-                desktopPos && 'w-80 max-w-[calc(100vw-2rem)] translate-x-0 rounded-xl',
+                  'left-3 right-3 top-[max(4.5rem,calc(var(--safe-top)+3.75rem))] w-auto max-w-none',
+                desktopPos && 'w-80 max-w-[calc(100vw-2rem)] rounded-xl',
               )}
             >
               <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2.5">
@@ -164,7 +156,7 @@ export function NotificationBell({
                   </button>
                 </div>
               </div>
-              <ul className="flex-1 overflow-y-auto overscroll-contain">
+              <ul className="flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
                 {isLoading ? (
                   <li className="px-3 py-4 text-sm text-muted">Cargando…</li>
                 ) : !data?.items.length ? (
