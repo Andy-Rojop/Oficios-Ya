@@ -17,7 +17,7 @@ import {
   formatServicePrice,
   workersApi,
   type PublicWorkerProfile,
-}
+} from '@/lib/workers';
 
 interface PageProps {
   params: Promise<{ id: string }>;
