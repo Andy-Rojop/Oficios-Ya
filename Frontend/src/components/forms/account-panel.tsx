@@ -20,12 +20,14 @@ import {
   isUnauthorized,
   updateEmail,
   updateProfile,
+  uploadAvatar,
   useLogout,
   useMe,
   useSwitchMode,
   type ActiveMode,
   type UserDto,
 } from '@/lib/auth';
+import { ImagePicker } from '@/components/worker/image-picker';
 import { useZones } from '@/lib/catalog';
 import { signOutFirebase } from '@/lib/firebase';
 import { sanitizeEmailInput } from '@/lib/numeric-input';
@@ -137,6 +139,8 @@ function ProfileCard({ user }: { user: UserDto }) {
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
 
   const {
     register,
@@ -245,6 +249,33 @@ function ProfileCard({ user }: { user: UserDto }) {
     },
   ];
 
+  const avatarStatus = user.avatarStatus ?? 'NOT_SET';
+  const avatarStatusLabel =
+    avatarStatus === 'APPROVED'
+      ? 'Aprobada'
+      : avatarStatus === 'PENDING'
+        ? 'En revisión'
+        : avatarStatus === 'REJECTED'
+          ? 'Rechazada'
+          : 'Sin foto';
+
+  async function onUploadAvatar() {
+    if (!avatarFile) return;
+    setAvatarBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const updated = await uploadAvatar(avatarFile);
+      queryClient.setQueryData(ME_QUERY_KEY, updated);
+      setAvatarFile(null);
+      setMessage('Foto enviada. Quedará visible cuando un administrador la apruebe.');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setAvatarBusy(false);
+    }
+  }
+
   return (
     <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -264,7 +295,40 @@ function ProfileCard({ user }: { user: UserDto }) {
           Editar perfil
         </Button>
       </div>
+
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-accent-soft/40 p-4">
+        <div className="relative h-20 w-20 overflow-hidden rounded-full bg-brand-soft">
+          {user.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <span className="flex h-full items-center justify-center text-2xl font-semibold text-muted">
+              {(user.name || '?').charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="min-w-0 flex-1 space-y-2">
+          <p className="text-sm font-semibold text-foreground">Foto de perfil</p>
+          <p className="text-xs text-muted">
+            Estado: {avatarStatusLabel}. Debe ser aprobada por un administrador.
+          </p>
+          <ImagePicker
+            id="account-avatar"
+            label="Elegir foto"
+            file={avatarFile}
+            onChange={setAvatarFile}
+            disabled={avatarBusy}
+          />
+          {avatarFile ? (
+            <Button size="sm" disabled={avatarBusy} onClick={() => void onUploadAvatar()}>
+              {avatarBusy ? 'Enviando…' : 'Enviar para aprobación'}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
       {message ? <FormMessage tone="success">{message}</FormMessage> : null}
+      {error ? <FormMessage tone="error">{error}</FormMessage> : null}
       <dl className="grid gap-3 sm:grid-cols-2">
         {rows.map(({ label, value, Icon }) => (
           <div
@@ -287,68 +351,117 @@ function ProfileCard({ user }: { user: UserDto }) {
 
 function ModeCard({ user }: { user: UserDto }) {
   const mutation = useSwitchMode();
+  const [pendingMode, setPendingMode] = useState<ActiveMode | null>(null);
+
+  function switchTo(mode: ActiveMode) {
+    if (mode === user.activeMode || mutation.isPending) return;
+    setPendingMode(mode);
+    mutation.mutate(mode, {
+      onSettled: () => setPendingMode(null),
+    });
+  }
+
+  const switchingLabel =
+    pendingMode === 'WORKER' ? 'Trabajador' : pendingMode === 'CLIENT' ? 'Cliente' : null;
 
   return (
-    <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
-      <div className="space-y-1">
-        <CardTitle>Modo de uso</CardTitle>
-        <CardDescription>
-          Una sola cuenta con dos modos asociados y menús separados. Cliente sirve para buscar y
-          contratar; Trabajador, para ofrecer servicios y gestionar su panel. Al cambiar, cambian
-          el color, el menú y la pantalla de inicio.
-        </CardDescription>
-      </div>
-      <div role="radiogroup" aria-label="Modo de uso" className="grid gap-3 sm:grid-cols-2">
-        {MODE_OPTIONS.map(({ value, label, description, Icon }) => {
-          const selected = user.activeMode === value;
-          return (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              disabled={mutation.isPending}
-              onClick={() => {
-                if (!selected) mutation.mutate(value);
-              }}
-              className={cn(
-                'relative flex items-start gap-3 rounded-2xl border-2 bg-surface p-4 text-left transition disabled:opacity-60',
-                selected && value === 'CLIENT'
-                  ? 'border-foreground bg-foreground text-white shadow-[0_6px_20px_rgba(26,35,50,0.18)]'
-                  : selected && value === 'WORKER'
-                    ? 'border-[#2563eb] bg-[#2563eb] text-white shadow-[0_6px_20px_rgba(37,99,235,0.25)]'
-                    : 'border-border hover:border-brand/30 hover:bg-brand-soft/60',
-              )}
-            >
-              {selected ? (
-                <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white">
-                  <Check aria-hidden className="h-3 w-3" strokeWidth={3} />
-                </span>
-              ) : null}
-              <span
+    <>
+      {pendingMode ? (
+        <div
+          className="fixed inset-0 z-[80] flex flex-col items-center justify-center bg-[#121820]/92 px-6 text-center text-white"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-white/40 bg-white/10">
+            {pendingMode === 'WORKER' ? (
+              <Briefcase aria-hidden className="h-9 w-9" />
+            ) : (
+              <Search aria-hidden className="h-9 w-9" />
+            )}
+          </span>
+          <p className="mt-5 text-sm font-medium text-white/70">Cambiando a</p>
+          <p
+            className="mt-1 text-2xl font-semibold tracking-tight"
+            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+          >
+            {switchingLabel}…
+          </p>
+          {pendingMode === 'WORKER' ? (
+            <p className="mt-3 max-w-xs text-sm text-white/65">
+              Se abrirá su Panel de trabajador con menú y herramientas propias.
+            </p>
+          ) : (
+            <p className="mt-3 max-w-xs text-sm text-white/65">
+              Volverá al modo cliente para buscar oficios cerca de usted.
+            </p>
+          )}
+        </div>
+      ) : null}
+
+      <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(26,35,50,0.05)]">
+        <div className="space-y-1">
+          <CardTitle>Modo de uso</CardTitle>
+          <CardDescription>
+            El cambio es notorio: cambian colores, menú e inicio. En modo Trabajador verá el{' '}
+            <strong>Panel</strong> para gestionar su oficio.
+          </CardDescription>
+        </div>
+        <div role="radiogroup" aria-label="Modo de uso" className="grid gap-3 sm:grid-cols-2">
+          {MODE_OPTIONS.map(({ value, label, description, Icon }) => {
+            const selected = user.activeMode === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                disabled={mutation.isPending}
+                onClick={() => switchTo(value)}
                 className={cn(
-                  'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-                  selected ? 'bg-white/15 text-white' : 'bg-brand-soft text-brand',
+                  'relative flex items-start gap-3 rounded-2xl border-2 bg-surface p-4 text-left transition disabled:opacity-60',
+                  selected && value === 'CLIENT'
+                    ? 'border-foreground bg-foreground text-white shadow-[0_6px_20px_rgba(26,35,50,0.18)]'
+                    : selected && value === 'WORKER'
+                      ? 'border-[#2563eb] bg-[#2563eb] text-white shadow-[0_6px_20px_rgba(37,99,235,0.25)]'
+                      : 'border-border hover:border-brand/30 hover:bg-brand-soft/60',
                 )}
               >
-                <Icon aria-hidden className="h-5 w-5" />
-              </span>
-              <span className="pr-6">
-                <span className={cn('block text-sm font-semibold', selected ? 'text-white' : 'text-foreground')}>
-                  {label}
+                {selected ? (
+                  <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white">
+                    <Check aria-hidden className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                ) : null}
+                <span
+                  className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                    selected ? 'bg-white/15 text-white' : 'bg-brand-soft text-brand',
+                  )}
+                >
+                  <Icon aria-hidden className="h-5 w-5" />
                 </span>
-                <span className={cn('block text-xs', selected ? 'text-white/80' : 'text-muted')}>
-                  {description}
+                <span className="pr-6">
+                  <span
+                    className={cn(
+                      'block text-sm font-semibold',
+                      selected ? 'text-white' : 'text-foreground',
+                    )}
+                  >
+                    {label}
+                    {value === 'WORKER' ? ' · Panel' : ''}
+                  </span>
+                  <span className={cn('block text-xs', selected ? 'text-white/80' : 'text-muted')}>
+                    {description}
+                  </span>
                 </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      {mutation.isError ? (
-        <FormMessage tone="error">{getErrorMessage(mutation.error)}</FormMessage>
-      ) : null}
-    </Card>
+              </button>
+            );
+          })}
+        </div>
+        {mutation.isError ? (
+          <FormMessage tone="error">{getErrorMessage(mutation.error)}</FormMessage>
+        ) : null}
+      </Card>
+    </>
   );
 }
 

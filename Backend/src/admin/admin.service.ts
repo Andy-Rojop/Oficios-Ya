@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import {
   AccountStatus,
+  AvatarStatus,
+  CategoryRequestStatus,
   IdentityStatus,
   ReportStatus,
   ReportTarget,
@@ -743,5 +745,150 @@ export class AdminService {
       ].join(','),
     );
     return [header, ...rows].join('\n');
+  }
+
+  /** QA Johan #3: solicitudes de oficio nuevo. */
+  async listCategoryRequests(query: AdminPaginationQueryDto) {
+    const { page, pageSize, skip } = pageParams(query);
+    const where = { status: CategoryRequestStatus.PENDING };
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.categoryRequest.count({ where }),
+      this.prisma.categoryRequest.findMany({
+        where,
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: pageSize,
+        include: {
+          requestedBy: { select: { id: true, name: true, phone: true } },
+        },
+      }),
+    ]);
+    return { page, pageSize, total, items };
+  }
+
+  async decideCategoryRequest(
+    actorId: string,
+    id: string,
+    dto: DecideVerificationDto,
+    ip?: string,
+  ) {
+    const request = await this.prisma.categoryRequest.findUnique({ where: { id } });
+    if (!request || request.status !== CategoryRequestStatus.PENDING) {
+      throw new NotFoundException('Solicitud de oficio no encontrada o ya resuelta');
+    }
+    if (dto.decision === IdentityStatus.VERIFIED) {
+      const slug = slugify(request.name);
+      const category = await this.prisma.category.upsert({
+        where: { name: request.name },
+        create: { name: request.name, slug: slug || `oficio-${Date.now()}`, active: true },
+        update: { active: true },
+      });
+      const updated = await this.prisma.categoryRequest.update({
+        where: { id },
+        data: {
+          status: CategoryRequestStatus.APPROVED,
+          reviewedAt: new Date(),
+          reviewedById: actorId,
+          createdCategoryId: category.id,
+          adminNote: dto.note ?? null,
+        },
+      });
+      await this.prisma.workerProfile.updateMany({
+        where: {
+          userId: request.requestedByUserId,
+          headline: { equals: request.name, mode: 'insensitive' },
+          mainCategoryId: null,
+        },
+        data: { mainCategoryId: category.id, headline: category.name },
+      });
+      await this.audit.log({
+        actorId,
+        action: 'CATEGORY_REQUEST_APPROVE',
+        resource: 'CategoryRequest',
+        resourceId: id,
+        metadata: { categoryId: category.id, name: category.name },
+        ip,
+      });
+      return updated;
+    }
+    const rejected = await this.prisma.categoryRequest.update({
+      where: { id },
+      data: {
+        status: CategoryRequestStatus.REJECTED,
+        reviewedAt: new Date(),
+        reviewedById: actorId,
+        adminNote: dto.note ?? null,
+      },
+    });
+    await this.audit.log({
+      actorId,
+      action: 'CATEGORY_REQUEST_REJECT',
+      resource: 'CategoryRequest',
+      resourceId: id,
+      metadata: { name: request.name },
+      ip,
+    });
+    return rejected;
+  }
+
+  /** QA Johan #2: fotos de perfil pendientes. */
+  async listPendingAvatars(query: AdminPaginationQueryDto) {
+    const { page, pageSize, skip } = pageParams(query);
+    const where = { avatarStatus: AvatarStatus.PENDING };
+    const [total, users] = await this.prisma.$transaction([
+      this.prisma.user.count({ where }),
+      this.prisma.user.findMany({
+        where,
+        orderBy: { updatedAt: 'asc' },
+        skip,
+        take: pageSize,
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          avatarPath: true,
+          avatarStatus: true,
+          updatedAt: true,
+        },
+      }),
+    ]);
+    return {
+      page,
+      pageSize,
+      total,
+      items: users.map((u) => ({
+        ...u,
+        avatarUrl: u.avatarPath ? this.storage.getPublicUrl(u.avatarPath) : null,
+      })),
+    };
+  }
+
+  async decideAvatar(actorId: string, userId: string, dto: DecideVerificationDto, ip?: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, avatarStatus: true, avatarPath: true },
+    });
+    if (!user || user.avatarStatus !== AvatarStatus.PENDING || !user.avatarPath) {
+      throw new NotFoundException('Foto de perfil no encontrada o ya resuelta');
+    }
+    const next =
+      dto.decision === IdentityStatus.VERIFIED ? AvatarStatus.APPROVED : AvatarStatus.REJECTED;
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarStatus: next },
+      select: { id: true, name: true, avatarStatus: true, avatarPath: true },
+    });
+    await this.audit.log({
+      actorId,
+      action: next === AvatarStatus.APPROVED ? 'AVATAR_APPROVE' : 'AVATAR_REJECT',
+      resource: 'User',
+      resourceId: userId,
+      metadata: { avatarPath: user.avatarPath },
+      ip,
+    });
+    return {
+      ...updated,
+      avatarUrl: updated.avatarPath ? this.storage.getPublicUrl(updated.avatarPath) : null,
+    };
   }
 }

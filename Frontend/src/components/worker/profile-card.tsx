@@ -11,18 +11,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { getErrorMessage } from '@/lib/auth';
 import { useCategories } from '@/lib/catalog';
 import { COHERENT_TEXT_MESSAGE, isCoherentText } from '@/lib/coherent-text';
-import {
-  isValidGuatemalaDpi,
-  isValidGuatemalaNit,
-  sanitizeDigitsInput,
-  sanitizeNitInput,
-} from '@/lib/numeric-input';
+import { sanitizeDigitsInput } from '@/lib/numeric-input';
 import { cn } from '@/lib/utils';
 import {
   AVAILABILITY_LABELS,
   DAY_KEYS,
   DAY_LABELS,
-  IDENTITY_STATUS_LABELS,
   WORKER_QUERY_KEYS,
   workersApi,
   type Availability,
@@ -34,6 +28,7 @@ import {
 /** Textos del perfil mínimo que crea el backend al activar el modo trabajador. */
 const STUB_HEADLINE = 'Oficio por definir';
 const STUB_DESCRIPTION = 'Perfil en construcción';
+const CUSTOM_OFICIO_VALUE = '__custom__';
 
 const DEFAULT_SCHEDULE: Schedule = {
   mon: { closed: false, from: '08:00', to: '17:00' },
@@ -53,155 +48,19 @@ const CHANNEL_OPTIONS: { key: keyof VisibleChannels; label: string }[] = [
 
 const AVAILABILITY_OPTIONS = Object.keys(AVAILABILITY_LABELS) as Availability[];
 
+function RequiredMark() {
+  return (
+    <span className="ml-1 text-xs font-bold uppercase tracking-wide text-orange-600" title="Obligatorio">
+      *
+    </span>
+  );
+}
+
 function useInvalidateWorker() {
   const queryClient = useQueryClient();
   return () => {
     void queryClient.invalidateQueries({ queryKey: WORKER_QUERY_KEYS.profile });
   };
-}
-
-/** Envío de DPI/NIT privado → identityStatus PENDING (cola admin). */
-export function IdentityCard({ profile }: { profile: OwnWorkerProfile }) {
-  const queryClient = useQueryClient();
-  const [dpi, setDpi] = useState(profile.dpi ?? '');
-  const [nit, setNit] = useState(sanitizeNitInput(profile.nit ?? ''));
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-
-  const mutation = useMutation({
-    mutationFn: workersApi.updateProfile,
-    onSuccess: (updated) => {
-      queryClient.setQueryData(WORKER_QUERY_KEYS.profile, updated);
-      setSaved(true);
-      setError(null);
-    },
-  });
-
-  const locked = profile.identityStatus === 'PENDING';
-
-  function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setSaved(false);
-    const cleanDpi = dpi.replace(/\D/g, '');
-    if (!isValidGuatemalaDpi(cleanDpi)) {
-      setError('Ingrese un número de DPI válido de 13 dígitos');
-      return;
-    }
-    const cleanNit = nit.trim().toUpperCase();
-    if (!isValidGuatemalaNit(cleanNit)) {
-      setError('Ingrese un NIT de 9 dígitos, sin guiones ni espacios');
-      return;
-    }
-    setError(null);
-    mutation.mutate({
-      headline: profile.headline,
-      description: profile.description,
-      experienceYears: profile.experienceYears,
-      mainCategoryId: profile.mainCategory?.id ?? null,
-      schedule: profile.schedule,
-      visibleChannels: profile.visibleChannels,
-      dpi: cleanDpi,
-      nit: cleanNit === '' ? null : cleanNit,
-    });
-  }
-
-  return (
-    <Card>
-      <form onSubmit={onSubmit} noValidate className="space-y-4">
-        <div className="space-y-1">
-          <CardTitle>Verificación de identidad</CardTitle>
-          <CardDescription>
-            DPI y NIT son privados: solo los ve la administración para validar su perfil. No
-            aparecen en su página pública.
-          </CardDescription>
-        </div>
-
-        <p className="text-sm">
-          Estado:{' '}
-          <span
-            className={cn(
-              'inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide',
-              profile.identityStatus === 'VERIFIED' && 'bg-foreground text-white',
-              profile.identityStatus === 'PENDING' && 'bg-amber-100 text-amber-900',
-              profile.identityStatus === 'REJECTED' && 'bg-red-100 text-red-800',
-              profile.identityStatus === 'NOT_SUBMITTED' && 'bg-brand-soft text-muted',
-            )}
-          >
-            {IDENTITY_STATUS_LABELS[profile.identityStatus]}
-          </span>
-        </p>
-
-        <FormField
-          id="dpi"
-          label="DPI (13 dígitos)"
-          hint="Solo los 13 números de su CUI, sin espacios ni guiones."
-          error={error?.includes('DPI') ? error : undefined}
-        >
-          {(aria) => (
-            <Input
-              {...aria}
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={13}
-              value={dpi}
-              disabled={locked || mutation.isPending}
-              placeholder="1234567890101"
-              onChange={(event) => {
-                setSaved(false);
-                setDpi(sanitizeDigitsInput(event.target.value, 13));
-              }}
-            />
-          )}
-        </FormField>
-
-        <FormField
-          id="nit"
-          label="NIT (opcional)"
-          hint="Ingrese NIT sin guiones ni espacios. Solo 9 dígitos."
-          error={error?.includes('NIT') ? error : undefined}
-        >
-          {(aria) => (
-            <Input
-              {...aria}
-              autoComplete="off"
-              inputMode="numeric"
-              maxLength={9}
-              value={nit}
-              disabled={locked || mutation.isPending}
-              placeholder="123456789"
-              onChange={(event) => {
-                setSaved(false);
-                setNit(sanitizeNitInput(event.target.value));
-              }}
-            />
-          )}
-        </FormField>
-
-        {locked ? (
-          <p className="text-sm text-muted">
-            Su solicitud está en revisión. Le avisaremos cuando haya una decisión.
-          </p>
-        ) : null}
-        {error && !error.includes('DPI') && !error.includes('NIT') ? (
-          <FormMessage tone="error">{error}</FormMessage>
-        ) : null}
-        {mutation.isError ? (
-          <FormMessage tone="error">{getErrorMessage(mutation.error)}</FormMessage>
-        ) : null}
-        {saved ? (
-          <FormMessage tone="success">Documentos enviados para revisión.</FormMessage>
-        ) : null}
-
-        <Button type="submit" disabled={locked || mutation.isPending}>
-          {mutation.isPending
-            ? 'Enviando…'
-            : profile.identityStatus === 'VERIFIED' || profile.identityStatus === 'REJECTED'
-              ? 'Reenviar para revisión'
-              : 'Enviar para verificación'}
-        </Button>
-      </form>
-    </Card>
-  );
 }
 
 export function AvailabilityCard({ profile }: { profile: OwnWorkerProfile }) {
@@ -215,7 +74,7 @@ export function AvailabilityCard({ profile }: { profile: OwnWorkerProfile }) {
     <Card className="space-y-4 rounded-3xl shadow-[0_8px_28px_rgba(0,0,0,0.05)]">
       <div className="space-y-1">
         <CardTitle>Disponibilidad</CardTitle>
-        <CardDescription>Los clientes ven si puede tomar trabajos ahora.</CardDescription>
+        <CardDescription>Sirve de referencia a los clientes.</CardDescription>
       </div>
       <div role="radiogroup" aria-label="Disponibilidad" className="grid gap-2 sm:grid-cols-3">
         {AVAILABILITY_OPTIONS.map((option) => {
@@ -257,8 +116,20 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateWorker();
 
-  const [headline, setHeadline] = useState(
-    profile.headline === STUB_HEADLINE ? '' : profile.headline,
+  const initialHeadline = profile.headline === STUB_HEADLINE ? '' : profile.headline;
+  const matchedCategoryId =
+    profile.mainCategory?.id ??
+    categories.data?.find(
+      (c) => c.name.toLowerCase() === initialHeadline.toLowerCase(),
+    )?.id ??
+    '';
+
+  const [categoryId, setCategoryId] = useState(matchedCategoryId);
+  const [customOficio, setCustomOficio] = useState(
+    matchedCategoryId || !initialHeadline ? '' : initialHeadline,
+  );
+  const [oficioMode, setOficioMode] = useState<'catalog' | 'custom'>(
+    matchedCategoryId || !initialHeadline ? 'catalog' : 'custom',
   );
   const [description, setDescription] = useState(
     profile.description === STUB_DESCRIPTION ? '' : profile.description,
@@ -266,7 +137,6 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
   const [experience, setExperience] = useState(
     profile.experienceYears === null ? '' : String(profile.experienceYears),
   );
-  const [categoryId, setCategoryId] = useState(profile.mainCategory?.id ?? '');
   const [channels, setChannels] = useState<VisibleChannels>(profile.visibleChannels);
   const [schedule, setSchedule] = useState<Schedule | null>(profile.schedule);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -300,20 +170,42 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
     });
   }
 
+  function resolveOficio(): { headline: string; mainCategoryId: string | null } | null {
+    if (oficioMode === 'custom') {
+      const name = customOficio.trim();
+      if (name.length < 3) return null;
+      return { headline: name, mainCategoryId: null };
+    }
+    const selected = categories.data?.find((c) => c.id === categoryId);
+    if (!selected) return null;
+    return { headline: selected.name, mainCategoryId: selected.id };
+  }
+
   function validate(): Record<string, string> {
     const found: Record<string, string> = {};
-    if (headline.trim().length < 3) found.headline = 'Escriba el nombre de su oficio (mínimo 3 caracteres)';
-    else if (!isCoherentText(headline, 3)) found.headline = COHERENT_TEXT_MESSAGE;
+    const oficio = resolveOficio();
+    if (!oficio) {
+      found.headline =
+        oficioMode === 'custom'
+          ? 'Escriba el nombre de su oficio (mínimo 3 caracteres)'
+          : 'Elija un oficio de la lista';
+    } else if (!isCoherentText(oficio.headline, 3)) {
+      found.headline = COHERENT_TEXT_MESSAGE;
+    }
     if (description.trim().length < 10)
-      found.description = 'Describa su experiencia (mínimo 10 caracteres)';
+      found.description = 'Describa de manera breve a qué se dedica (mínimo 10 caracteres)';
     else if (!isCoherentText(description, 8)) found.description = COHERENT_TEXT_MESSAGE;
-    if (experience !== '') {
+    if (experience === '') {
+      found.experience = 'Indique sus años de experiencia';
+    } else {
       const years = Number(experience);
       if (!Number.isInteger(years) || years < 0 || years > 60) {
         found.experience = 'Ingrese un número entero entre 0 y 60';
       }
     }
-    if (schedule) {
+    if (!schedule) {
+      found.schedule = 'Defina su horario de atención';
+    } else {
       for (const day of DAY_KEYS) {
         const value = schedule[day];
         if (value && !value.closed && (!value.from || !value.to || value.from >= value.to)) {
@@ -331,70 +223,97 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
     const found = validate();
     setErrors(found);
     if (Object.keys(found).length > 0) return;
+    const oficio = resolveOficio();
+    if (!oficio) return;
 
     mutation.mutate({
-      headline: headline.trim(),
+      headline: oficio.headline,
       description: description.trim(),
-      experienceYears: experience === '' ? null : Number(experience),
-      mainCategoryId: categoryId === '' ? null : categoryId,
+      experienceYears: Number(experience),
+      mainCategoryId: oficio.mainCategoryId,
       schedule,
       visibleChannels: channels,
+      ...(oficioMode === 'custom' ? { requestNewOficio: true } : {}),
     });
   }
 
+  const selectValue = oficioMode === 'custom' ? CUSTOM_OFICIO_VALUE : categoryId;
+
   return (
-    <Card>
+    <Card className="border-orange-200/80">
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <div className="space-y-1">
-          <CardTitle>Mi perfil de trabajador</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle>Mi perfil de trabajador</CardTitle>
+            <span className="rounded-full bg-orange-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-orange-800">
+              Obligatorio
+            </span>
+          </div>
           <CardDescription>Así lo verán los clientes en su perfil público.</CardDescription>
         </div>
 
         <FormField
           id="headline"
-          label="Nombre de su oficio"
-          hint="Así lo encontrarán los clientes. Ejemplo: Carpintero, electricista o limpia peceras."
+          label={
+            <>
+              Nombre de su oficio
+              <RequiredMark />
+            </>
+          }
+          hint="Elija un oficio de la lista. Si no aparece, solicite uno nuevo."
           error={errors.headline}
         >
           {(aria) => (
-            <Input
-              {...aria}
-              value={headline}
-              maxLength={100}
-              placeholder="Ej.: Carpintero"
-              onChange={(event) => {
-                setSaved(false);
-                setHeadline(event.target.value);
-              }}
-            />
-          )}
-        </FormField>
-
-        <FormField id="mainCategory" label="Categoría principal">
-          {(aria) => (
-            <Select
-              {...aria}
-              value={categoryId}
-              onChange={(event) => {
-                setSaved(false);
-                setCategoryId(event.target.value);
-              }}
-            >
-              <option value="">Sin categoría</option>
-              {categories.data?.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </Select>
+            <div className="space-y-2">
+              <Select
+                {...aria}
+                value={selectValue}
+                onChange={(event) => {
+                  setSaved(false);
+                  const value = event.target.value;
+                  if (value === CUSTOM_OFICIO_VALUE) {
+                    setOficioMode('custom');
+                    setCategoryId('');
+                  } else {
+                    setOficioMode('catalog');
+                    setCategoryId(value);
+                    setCustomOficio('');
+                  }
+                }}
+              >
+                <option value="">Seleccione un oficio</option>
+                {categories.data?.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+                <option value={CUSTOM_OFICIO_VALUE}>Otro — solicitar oficio nuevo</option>
+              </Select>
+              {oficioMode === 'custom' ? (
+                <Input
+                  value={customOficio}
+                  maxLength={100}
+                  placeholder="Escriba el oficio que necesita"
+                  onChange={(event) => {
+                    setSaved(false);
+                    setCustomOficio(event.target.value);
+                  }}
+                />
+              ) : null}
+            </div>
           )}
         </FormField>
 
         <FormField
           id="description"
-          label="Descripción"
+          label={
+            <>
+              Descripción
+              <RequiredMark />
+            </>
+          }
           error={errors.description}
-          hint="Opcional ampliar: cuente qué hace, materiales o zona que cubre."
+          hint="Describa de manera breve a qué se dedica"
         >
           {(aria) => (
             <Textarea
@@ -409,7 +328,16 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
           )}
         </FormField>
 
-        <FormField id="experience" label="Años de experiencia" error={errors.experience}>
+        <FormField
+          id="experience"
+          label={
+            <>
+              Años de experiencia
+              <RequiredMark />
+            </>
+          }
+          error={errors.experience}
+        >
           {(aria) => (
             <Input
               {...aria}
@@ -427,7 +355,10 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
         </FormField>
 
         <fieldset className="space-y-2">
-          <legend className="text-sm font-semibold">Canales de contacto visibles</legend>
+          <legend className="text-sm font-semibold">
+            Canales de contacto visibles
+            <RequiredMark />
+          </legend>
           <p className="text-xs text-muted">
             Por privacidad, su teléfono solo se muestra si lo activa aquí. El chat de la app
             siempre está disponible.
@@ -451,7 +382,10 @@ export function ProfileCard({ profile }: { profile: OwnWorkerProfile }) {
         </fieldset>
 
         <fieldset className="space-y-3">
-          <legend className="text-sm font-semibold">Horario de atención</legend>
+          <legend className="text-sm font-semibold">
+            Horario de atención
+            <RequiredMark />
+          </legend>
           {schedule === null ? (
             <Button
               type="button"

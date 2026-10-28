@@ -10,6 +10,8 @@ export type UserRole = 'USER' | 'ADMIN' | 'MUNICIPAL';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
 
 /** Igual a UserResponseDto del backend (las fechas llegan como ISO string). */
+export type AvatarStatus = 'NOT_SET' | 'PENDING' | 'APPROVED' | 'REJECTED';
+
 export interface UserDto {
   id: string;
   name: string;
@@ -19,9 +21,17 @@ export interface UserDto {
   activeMode: ActiveMode;
   status: AccountStatus;
   zoneId: string | null;
+  avatarStatus?: AvatarStatus;
+  avatarUrl?: string | null;
   phoneVerifiedAt: string | null;
   emailVerifiedAt: string | null;
   createdAt: string;
+}
+
+export function uploadAvatar(file: File): Promise<UserDto> {
+  const form = new FormData();
+  form.append('file', file);
+  return apiFetch<UserDto>('/users/me/avatar', { method: 'POST', body: form });
 }
 
 export interface LoginInput {

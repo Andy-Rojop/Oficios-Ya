@@ -8,7 +8,7 @@ import { FormMessage } from '@/components/forms/form-field';
 import { getErrorMessage, isUnauthorized, useMe } from '@/lib/auth';
 import { WORKER_QUERY_KEYS, workersApi, type OwnWorkerProfile } from '@/lib/workers';
 import { CompletenessCard } from './completeness-card';
-import { AvailabilityCard, IdentityCard, ProfileCard } from './profile-card';
+import { AvailabilityCard, ProfileCard } from './profile-card';
 import { ZonesCard } from './zones-card';
 
 /** Edición del perfil de trabajador (ruta /panel/perfil). */
@@ -90,11 +90,10 @@ export function PanelProfileEditor() {
         </p>
       </header>
 
-      <CompletenessCard />
       <AvailabilityCard profile={profile} />
-      <IdentityCard key={`identity-${profile.id}`} profile={profile} />
       <ProfileCard key={profile.id} profile={profile} />
       <ZonesCard key={`zones-${profile.id}`} profile={profile} />
+      <CompletenessCard />
     </div>
   );
 }

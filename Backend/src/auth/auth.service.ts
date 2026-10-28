@@ -15,6 +15,7 @@ import type { User } from '../generated/prisma/client';
 import { AccountStatus, ActiveMode, VerificationPurpose } from '../generated/prisma/enums';
 import { OtpService } from '../otp/otp.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { ensureWorkerProfileStub } from '../users/worker-profile.stub';
 import { LOGIN_LOCK_MINUTES } from './auth.constants';
@@ -47,7 +48,15 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly otpService: OtpService,
     private readonly tokenService: TokenService,
+    private readonly storage: StorageService,
   ) {}
+
+  private toUserDto(user: User): UserResponseDto {
+    return UserResponseDto.fromEntity(user, {
+      toPublicUrl: (path) => this.storage.getPublicUrl(path),
+      includePendingAvatar: true,
+    });
+  }
 
   // ---------------------------------------------------------------- RF-001 registro
 
@@ -109,7 +118,7 @@ export class AuthService {
     }
 
     const tokens = await this.createSession(user, userAgent);
-    return { user: UserResponseDto.fromEntity(user), tokens };
+    return { user: this.toUserDto(user), tokens };
   }
 
   // ---------------------------------------------------------------- RF-002 login
@@ -146,7 +155,7 @@ export class AuthService {
     }
 
     const tokens = await this.createSession(current, userAgent);
-    return { user: UserResponseDto.fromEntity(current), tokens };
+    return { user: this.toUserDto(current), tokens };
   }
 
   // ---------------------------------------------------------------- refresh / logout
@@ -203,7 +212,7 @@ export class AuthService {
 
     const accessToken = await this.tokenService.signAccessToken(session.user, session.id);
     return {
-      user: UserResponseDto.fromEntity(session.user),
+      user: this.toUserDto(session.user),
       tokens: { accessToken, refreshToken: newRefreshToken },
     };
   }
@@ -317,7 +326,7 @@ export class AuthService {
       throw error;
     }
 
-    return UserResponseDto.fromEntity(updated);
+    return this.toUserDto(updated);
   }
 
   // ---------------------------------------------------------------- me
@@ -327,7 +336,7 @@ export class AuthService {
     if (!user || user.status !== AccountStatus.ACTIVE) {
       throw new UnauthorizedException(INVALID_SESSION);
     }
-    return UserResponseDto.fromEntity(user);
+    return this.toUserDto(user);
   }
 
   // ---------------------------------------------------------------- helpers

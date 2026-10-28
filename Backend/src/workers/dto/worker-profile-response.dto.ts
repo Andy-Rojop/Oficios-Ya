@@ -98,6 +98,8 @@ export interface OwnWorkerProfileSource {
   schedule: unknown;
   availability: Availability;
   visibleChannels: unknown;
+  offersHomeService?: boolean;
+  baseZoneId?: string | null;
   identityStatus: IdentityStatus;
   dpi: string | null;
   nit: string | null;
@@ -120,6 +122,8 @@ export class OwnWorkerProfileDto {
   @ApiProperty() visibleChannels: StoredVisibleChannels;
   @ApiPropertyOptional({ nullable: true }) mainCategory: CategorySource | null;
   @ApiProperty() zones: ZoneSource[];
+  @ApiProperty() offersHomeService: boolean;
+  @ApiPropertyOptional({ nullable: true }) baseZoneId: string | null;
   @ApiProperty({ enum: ['NOT_SUBMITTED', 'PENDING', 'VERIFIED', 'REJECTED'] })
   identityStatus: IdentityStatus;
   @ApiPropertyOptional({ nullable: true, description: 'PRIVADO: solo el dueño o un admin' })
@@ -153,6 +157,8 @@ export class OwnWorkerProfileDto {
       name: zone.name,
       type: zone.type,
     }));
+    dto.offersHomeService = profile.offersHomeService ?? false;
+    dto.baseZoneId = profile.baseZoneId ?? null;
     dto.identityStatus = profile.identityStatus;
     dto.dpi = profile.dpi;
     dto.nit = profile.nit;

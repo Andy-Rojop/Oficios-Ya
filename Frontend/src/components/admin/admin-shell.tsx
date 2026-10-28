@@ -9,6 +9,7 @@ import { getErrorMessage, isUnauthorized, useMe } from '@/lib/auth';
 
 const ADMIN_NAV = [
   { href: '/admin', label: 'Resumen' },
+  { href: '/admin/aprobaciones', label: 'Aprobaciones' },
   { href: '/admin/verificaciones', label: 'Verificaciones' },
   { href: '/admin/reportes', label: 'Reportes' },
   { href: '/admin/catalogos', label: 'Catálogos' },

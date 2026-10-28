@@ -138,11 +138,25 @@ export class WorkersService {
       identityStatus = nextDpi ? IdentityStatus.PENDING : IdentityStatus.NOT_SUBMITTED;
     }
 
+    if (dto.baseZoneId) {
+      const zone = await this.prisma.zone.findFirst({
+        where: { id: dto.baseZoneId, active: true },
+        select: { id: true },
+      });
+      if (!zone) {
+        throw new BadRequestException('La zona de ubicación no existe');
+      }
+    }
+
     const data = {
       headline: dto.headline,
       description: dto.description,
       ...(dto.experienceYears !== undefined ? { experienceYears: dto.experienceYears } : {}),
       ...(dto.mainCategoryId !== undefined ? { mainCategoryId: dto.mainCategoryId } : {}),
+      ...(dto.offersHomeService !== undefined
+        ? { offersHomeService: dto.offersHomeService }
+        : {}),
+      ...(dto.baseZoneId !== undefined ? { baseZoneId: dto.baseZoneId } : {}),
       ...(dto.schedule !== undefined
         ? {
             schedule:
@@ -176,6 +190,28 @@ export class WorkersService {
       },
       include: OWN_PROFILE_INCLUDE,
     });
+
+    if (dto.requestNewOficio && !dto.mainCategoryId) {
+      const name = dto.headline.trim();
+      const existing = await this.prisma.categoryRequest.findFirst({
+        where: {
+          requestedByUserId: userId,
+          status: 'PENDING' as const,
+          name: { equals: name, mode: 'insensitive' },
+        },
+        select: { id: true },
+      });
+      if (!existing) {
+        await this.prisma.categoryRequest.create({
+          data: {
+            name,
+            requestedByUserId: userId,
+            status: 'PENDING',
+          },
+        });
+      }
+    }
+
     return OwnWorkerProfileDto.fromEntity(profile);
   }
 
@@ -221,6 +257,7 @@ export class WorkersService {
         description: true,
         experienceYears: true,
         mainCategoryId: true,
+        baseZoneId: true,
         schedule: true,
         _count: {
           select: {
@@ -232,13 +269,16 @@ export class WorkersService {
       },
     });
 
+    const zoneCount =
+      profile._count.zones > 0 ? profile._count.zones : profile.baseZoneId ? 1 : 0;
+
     return computeProfileCompleteness({
       headline: profile.headline,
       description: profile.description,
       experienceYears: profile.experienceYears,
       mainCategoryId: profile.mainCategoryId,
       schedule: profile.schedule,
-      zoneCount: profile._count.zones,
+      zoneCount,
       activeServiceCount: profile._count.services,
       portfolioCount: profile._count.portfolioItems,
     });

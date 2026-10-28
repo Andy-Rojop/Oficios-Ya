@@ -132,6 +132,42 @@ export class AdminController {
     return this.admin.getReportConversation(user.id, id, clientIp(req));
   }
 
+  @Get('category-requests')
+  @ApiOperation({ summary: 'QA3: solicitudes de oficio nuevo pendientes' })
+  listCategoryRequests(@Query() query: AdminPaginationQueryDto) {
+    return this.admin.listCategoryRequests(query);
+  }
+
+  @Patch('category-requests/:id')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'QA3: aprobar o rechazar oficio nuevo' })
+  decideCategoryRequest(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', UUID_PIPE) id: string,
+    @Body() dto: DecideVerificationDto,
+    @Req() req: Request,
+  ) {
+    return this.admin.decideCategoryRequest(user.id, id, dto, clientIp(req));
+  }
+
+  @Get('avatars')
+  @ApiOperation({ summary: 'QA2: fotos de perfil pendientes' })
+  listPendingAvatars(@Query() query: AdminPaginationQueryDto) {
+    return this.admin.listPendingAvatars(query);
+  }
+
+  @Patch('avatars/:userId')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'QA2: aprobar o rechazar foto de perfil' })
+  decideAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('userId', UUID_PIPE) userId: string,
+    @Body() dto: DecideVerificationDto,
+    @Req() req: Request,
+  ) {
+    return this.admin.decideAvatar(user.id, userId, dto, clientIp(req));
+  }
+
   @Get('catalog/categories')
   @ApiOperation({ summary: 'Listar categorías (incluye inactivas)' })
   listCategories() {

@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { getErrorMessage } from '@/lib/auth';
+import { COHERENT_TEXT_MESSAGE, isCoherentText } from '@/lib/coherent-text';
 import { WORKER_QUERY_KEYS, workersApi, type PortfolioItemDto } from '@/lib/workers';
-import { ImagePicker } from './image-picker';
+import { ImagePicker, MAX_UPLOAD_MB } from './image-picker';
 
 export function PortfolioCard() {
   const queryClient = useQueryClient();
@@ -85,7 +86,14 @@ export function PortfolioCard() {
     setSavedNotice(null);
     const found: Record<string, string> = {};
     if (title.trim().length < 2) found.title = 'Escriba un título (mínimo 2 caracteres)';
+    else if (!isCoherentText(title, 2)) found.title = COHERENT_TEXT_MESSAGE;
+    if (description.trim() && !isCoherentText(description, 4)) {
+      found.description = COHERENT_TEXT_MESSAGE;
+    }
     if (!file) found.file = 'Elija una imagen antes de guardar en el portafolio';
+    else if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+      found.file = `La imagen no debe pesar más de ${MAX_UPLOAD_MB} MB`;
+    }
     setErrors(found);
     if (Object.keys(found).length > 0 || !file) return;
 
@@ -121,12 +129,17 @@ export function PortfolioCard() {
   const items = query.data ?? [];
 
   return (
-    <Card className="space-y-5">
+    <Card className="space-y-5 border-amber-200/90">
       <div className="space-y-1">
-        <CardTitle>Portafolio</CardTitle>
+        <div className="flex flex-wrap items-center gap-2">
+          <CardTitle>Portafolio</CardTitle>
+          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-900">
+            Opcional
+          </span>
+        </div>
         <CardDescription>
-          Fotos de trabajos que haya realizado (JPG, PNG o WebP, máx. 5 MB). Cada foto que sube se
-          guarda automáticamente en su perfil público.
+          Fotos de trabajos que haya realizado (JPG, PNG o WebP, máx. {MAX_UPLOAD_MB} MB). Cada foto
+          que sube se guarda automáticamente en su perfil público.
         </CardDescription>
       </div>
 
@@ -150,7 +163,11 @@ export function PortfolioCard() {
             />
           )}
         </FormField>
-        <FormField id="portfolio-description" label="Descripción (opcional)">
+        <FormField
+          id="portfolio-description"
+          label="Descripción (opcional)"
+          error={errors.description}
+        >
           {(aria) => (
             <Input
               {...aria}

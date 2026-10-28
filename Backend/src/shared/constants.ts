@@ -1,7 +1,7 @@
 /** Límites de negocio compartidos (SRS / RN). Mantener alineado con Frontend/src/lib/shared. */
 export const LIMITS = {
   REVIEW_COMMENT_MAX: 500,
-  UPLOAD_MAX_MB_DEFAULT: 5,
+  UPLOAD_MAX_MB_DEFAULT: 10,
   IMAGE_MAX_DIMENSION_PX: 1600,
   LOGIN_MAX_FAILED_ATTEMPTS: 10,
   OTP_PER_PHONE_PER_HOUR: 5,

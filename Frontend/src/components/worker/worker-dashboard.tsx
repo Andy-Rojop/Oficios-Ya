@@ -12,7 +12,7 @@ import { getErrorMessage, isUnauthorized, useMe, useSwitchMode } from '@/lib/aut
 import { WORKER_QUERY_KEYS, workersApi, type OwnWorkerProfile } from '@/lib/workers';
 import { CompletenessCard } from './completeness-card';
 import { PortfolioCard } from './portfolio-card';
-import { AvailabilityCard, IdentityCard, ProfileCard } from './profile-card';
+import { AvailabilityCard, ProfileCard } from './profile-card';
 import { ServicesCard } from './services-card';
 import { ZonesCard } from './zones-card';
 
@@ -144,14 +144,13 @@ function WorkerPanel() {
         </ul>
       </section>
 
-      <CompletenessCard />
       <AvailabilityCard profile={profile} />
-      <IdentityCard key={`identity-${profile.id}`} profile={profile} />
       {/* key: reinicia el formulario si el perfil se recarga con otro id (p. ej. tras cambiar de cuenta). */}
       <ProfileCard key={profile.id} profile={profile} />
       <ZonesCard key={`zones-${profile.id}`} profile={profile} />
       <ServicesCard profile={profile} />
       <PortfolioCard />
+      <CompletenessCard />
     </div>
   );
 }

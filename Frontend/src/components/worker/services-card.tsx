@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getErrorMessage } from '@/lib/auth';
-import { useCategories } from '@/lib/catalog';
 import { COHERENT_TEXT_MESSAGE, isCoherentText } from '@/lib/coherent-text';
 import { MAX_VALID_PRICE_GTQ, parseValidPrice, sanitizeMoneyInput } from '@/lib/numeric-input';
 import {
@@ -93,7 +92,12 @@ export function ServicesCard({ profile }: { profile: OwnWorkerProfile }) {
     <Card className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <CardTitle>Mis servicios</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle>Mis servicios</CardTitle>
+            <span className="rounded-full bg-orange-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-orange-800">
+              Obligatorio
+            </span>
+          </div>
           <CardDescription>Publica lo que ofreces con un precio de referencia.</CardDescription>
         </div>
         {editing === null ? (
@@ -115,7 +119,8 @@ export function ServicesCard({ profile }: { profile: OwnWorkerProfile }) {
         <ServiceForm
           key={editing}
           service={editingService}
-          defaultCategoryId={profile.mainCategory?.id ?? ''}
+          profileCategoryId={profile.mainCategory?.id ?? ''}
+          profileOficio={profile.headline}
           onDone={() => {
             setEditing(null);
             refresh();
@@ -260,18 +265,19 @@ function ServicePhotos({ service, onChanged }: { service: ServiceDto; onChanged:
 
 function ServiceForm({
   service,
-  defaultCategoryId,
+  profileCategoryId,
+  profileOficio,
   onDone,
   onCancel,
 }: {
   service: ServiceDto | undefined;
-  defaultCategoryId: string;
+  profileCategoryId: string;
+  profileOficio: string;
   onDone: () => void;
   onCancel: () => void;
 }) {
-  const categories = useCategories();
   const [form, setForm] = useState<FormState>(() =>
-    service ? fromService(service) : emptyForm(defaultCategoryId),
+    service ? fromService(service) : emptyForm(profileCategoryId),
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -290,8 +296,11 @@ function ServiceForm({
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     const found: Record<string, string> = {};
-    const categoryId = form.categoryId || categories.data?.[0]?.id || '';
-    if (!categoryId) found.categoryId = 'Elige una categoría';
+    const categoryId = profileCategoryId || form.categoryId;
+    if (!categoryId) {
+      found.categoryId =
+        'Primero guarde su oficio en el perfil; el sistema lo asignará al servicio.';
+    }
     if (form.name.trim().length < 3) found.name = 'Escriba un nombre (mínimo 3 caracteres)';
     else if (!isCoherentText(form.name, 3)) found.name = COHERENT_TEXT_MESSAGE;
     if (form.description.trim().length < 10)
@@ -328,6 +337,20 @@ function ServiceForm({
     >
       <p className="font-semibold">{service ? 'Editar servicio' : 'Nuevo servicio'}</p>
 
+      <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm">
+        <span className="font-semibold text-foreground">Oficio: </span>
+        <span className="text-muted">
+          {profileOficio && profileOficio !== 'Oficio por definir'
+            ? profileOficio
+            : 'Guarde su oficio en el perfil primero'}
+        </span>
+      </p>
+      {errors.categoryId ? (
+        <p role="alert" className="text-sm font-medium text-red-700">
+          {errors.categoryId}
+        </p>
+      ) : null}
+
       <FormField id="service-name" label="Nombre del servicio" error={errors.name}>
         {(aria) => (
           <Input
@@ -336,22 +359,6 @@ function ServiceForm({
             maxLength={100}
             onChange={(event) => set('name', event.target.value)}
           />
-        )}
-      </FormField>
-
-      <FormField id="service-category" label="Categoría" error={errors.categoryId}>
-        {(aria) => (
-          <Select
-            {...aria}
-            value={form.categoryId || categories.data?.[0]?.id || ''}
-            onChange={(event) => set('categoryId', event.target.value)}
-          >
-            {categories.data?.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </Select>
         )}
       </FormField>
 

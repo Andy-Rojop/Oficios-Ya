@@ -76,6 +76,10 @@ export interface OwnWorkerProfile {
   visibleChannels: VisibleChannels;
   mainCategory: CategoryDto | null;
   zones: ZoneDto[];
+  /** QA7: atiende a domicilio. */
+  offersHomeService?: boolean;
+  /** QA7: zona donde se ubica. */
+  baseZoneId?: string | null;
   identityStatus: IdentityStatus;
   dpi: string | null;
   nit: string | null;
@@ -91,7 +95,11 @@ export interface UpdateWorkerProfileInput {
   mainCategoryId?: string | null;
   schedule?: Schedule | null;
   visibleChannels?: VisibleChannels | null;
-  /** PRIVADO: 13 dígitos. Enviar dispara cola PENDING en el backend. */
+  /** Si true y no hay categoría, pide al admin un oficio nuevo. */
+  requestNewOficio?: boolean;
+  offersHomeService?: boolean;
+  baseZoneId?: string | null;
+  /** PRIVADO: legacy; ya no se usa en la UI. */
   dpi?: string | null;
   nit?: string | null;
 }

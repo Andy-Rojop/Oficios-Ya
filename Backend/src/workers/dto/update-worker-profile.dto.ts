@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -68,6 +69,24 @@ export class UpdateWorkerProfileDto {
   @ValidateNested()
   @Type(() => VisibleChannelsDto)
   visibleChannels?: VisibleChannelsDto | null;
+
+  @ApiPropertyOptional({ description: 'Si atiende a domicilio' })
+  @IsOptional()
+  @IsBoolean()
+  offersHomeService?: boolean;
+
+  @ApiPropertyOptional({ nullable: true, description: 'Zona donde se ubica' })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsUUID('all', { message: 'La zona de ubicación no es válida' })
+  baseZoneId?: string | null;
+
+  @ApiPropertyOptional({
+    description: 'Si true y no hay categoría, crea solicitud de oficio nuevo para el admin',
+  })
+  @IsOptional()
+  @IsBoolean()
+  requestNewOficio?: boolean;
 
   @ApiPropertyOptional({
     nullable: true,

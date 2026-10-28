@@ -36,53 +36,44 @@ export function computeProfileCompleteness(input: CompletenessInput): ProfileCom
   const headline = input.headline.trim();
   const description = input.description.trim();
 
+  // Portafolio es opcional (QA Johan #11): no entra en el 100%.
   const items: CompletenessItem[] = [
     {
-      key: 'headline',
-      label: 'Escriba su oficio principal',
-      weight: 15,
-      done: headline.length >= 3 && headline !== WORKER_STUB_HEADLINE,
+      key: 'oficio',
+      label: 'Elija su oficio',
+      weight: 20,
+      done:
+        (headline.length >= 3 && headline !== WORKER_STUB_HEADLINE) ||
+        input.mainCategoryId !== null,
     },
     {
       key: 'description',
-      label: 'Describa su experiencia (mínimo 30 caracteres)',
+      label: 'Describa de manera breve a qué se dedica (mínimo 30 caracteres)',
       weight: 15,
       done: description.length >= MIN_DESCRIPTION_LENGTH && description !== WORKER_STUB_DESCRIPTION,
     },
     {
-      key: 'mainCategory',
-      label: 'Elija su categoría principal',
-      weight: 10,
-      done: input.mainCategoryId !== null,
-    },
-    {
       key: 'zones',
-      label: 'Indique al menos una zona de cobertura',
+      label: 'Indique la zona donde se ubica o trabaja',
       weight: 15,
       done: input.zoneCount > 0,
     },
     {
       key: 'service',
       label: 'Publique al menos un servicio activo',
-      weight: 20,
+      weight: 25,
       done: input.activeServiceCount > 0,
     },
     {
       key: 'schedule',
       label: 'Defina su horario de atención',
-      weight: 10,
+      weight: 15,
       done: hasSchedule(input.schedule),
-    },
-    {
-      key: 'portfolio',
-      label: 'Suba al menos una foto de sus trabajos',
-      weight: 10,
-      done: input.portfolioCount > 0,
     },
     {
       key: 'experience',
       label: 'Indique sus años de experiencia',
-      weight: 5,
+      weight: 10,
       done: input.experienceYears !== null,
     },
   ];

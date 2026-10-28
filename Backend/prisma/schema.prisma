@@ -37,6 +37,19 @@ enum IdentityStatus {
   REJECTED
 }
 
+enum AvatarStatus {
+  NOT_SET
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CategoryRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum Availability {
   AVAILABLE
   BUSY
@@ -111,6 +124,8 @@ model User {
   activeMode          ActiveMode    @default(CLIENT)
   status              AccountStatus @default(ACTIVE)
   zoneId              String?
+  avatarPath          String?
+  avatarStatus        AvatarStatus  @default(NOT_SET)
   termsAcceptedAt     DateTime?
   failedLoginAttempts Int           @default(0)
   lockedUntil         DateTime?
@@ -133,6 +148,8 @@ model User {
   reportsMade         Report[]
   auditLogs           AuditLog[]
   notifications       Notification[]
+  categoryRequests    CategoryRequest[]   @relation("CategoryRequestAuthor")
+  reviewedCategoryRequests CategoryRequest[] @relation("CategoryRequestReviewer")
 }
 
 model Session {
@@ -169,8 +186,9 @@ model Zone {
   longitude Decimal? @db.Decimal(9, 6)
   active    Boolean  @default(true)
 
-  users   User[]
-  workers WorkerZone[]
+  users      User[]
+  workers    WorkerZone[]
+  baseOf     WorkerProfile[] @relation("WorkerBaseZone")
 }
 
 model Category {
@@ -180,29 +198,53 @@ model Category {
   active   Boolean         @default(true)
   services Service[]
   profiles WorkerProfile[]
+  requests CategoryRequest[]
+}
+
+/** Solicitud de oficio nuevo (QA Johan #3). */
+model CategoryRequest {
+  id                String                @id @default(uuid())
+  name              String
+  requestedByUserId String
+  status            CategoryRequestStatus @default(PENDING)
+  adminNote         String?
+  createdCategoryId String?
+  createdAt         DateTime              @default(now())
+  reviewedAt        DateTime?
+  reviewedById      String?
+
+  requestedBy     User      @relation("CategoryRequestAuthor", fields: [requestedByUserId], references: [id], onDelete: Cascade)
+  reviewedBy      User?     @relation("CategoryRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  createdCategory Category? @relation(fields: [createdCategoryId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([requestedByUserId, status])
 }
 
 model WorkerProfile {
-  id              String         @id @default(uuid())
-  userId          String         @unique
-  mainCategoryId  String?
-  headline        String // oficio principal visible
-  description     String
-  experienceYears Int?
-  schedule        Json? // horario de atención por día
-  availability    Availability   @default(AVAILABLE)
-  visibleChannels Json? // canales de contacto que el trabajador decide mostrar
-  identityStatus  IdentityStatus @default(NOT_SUBMITTED)
-  dpi             String? // PRIVADO: nunca se expone en respuestas públicas
-  nit             String? // PRIVADO
-  ratingAverage   Decimal        @default(0) @db.Decimal(3, 2)
-  ratingCount     Int            @default(0)
-  completedJobs   Int            @default(0)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id                String         @id @default(uuid())
+  userId            String         @unique
+  mainCategoryId    String?
+  baseZoneId        String?
+  offersHomeService Boolean        @default(false)
+  headline          String // oficio principal visible
+  description       String
+  experienceYears   Int?
+  schedule          Json? // horario de atención por día
+  availability      Availability   @default(AVAILABLE)
+  visibleChannels   Json? // canales de contacto que el trabajador decide mostrar
+  identityStatus    IdentityStatus @default(NOT_SUBMITTED)
+  dpi               String? // PRIVADO: nunca se expone en respuestas públicas
+  nit               String? // PRIVADO
+  ratingAverage     Decimal        @default(0) @db.Decimal(3, 2)
+  ratingCount       Int            @default(0)
+  completedJobs     Int            @default(0)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   mainCategory   Category?       @relation(fields: [mainCategoryId], references: [id])
+  baseZone       Zone?           @relation("WorkerBaseZone", fields: [baseZoneId], references: [id])
   zones          WorkerZone[]
   services       Service[]
   portfolioItems PortfolioItem[]

@@ -110,6 +110,24 @@ export interface ZoneRow {
   active: boolean;
 }
 
+export interface CategoryRequestRow {
+  id: string;
+  name: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+  requestedBy: { id: string; name: string; phone: string };
+}
+
+export interface AvatarModerationRow {
+  id: string;
+  name: string;
+  phone: string;
+  avatarPath: string | null;
+  avatarUrl: string | null;
+  avatarStatus: 'NOT_SET' | 'PENDING' | 'APPROVED' | 'REJECTED';
+  updatedAt: string;
+}
+
 export const ADMIN_QUERY_KEYS = {
   stats: ['admin', 'stats'] as const,
   users: (page: number) => ['admin', 'users', page] as const,
@@ -118,6 +136,8 @@ export const ADMIN_QUERY_KEYS = {
   audit: (page: number) => ['admin', 'audit', page] as const,
   categories: ['admin', 'categories'] as const,
   zones: ['admin', 'zones'] as const,
+  categoryRequests: (page: number) => ['admin', 'category-requests', page] as const,
+  avatars: (page: number) => ['admin', 'avatars', page] as const,
 };
 
 function qs(params: Record<string, string | number | undefined>): string {
@@ -142,6 +162,22 @@ export const adminApi = {
     apiFetch<Paginated<VerificationRow>>(`/admin/verifications${qs({ page, pageSize: 20 })}`),
   decideVerification: (id: string, decision: 'VERIFIED' | 'REJECTED', note?: string) =>
     apiFetch(`/admin/verifications/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ decision, note }),
+    }),
+  categoryRequests: (page = 1) =>
+    apiFetch<Paginated<CategoryRequestRow>>(
+      `/admin/category-requests${qs({ page, pageSize: 20 })}`,
+    ),
+  decideCategoryRequest: (id: string, decision: 'VERIFIED' | 'REJECTED', note?: string) =>
+    apiFetch(`/admin/category-requests/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ decision, note }),
+    }),
+  pendingAvatars: (page = 1) =>
+    apiFetch<Paginated<AvatarModerationRow>>(`/admin/avatars${qs({ page, pageSize: 20 })}`),
+  decideAvatar: (userId: string, decision: 'VERIFIED' | 'REJECTED', note?: string) =>
+    apiFetch(`/admin/avatars/${userId}`, {
       method: 'PATCH',
       body: JSON.stringify({ decision, note }),
     }),

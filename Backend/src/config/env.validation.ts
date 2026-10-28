@@ -24,7 +24,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(''),
   SUPABASE_PUBLIC_BUCKET: z.string().default('public-media'),
   SUPABASE_PRIVATE_BUCKET: z.string().default('chat-media'),
-  UPLOAD_MAX_MB: z.coerce.number().positive().default(5),
+  UPLOAD_MAX_MB: z.coerce.number().positive().default(10),
   SENTRY_DSN: z.string().optional().default(''),
 });
 

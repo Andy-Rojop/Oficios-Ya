@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-export const MAX_UPLOAD_MB = 5;
+export const MAX_UPLOAD_MB = 10;
 
 /** Valida tipo y tamaño en el navegador (la API vuelve a validarlo). Devuelve un mensaje o null. */
 export function validateImageFile(file: File): string | null {

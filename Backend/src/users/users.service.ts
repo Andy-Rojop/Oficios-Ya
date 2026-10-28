@@ -5,8 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { User } from '../generated/prisma/client';
-import { AccountStatus, ActiveMode } from '../generated/prisma/enums';
+import { AccountStatus, ActiveMode, AvatarStatus } from '../generated/prisma/enums';
 import { PrismaService } from '../prisma/prisma.service';
+import type { UploadedImage } from '../storage/image-upload.interceptor';
+import { StorageService } from '../storage/storage.service';
 import type { SwitchModeDto } from './dto/switch-mode.dto';
 import type { UpdateEmailDto } from './dto/update-email.dto';
 import type { UpdateProfileDto } from './dto/update-profile.dto';
@@ -14,7 +16,10 @@ import { ensureWorkerProfileStub } from './worker-profile.stub';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   /** RF-006: actualizar nombre y/o zona. */
   async updateProfile(userId: string, dto: UpdateProfileDto): Promise<User> {
@@ -35,6 +40,21 @@ export class UsersService {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
         ...(dto.zoneId !== undefined ? { zoneId: dto.zoneId } : {}),
       },
+    });
+  }
+
+  /** QA Johan #2: subir foto de perfil → queda PENDING hasta que un admin la apruebe. */
+  async uploadAvatar(userId: string, file: UploadedImage | undefined): Promise<User> {
+    if (!file) {
+      throw new BadRequestException('Elija una imagen de perfil');
+    }
+    const path = await this.storage.uploadPublic(
+      file.buffer,
+      `avatars/${userId}/${Date.now()}.webp`,
+    );
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarPath: path, avatarStatus: AvatarStatus.PENDING },
     });
   }
 
