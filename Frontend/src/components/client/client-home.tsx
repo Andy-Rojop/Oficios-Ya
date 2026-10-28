@@ -80,17 +80,17 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
       </section>
 
       {spotlight.length > 0 ? (
-        <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden bg-[#e8eef6]">
+        <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden bg-[#e8f3f1]">
           <div
             className="pointer-events-none absolute inset-0"
             aria-hidden
             style={{
               backgroundImage:
-                'radial-gradient(ellipse 70% 55% at 10% 0%, rgba(37,99,235,0.14), transparent 55%), radial-gradient(ellipse 50% 40% at 100% 80%, rgba(14,116,144,0.12), transparent 50%)',
+                'radial-gradient(ellipse 70% 55% at 10% 0%, rgba(15,118,110,0.14), transparent 55%), radial-gradient(ellipse 50% 40% at 100% 80%, rgba(14,116,144,0.10), transparent 50%)',
             }}
           />
           <div
-            className="pointer-events-none absolute -right-16 top-10 h-56 w-56 rounded-full bg-[#2563eb]/10 blur-3xl"
+            className="pointer-events-none absolute -right-16 top-10 h-56 w-56 rounded-full bg-[#0f766e]/12 blur-3xl"
             aria-hidden
           />
           <div
@@ -223,7 +223,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               ))}
             </div>
             <div
-              className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#e8eef6] to-transparent sm:w-16"
+              className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#e8f3f1] to-transparent sm:w-16"
               aria-hidden
             />
           </div>

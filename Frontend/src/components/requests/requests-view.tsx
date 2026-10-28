@@ -48,10 +48,10 @@ export function RequestsView() {
   const emptyText = asWorker ? EMPTY_WORKER : EMPTY_CLIENT;
 
   return (
-    <section className="mx-auto w-full max-w-2xl space-y-4">
+    <section className="mx-auto w-full max-w-3xl space-y-5">
       <header className="space-y-1">
         <h1
-          className="text-2xl font-semibold"
+          className="text-2xl font-semibold tracking-tight sm:text-3xl"
           style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
           Mis solicitudes
@@ -59,7 +59,7 @@ export function RequestsView() {
         <p className="text-sm text-muted">
           {asWorker
             ? 'Pedidos que le enviaron los clientes.'
-            : 'Servicios que solicitó a trabajadores.'}
+            : 'Historial y estado de los servicios que solicitó.'}
         </p>
       </header>
 
@@ -108,13 +108,13 @@ function RequestRow({ request }: { request: ServiceRequestDto }) {
     <li>
       <Link
         href={`/solicitudes/${request.id}`}
-        className="block rounded-2xl border border-border bg-surface p-4 shadow-sm transition-colors hover:bg-brand-soft/50"
+        className="block rounded-2xl border border-border bg-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-md"
       >
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-semibold">{other.name}</p>
             {other.subtitle ? (
-              <p className="truncate text-xs text-brand-dark">{other.subtitle}</p>
+              <p className="truncate text-xs text-accent-dark">{other.subtitle}</p>
             ) : null}
           </div>
           <div className="flex items-center gap-1.5">
@@ -126,12 +126,12 @@ function RequestRow({ request }: { request: ServiceRequestDto }) {
             <StatusBadge status={request.status} />
           </div>
         </div>
-        <p className="mt-2 line-clamp-2 text-sm">{request.description}</p>
-        <p className="mt-2 flex flex-wrap items-center gap-x-3 text-xs text-muted">
+        <p className="mt-2 line-clamp-2 text-sm text-foreground/90">{request.description}</p>
+        <p className="mt-3 flex flex-wrap items-center gap-x-3 border-t border-border/70 pt-2 text-xs text-muted">
           <span>Enviada el {formatDate(request.createdAt)}</span>
           {request.service ? <span>· {request.service.name}</span> : null}
           {needsAction ? (
-            <span className="font-semibold text-brand">· Requiere su atención</span>
+            <span className="font-semibold text-accent">· Requiere su atención</span>
           ) : null}
         </p>
       </Link>

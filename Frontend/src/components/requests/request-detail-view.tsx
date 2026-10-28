@@ -183,7 +183,7 @@ export function RequestDetailView({ requestId }: { requestId: string }) {
 
       {request.review || actions.canReview ? (
         <Card className="space-y-3">
-          <CardTitle>Reseña</CardTitle>
+          <CardTitle>{request.review ? 'Reseña' : 'Calificar servicio'}</CardTitle>
           {request.review ? (
             <div className="space-y-2">
               <StarsDisplay rating={request.review.rating} className="text-xl" />

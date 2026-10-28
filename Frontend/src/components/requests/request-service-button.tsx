@@ -11,7 +11,7 @@ interface RequestServiceButtonProps {
   workerName: string;
   /** Ruta a la que volver tras ingresar (por defecto, el perfil del trabajador). */
   returnTo?: string;
-  variant?: 'default' | 'outline';
+  variant?: 'default' | 'outline' | 'accent';
 }
 
 /** «Solicitar servicio» en el perfil público: sin sesión pide ingresar y vuelve aquí. */
@@ -19,7 +19,7 @@ export function RequestServiceButton({
   workerProfileId,
   workerName,
   returnTo,
-  variant = 'outline',
+  variant = 'accent',
 }: RequestServiceButtonProps) {
   const router = useRouter();
   const me = useMe();

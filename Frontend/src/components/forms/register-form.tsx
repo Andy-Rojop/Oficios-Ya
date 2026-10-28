@@ -10,6 +10,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { FormField, FormMessage } from '@/components/forms/form-field';
 import { PhoneOtpFlow, type PhoneVerification } from '@/components/forms/phone-otp-flow';
+import { BrandLogo } from '@/components/layout/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -233,8 +234,8 @@ function RegisterPanel({
 }) {
   return (
     <section className="mx-auto w-full max-w-md space-y-5 py-4 sm:py-8">
+      <BrandLogo href="/" className="text-lg sm:text-xl" />
       <header className="space-y-2">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-dark">OficiosYa</p>
         <h1
           className="text-3xl font-semibold tracking-tight"
           style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}

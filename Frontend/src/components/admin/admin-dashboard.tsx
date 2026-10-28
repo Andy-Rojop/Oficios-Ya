@@ -21,12 +21,12 @@ export function AdminDashboard() {
     <section className="space-y-4">
       <div>
         <h1
-          className="text-2xl font-semibold"
+          className="text-2xl font-semibold tracking-tight"
           style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
         >
-          Administración
+          Dashboard
         </h1>
-        <p className="text-sm text-muted">Panel de moderación y catálogos de OficiosYa.</p>
+        <p className="text-sm text-muted">Resumen de moderación y catálogos de OficiosYa.</p>
       </div>
 
       {stats.isLoading ? (

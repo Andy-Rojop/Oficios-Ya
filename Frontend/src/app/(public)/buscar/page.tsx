@@ -55,15 +55,16 @@ export default async function BuscarPage({ searchParams }: PageProps) {
     <ProtectedDiscovery>
       <section className="space-y-6">
         <header className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Catálogo</p>
           <h1
-            className="text-2xl font-semibold sm:text-3xl"
+            className="text-2xl font-semibold tracking-tight sm:text-3xl"
             style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
           >
             Buscar trabajadores
           </h1>
-          <p className="max-w-2xl text-muted">
-            Toque el mapa para ver a las personas disponibles, de la más cercana a la más lejana.
-            Los pines son centros de zona, nunca una dirección exacta.
+          <p className="max-w-2xl text-sm text-muted sm:text-base">
+            Filtre por oficio, zona o precio y use el mapa para ver quién está cerca. Los pines son
+            centros de zona, nunca una dirección exacta.
           </p>
         </header>
 

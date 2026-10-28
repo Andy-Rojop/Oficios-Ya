@@ -88,10 +88,10 @@ export const REQUEST_STATUS_LABELS: Record<RequestStatus, string> = {
 
 export const REQUEST_STATUS_STYLES: Record<RequestStatus, string> = {
   SENT: 'bg-amber-100 text-amber-900',
-  ACCEPTED: 'bg-brand-soft text-brand-dark',
+  ACCEPTED: 'bg-accent-soft text-accent-dark',
   REJECTED: 'bg-red-100 text-red-800',
   IN_PROGRESS: 'bg-sky-100 text-sky-900',
-  COMPLETED: 'bg-brand text-white',
+  COMPLETED: 'bg-accent text-white',
   CANCELLED: 'bg-border text-muted',
 };
 

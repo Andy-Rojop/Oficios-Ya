@@ -3,6 +3,7 @@
 import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { BrandLogo } from '@/components/layout/brand-logo';
 import { GUEST_LINKS, linksForMode } from '@/components/layout/nav-links';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { isStaffRole } from '@/lib/admin';
@@ -47,16 +48,10 @@ export function SiteHeader() {
     >
       {/* flex-nowrap: Salir nunca baja de línea; queda siempre a la derecha. */}
       <div className="mx-auto flex h-12 w-full max-w-6xl flex-nowrap items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-6">
-        <Link
+        <BrandLogo
           href={sessionUser?.activeMode === 'WORKER' ? '/panel' : '/'}
-          className={cn(
-            'shrink-0 text-base font-bold tracking-tight sm:text-lg',
-            sessionUser?.activeMode === 'WORKER' ? 'text-white' : 'text-foreground',
-          )}
-          style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-        >
-          OficiosYa
-        </Link>
+          inverted={sessionUser?.activeMode === 'WORKER'}
+        />
 
         {sessionUser ? (
           <span

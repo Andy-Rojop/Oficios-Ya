@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { BadgeCheck } from 'lucide-react';
 import { ProtectedLogin } from '@/components/auth/require-login';
 import { Card, CardTitle } from '@/components/ui/card';
 import { OwnProfileActions } from '@/components/worker/own-profile-actions';
@@ -16,7 +17,7 @@ import {
   formatServicePrice,
   workersApi,
   type PublicWorkerProfile,
-} from '@/lib/workers';
+}
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -75,53 +76,64 @@ export default async function TrabajadorPage({ params }: PageProps) {
   return (
     <ProtectedLogin>
     <article className="mx-auto w-full max-w-3xl space-y-5">
-      <Card className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <h1
-              className="break-words text-3xl font-semibold tracking-tight"
-              style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+      <Card className="space-y-5 overflow-hidden !p-0">
+        <div className="space-y-4 p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1
+                  className="break-words text-3xl font-semibold tracking-tight"
+                  style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+                >
+                  {profile.name}
+                </h1>
+                {profile.identityVerified ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent-dark">
+                    <BadgeCheck aria-hidden className="h-3.5 w-3.5" />
+                    Verificado
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-lg text-brand-dark">{profile.headline}</p>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-sm font-semibold ${AVAILABILITY_STYLES[profile.availability]}`}
             >
-              {profile.name}
-            </h1>
-            <p className="text-lg text-brand-dark">{profile.headline}</p>
+              {AVAILABILITY_LABELS[profile.availability]}
+            </span>
           </div>
-          <span
-            className={`rounded-full px-3 py-1 text-sm font-semibold ${AVAILABILITY_STYLES[profile.availability]}`}
-          >
-            {AVAILABILITY_LABELS[profile.availability]}
-          </span>
+
+          <dl className="grid gap-3 text-sm sm:grid-cols-3">
+            {profile.mainCategory ? (
+              <Fact label="Oficio" value={profile.mainCategory.name} />
+            ) : null}
+            {profile.experienceYears !== null ? (
+              <Fact
+                label="Experiencia"
+                value={`${profile.experienceYears} ${profile.experienceYears === 1 ? 'año' : 'años'}`}
+              />
+            ) : null}
+            <Fact
+              label="Calificación"
+              value={
+                profile.ratingCount > 0
+                  ? `${profile.ratingAverage.toFixed(1)} (${profile.ratingCount})`
+                  : 'Aún sin reseñas'
+              }
+            />
+            <Fact label="Trabajos completados" value={String(profile.completedJobs)} />
+          </dl>
+
+          <p className="whitespace-pre-line">{profile.description}</p>
         </div>
 
-        <dl className="grid gap-3 text-sm sm:grid-cols-3">
-          {profile.mainCategory ? (
-            <Fact label="Categoría" value={profile.mainCategory.name} />
-          ) : null}
-          {profile.experienceYears !== null ? (
-            <Fact
-              label="Experiencia"
-              value={`${profile.experienceYears} ${profile.experienceYears === 1 ? 'año' : 'años'}`}
-            />
-          ) : null}
-          <Fact
-            label="Calificación"
-            value={
-              profile.ratingCount > 0
-                ? `${profile.ratingAverage.toFixed(1)} (${profile.ratingCount})`
-                : 'Aún sin reseñas'
-            }
+        <div className="border-t border-border bg-[#f7faf9] px-5 py-4 sm:px-6">
+          <OwnProfileActions
+            workerProfileId={profile.id}
+            workerName={profile.name}
+            isOwner={profile.isOwner}
           />
-          <Fact label="Trabajos completados" value={String(profile.completedJobs)} />
-          {profile.identityVerified ? <Fact label="Identidad" value="Verificada" /> : null}
-        </dl>
-
-        <p className="whitespace-pre-line">{profile.description}</p>
-
-        <OwnProfileActions
-          workerProfileId={profile.id}
-          workerName={profile.name}
-          isOwner={profile.isOwner}
-        />
+        </div>
       </Card>
 
       {profile.zones.length > 0 ? (

@@ -356,8 +356,13 @@ function ModeCard({ user }: { user: UserDto }) {
   function switchTo(mode: ActiveMode) {
     if (mode === user.activeMode || mutation.isPending) return;
     setPendingMode(mode);
+    // Si la red falla o tarda, no dejar el overlay negro pegado (iOS se siente “congelado”).
+    const safety = window.setTimeout(() => setPendingMode(null), 8000);
     mutation.mutate(mode, {
-      onSettled: () => setPendingMode(null),
+      onSettled: () => {
+        window.clearTimeout(safety);
+        setPendingMode(null);
+      },
     });
   }
 

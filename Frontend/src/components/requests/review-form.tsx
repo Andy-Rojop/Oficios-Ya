@@ -42,16 +42,19 @@ export function ReviewForm({
 
   return (
     <form
-      className="space-y-3"
+      className="space-y-4 rounded-2xl border border-accent/20 bg-gradient-to-b from-accent-soft/70 to-surface p-4 sm:p-5"
       onSubmit={(event) => {
         event.preventDefault();
         if (rating >= 1 && !submit.isPending) submit.mutate();
       }}
     >
-      <div className="space-y-1">
-        <p id={labelId} className="text-sm font-medium">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">Calificar servicio</p>
+        <p id={labelId} className="mt-1 text-base font-semibold text-foreground">
           ¿Cómo fue el trabajo?
         </p>
+      </div>
+      <div className="space-y-1">
         <StarPicker value={rating} onChange={setRating} labelledBy={labelId} />
         <p className="h-4 text-xs text-muted" aria-live="polite">
           {RATING_HINTS[rating]}
@@ -78,7 +81,7 @@ export function ReviewForm({
           {getErrorMessage(submit.error)}
         </p>
       ) : null}
-      <Button type="submit" disabled={rating < 1 || submit.isPending}>
+      <Button type="submit" variant="accent" className="w-full sm:w-auto" disabled={rating < 1 || submit.isPending}>
         {submit.isPending ? 'Enviando…' : 'Publicar reseña'}
       </Button>
     </form>
@@ -121,7 +124,7 @@ export function ReplyForm({ reviewId, requestId }: { reviewId: string; requestId
           {getErrorMessage(submit.error)}
         </p>
       ) : null}
-      <Button type="submit" size="sm" disabled={!reply.trim() || submit.isPending}>
+      <Button type="submit" size="sm" variant="accent" disabled={!reply.trim() || submit.isPending}>
         {submit.isPending ? 'Enviando…' : 'Enviar respuesta'}
       </Button>
     </form>

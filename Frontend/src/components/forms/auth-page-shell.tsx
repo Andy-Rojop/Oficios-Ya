@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { BrandLogo } from '@/components/layout/brand-logo';
 import { Card } from '@/components/ui/card';
 
 interface AuthPageShellProps {
@@ -11,6 +12,7 @@ interface AuthPageShellProps {
 export function AuthPageShell({ title, description, children }: AuthPageShellProps) {
   return (
     <section className="mx-auto w-full max-w-md space-y-5 py-4 sm:py-8">
+      <BrandLogo href="/" className="text-lg sm:text-xl" />
       <header className="space-y-2">
         <h1
           className="text-3xl font-semibold tracking-tight"

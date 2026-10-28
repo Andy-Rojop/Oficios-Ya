@@ -1,17 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import { Card } from '@/components/ui/card';
 import { isStaffRole } from '@/lib/admin';
 import { getErrorMessage, isUnauthorized, useMe } from '@/lib/auth';
+import { cn } from '@/lib/utils';
 
 const ADMIN_NAV = [
-  { href: '/admin', label: 'Resumen' },
+  { href: '/admin', label: 'Dashboard' },
   { href: '/admin/aprobaciones', label: 'Aprobaciones' },
   { href: '/admin/verificaciones', label: 'Verificaciones' },
-  { href: '/admin/reportes', label: 'Reportes' },
+  { href: '/admin/reportes', label: 'Moderación y Reportes' },
   { href: '/admin/catalogos', label: 'Catálogos' },
   { href: '/admin/usuarios', label: 'Usuarios' },
   { href: '/admin/bitacora', label: 'Bitácora', adminOnly: true },
@@ -20,6 +21,7 @@ const ADMIN_NAV = [
 /** Redirige si el rol no es ADMIN/MUNICIPAL; muestra navegación del panel. */
 export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const me = useMe();
 
   useEffect(() => {
@@ -56,19 +58,43 @@ export function AdminShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="space-y-6">
-      <nav aria-label="Administración" className="flex flex-wrap gap-1 border-b border-border pb-2">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-muted hover:bg-brand-soft hover:text-foreground"
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-      {children}
+    <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+      <aside className="space-y-4 lg:sticky lg:top-[calc(var(--header-h)+1rem)] lg:self-start">
+        <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+          <span className="inline-flex items-center rounded-md bg-[#f59a2c] px-2 py-0.5 text-xs font-bold tracking-tight text-[#1a2332]">
+            OficiosYa
+          </span>
+          <p className="mt-1 truncate text-sm font-semibold text-foreground">{user.name}</p>
+          <p className="text-xs text-muted">
+            {user.role === 'ADMIN' ? 'Administrador' : 'Municipal'}
+          </p>
+        </div>
+        <nav
+          aria-label="Administración"
+          className="flex flex-wrap gap-1 rounded-2xl border border-border bg-surface p-2 shadow-sm lg:flex-col"
+        >
+          {links.map((link) => {
+            const active =
+              link.href === '/admin' ? pathname === '/admin' : pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'rounded-xl px-3 py-2.5 text-sm font-medium transition',
+                  active
+                    ? 'bg-accent-soft text-accent-dark'
+                    : 'text-muted hover:bg-brand-soft hover:text-foreground',
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

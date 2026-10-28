@@ -11,7 +11,7 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
   const extraZones = worker.zones.length > 3 ? ` +${worker.zones.length - 3}` : '';
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-surface transition hover:border-foreground/20 hover:shadow-md">
+    <article className="overflow-hidden rounded-2xl border border-border bg-surface transition hover:-translate-y-0.5 hover:border-accent/35 hover:shadow-md">
       <LoginAwareLink href={`/trabajador/${worker.id}`} className="flex gap-3 p-3 sm:gap-4 sm:p-4">
         <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-soft sm:h-24 sm:w-24">
           {worker.photoUrl ? (

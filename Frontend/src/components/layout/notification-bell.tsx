@@ -17,9 +17,16 @@ import { cn } from '@/lib/utils';
 
 /**
  * Panel de avisos vía portal.
- * En iOS NO se bloquea `body.overflow` (deja la página congelada) ni se
- * re-renderiza en cada scroll.
+ * En iPhone NO se usa el modo “desktop” aunque el ancho en landscape sea >640px
+ * (antes eso reactivaba scroll+setState y congelaba Safari).
+ * Tampoco se bloquea `body.overflow`.
  */
+function isFinePointerDesktop(): boolean {
+  if (typeof window === 'undefined') return false;
+  // hover+fine = mouse real. En iPhone/iPad (incluso landscape ancho) es false.
+  return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+}
+
 export function NotificationBell({
   enabled,
   workerChrome = false,
@@ -54,15 +61,15 @@ export function NotificationBell({
     };
   }, [enabled, queryClient]);
 
-  // Solo posicionar en desktop; en móvil el panel va centrado y fijo.
+  // Posicionar anclado al botón solo con mouse/desktop real.
   useLayoutEffect(() => {
     if (!open || !buttonRef.current) return;
 
-    const media = window.matchMedia('(min-width: 640px)');
+    const pointerMedia = window.matchMedia('(hover: hover) and (pointer: fine)');
 
     function place() {
       const button = buttonRef.current;
-      if (!button || !media.matches) {
+      if (!button || !pointerMedia.matches) {
         setDesktopPos((prev) => (prev === null ? prev : null));
         return;
       }
@@ -77,17 +84,25 @@ export function NotificationBell({
     }
 
     place();
-    media.addEventListener('change', place);
+    pointerMedia.addEventListener('change', place);
     window.addEventListener('resize', place);
-    // Scroll solo en desktop (en iPhone el scroll + setState congelaba la UI).
-    if (media.matches) {
+    // Scroll+setState solo con puntero fino (nunca en iPhone).
+    if (pointerMedia.matches) {
       window.addEventListener('scroll', place, true);
     }
     return () => {
-      media.removeEventListener('change', place);
+      pointerMedia.removeEventListener('change', place);
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
+  }, [open]);
+
+  // Al abrir en touch, forzar panel móvil aunque quede un desktopPos viejo.
+  useEffect(() => {
+    if (!open) return;
+    if (!isFinePointerDesktop()) {
+      setDesktopPos(null);
+    }
   }, [open]);
 
   useEffect(() => {
@@ -110,7 +125,10 @@ export function NotificationBell({
             <button
               type="button"
               aria-label="Cerrar notificaciones"
-              className="fixed inset-0 z-[60] bg-black/40 sm:bg-transparent"
+              className={cn(
+                'fixed inset-0 z-[60]',
+                desktopPos ? 'bg-transparent' : 'bg-black/40',
+              )}
               onClick={() => setOpen(false)}
             />
             <div
@@ -146,14 +164,16 @@ export function NotificationBell({
                       Marcar todas
                     </button>
                   ) : null}
-                  <button
-                    type="button"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg leading-none text-muted hover:bg-brand-soft sm:hidden"
-                    aria-label="Cerrar"
-                    onClick={() => setOpen(false)}
-                  >
-                    ×
-                  </button>
+                  {!desktopPos ? (
+                    <button
+                      type="button"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg leading-none text-muted hover:bg-brand-soft"
+                      aria-label="Cerrar"
+                      onClick={() => setOpen(false)}
+                    >
+                      ×
+                    </button>
+                  ) : null}
                 </div>
               </div>
               <ul className="flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
