@@ -84,8 +84,8 @@ export function SiteHeader() {
                         ? 'bg-white text-[#1e3a5f]'
                         : 'text-white/80 hover:bg-white/10 hover:text-white'
                       : active
-                        ? 'bg-foreground text-white'
-                        : 'text-muted hover:bg-brand-soft hover:text-foreground',
+                        ? 'bg-accent text-white'
+                        : 'text-muted hover:bg-accent-soft hover:text-foreground',
                   )}
                 >
                   <span className="md:hidden">{link.shortLabel ?? link.label}</span>

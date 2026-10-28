@@ -22,6 +22,7 @@ import {
   type SearchSort,
   type SearchWorkerCard,
 } from '@/lib/search';
+import type { Availability } from '@/lib/workers';
 import { cn } from '@/lib/utils';
 
 interface SearchFiltersFormProps {
@@ -64,6 +65,7 @@ export function SearchFiltersForm({
   const [minRating, setMinRating] = useState(
     filters.minRating !== undefined ? String(filters.minRating) : '',
   );
+  const [availability, setAvailability] = useState(filters.availability ?? '');
   const [priceMin, setPriceMin] = useState(
     filters.priceMin !== undefined ? String(filters.priceMin) : '',
   );
@@ -113,6 +115,7 @@ export function SearchFiltersForm({
       categoryId: hideCategory ? undefined : nextCategoryId,
       zoneId: nextZoneId,
       minRating: minRating ? Number(minRating) : undefined,
+      availability: (availability || undefined) as Availability | undefined,
       priceMin: parsedMin ?? undefined,
       priceMax: parsedMax ?? undefined,
       sort: nextSort === 'rating' ? undefined : nextSort,
@@ -196,6 +199,7 @@ export function SearchFiltersForm({
     setCategoryId('');
     setZoneId('');
     setMinRating('');
+    setAvailability('');
     setPriceMin('');
     setPriceMax('');
     setSort('rating');
@@ -228,7 +232,7 @@ export function SearchFiltersForm({
             hideCategorySuggestions={hideCategory}
           />
         </div>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" variant="accent" disabled={pending}>
           Buscar
         </Button>
       </div>
@@ -300,6 +304,20 @@ export function SearchFiltersForm({
           </Select>
         </div>
 
+        <div className="space-y-1">
+          <Label htmlFor="filter-availability">Disponibilidad</Label>
+          <Select
+            id="filter-availability"
+            value={availability}
+            onChange={(event) => setAvailability(event.target.value)}
+          >
+            <option value="">Todas</option>
+            <option value="AVAILABLE">Disponibles</option>
+            <option value="BUSY">Ocupados</option>
+            <option value="UNAVAILABLE">No disponibles</option>
+          </Select>
+        </div>
+
         <fieldset className="space-y-1 sm:col-span-2">
           <legend className="text-sm font-medium">Precio de referencia (Q)</legend>
           <div className="flex items-center gap-2">
@@ -359,7 +377,7 @@ export function SearchFiltersForm({
             'sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-border bg-surface px-4 py-3 shadow-[0_-6px_16px_rgba(26,35,50,0.06)] md:bottom-3 lg:static lg:z-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none',
         )}
       >
-        <Button type="submit" variant="default" disabled={pending} className="min-h-11 flex-1 sm:flex-none">
+        <Button type="submit" variant="accent" disabled={pending} className="min-h-11 flex-1 sm:flex-none">
           Aplicar filtros
         </Button>
         <Button type="button" variant="ghost" onClick={clearAll} disabled={pending} className="min-h-11">

@@ -280,7 +280,7 @@ export default function WorkersMap({
           <CircleMarker
             center={DEFAULT_MAP_CENTER}
             radius={14}
-            pathOptions={{ color: '#ffffff', weight: 3, fillColor: '#1e3a5f', fillOpacity: 0.9 }}
+            pathOptions={{ color: '#ffffff', weight: 3, fillColor: '#f26522', fillOpacity: 0.9 }}
           >
             <Popup>
               <p className="text-sm font-semibold">El Asintal</p>
@@ -313,9 +313,9 @@ export default function WorkersMap({
               center={[selectedCenter.lat, selectedCenter.lng]}
               radius={1800}
               pathOptions={{
-                color: '#1e3a5f',
+                color: '#f26522',
                 weight: 1.5,
-                fillColor: '#1e3a5f',
+                fillColor: '#f26522',
                 fillOpacity: 0.08,
               }}
             />
@@ -340,7 +340,7 @@ export default function WorkersMap({
         {workerPoints.map((worker) => {
           const fillColor =
             worker.availability === 'AVAILABLE'
-              ? '#1e3a5f'
+              ? '#f26522'
               : worker.availability === 'BUSY'
                 ? '#b45309'
                 : '#64748b';

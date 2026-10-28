@@ -61,9 +61,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
       <aside className="space-y-4 lg:sticky lg:top-[calc(var(--header-h)+1rem)] lg:self-start">
         <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
-          <span className="inline-flex items-center rounded-md bg-[#f59a2c] px-2 py-0.5 text-xs font-bold tracking-tight text-[#1a2332]">
-            OficiosYa
-          </span>
+          <p className="text-sm font-bold tracking-tight text-foreground">
+            oficios<span className="text-accent">YA!</span>
+          </p>
           <p className="mt-1 truncate text-sm font-semibold text-foreground">{user.name}</p>
           <p className="text-xs text-muted">
             {user.role === 'ADMIN' ? 'Administrador' : 'Municipal'}

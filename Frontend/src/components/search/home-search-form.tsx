@@ -76,7 +76,11 @@ export function HomeSearchForm({
           categories={categories}
           workers={workers}
         />
-        <Button type="submit" className="h-11 w-full shrink-0 rounded-lg px-4 sm:w-auto">
+        <Button
+          type="submit"
+          variant="accent"
+          className="h-11 w-full shrink-0 rounded-lg px-5 sm:w-auto"
+        >
           Buscar
         </Button>
       </form>
