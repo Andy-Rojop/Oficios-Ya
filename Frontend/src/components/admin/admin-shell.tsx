@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
+import { BrandLogo } from '@/components/layout/brand-logo';
 import { Card } from '@/components/ui/card';
 import { isStaffRole } from '@/lib/admin';
 import { getErrorMessage, isUnauthorized, useMe } from '@/lib/auth';
@@ -61,9 +62,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
       <aside className="space-y-4 lg:sticky lg:top-[calc(var(--header-h)+1rem)] lg:self-start">
         <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
-          <p className="text-sm font-bold tracking-tight text-foreground">
-            oficios<span className="text-accent">YA!</span>
-          </p>
+          <BrandLogo href="/admin" className="h-9 sm:h-9" />
           <p className="mt-1 truncate text-sm font-semibold text-foreground">{user.name}</p>
           <p className="text-xs text-muted">
             {user.role === 'ADMIN' ? 'Administrador' : 'Municipal'}

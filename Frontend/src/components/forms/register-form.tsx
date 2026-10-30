@@ -234,7 +234,7 @@ function RegisterPanel({
 }) {
   return (
     <section className="mx-auto w-full max-w-md space-y-5 py-4 sm:py-8">
-      <BrandLogo href="/" className="text-lg sm:text-xl" />
+      <BrandLogo href="/" className="h-12 sm:h-14" />
       <header className="space-y-2">
         <h1
           className="text-3xl font-semibold tracking-tight"
