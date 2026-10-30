@@ -25,6 +25,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: user } = useMe();
   const authScreen = isAuthPath(pathname);
   const loggedIn = Boolean(user) && !authScreen;
+
+  // Ingreso usa su propio lienzo a pantalla completa (prototipo), sin header.
+  if (pathname === '/ingresar') {
+    return (
+      <>
+        <ModeTheme />
+        {children}
+      </>
+    );
+  }
   const chatArea = pathname === '/mensajes' || isChatThreadPath(pathname);
   const inThread = isChatThreadPath(pathname);
   const showBottomPad = loggedIn && !inThread;

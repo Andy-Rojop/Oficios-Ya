@@ -2,13 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
+import { ArrowRight, Lock, Phone, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { FormField, FormMessage } from '@/components/forms/form-field';
-import { PhoneInput } from '@/components/forms/phone-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,7 +21,6 @@ import {
   type ActiveMode,
 } from '@/lib/auth';
 import { normalizeGuatemalaPhone } from '@/lib/phone';
-import { UI_COPY } from '@/lib/ui-copy';
 
 const loginSchema = z.object({
   phone: z
@@ -119,15 +118,19 @@ export function LoginForm() {
   const checkingSession = (me.isLoading || Boolean(me.data)) && !error && !isSubmitting;
 
   if (checkingSession && !error) {
-    return <p className="text-center text-sm text-muted">Entrando…</p>;
+    return <p className="text-center text-sm text-[#667085]">Entrando…</p>;
   }
 
+  const phoneField = register('phone');
+  const registerHref =
+    mode === 'WORKER' ? '/registro?mode=WORKER' : mode === 'CLIENT' ? '/registro?mode=CLIENT' : '/registro';
+
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-4">
+    <form onSubmit={onSubmit} noValidate className="space-y-5">
       {roleLabel ? (
-        <p className="rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand-dark">
+        <p className="rounded-xl bg-white px-3 py-2 text-sm text-[#1B2A4A] shadow-sm">
           Entrará como <strong>{roleLabel}</strong>.{' '}
-          <Link href="/roles" className="font-medium underline-offset-2 hover:underline">
+          <Link href="/roles" className="font-medium text-accent underline-offset-2 hover:underline">
             Cambiar rol
           </Link>
         </p>
@@ -139,46 +142,79 @@ export function LoginForm() {
         </FormMessage>
       ) : null}
 
-      <FormField id="phone" label="Teléfono" error={errors.phone?.message}>
-        {(aria) => <PhoneInput {...aria} {...register('phone')} />}
+      <FormField id="phone" label="Teléfono (+502)" error={errors.phone?.message}>
+        {(aria) => (
+          <div className="flex h-12 items-center gap-2 rounded-xl border border-[#E4E7EC] bg-white px-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+            <Phone className="h-4 w-4 shrink-0 text-[#98A2B3]" aria-hidden />
+            <span className="rounded-md bg-[#F2F4F7] px-2 py-1 text-sm font-semibold text-[#1B2A4A]">
+              +502
+            </span>
+            <input
+              {...aria}
+              {...phoneField}
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
+              placeholder="5555 0001"
+              className="h-full min-w-0 flex-1 bg-transparent text-base text-[#1B2A4A] outline-none placeholder:text-[#98A2B3]"
+              onChange={(event) => {
+                const digits = event.target.value.replace(/\D/g, '').slice(0, 8);
+                event.target.value =
+                  digits.length > 4 ? `${digits.slice(0, 4)} ${digits.slice(4)}` : digits;
+                void phoneField.onChange(event);
+              }}
+            />
+          </div>
+        )}
       </FormField>
 
       <FormField id="password" label="Contraseña" error={errors.password?.message}>
         {(aria) => (
-          <Input
-            {...aria}
-            type="password"
-            autoComplete="current-password"
-            maxLength={15}
-            {...register('password')}
-          />
+          <div className="relative">
+            <Lock
+              className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[#98A2B3]"
+              aria-hidden
+            />
+            <Input
+              {...aria}
+              type="password"
+              autoComplete="current-password"
+              maxLength={15}
+              placeholder="••••••••"
+              className="h-12 rounded-xl border-[#E4E7EC] pl-10 shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+              {...register('password')}
+            />
+          </div>
         )}
       </FormField>
 
+      <div className="flex justify-end">
+        <Link href="/recuperar" className="text-sm font-semibold text-accent hover:text-accent-dark">
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </div>
+
       {error ? <FormMessage tone="error">{error}</FormMessage> : null}
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        variant="accent"
+        className="h-12 w-full rounded-xl text-base font-semibold"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? 'Ingresando…' : 'Ingresar'}
+        {isSubmitting ? null : <ArrowRight className="h-4 w-4" aria-hidden />}
       </Button>
 
-      <div className="flex flex-col gap-2 text-center text-sm sm:flex-row sm:justify-between">
-        <Link
-          href="/recuperar"
-          className="font-medium text-brand underline-offset-4 hover:underline"
-        >
-          {UI_COPY.forgotPassword}
-        </Link>
-        <Link
-          href={
-            mode === 'WORKER'
-              ? '/registro?mode=WORKER'
-              : mode === 'CLIENT'
-                ? '/registro?mode=CLIENT'
-                : '/registro'
-          }
-          className="font-medium text-brand underline-offset-4 hover:underline"
-        >
-          {UI_COPY.createAccount}
+      <p className="flex items-center justify-center gap-1.5 text-center text-xs text-[#98A2B3]">
+        <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+        El inicio de sesión no envía SMS.
+      </p>
+
+      <div className="border-t border-[#E4E7EC] pt-5 text-center text-sm text-[#667085]">
+        ¿No tienes cuenta?{' '}
+        <Link href={registerHref} className="font-semibold text-accent hover:text-accent-dark">
+          Crear cuenta
         </Link>
       </div>
     </form>

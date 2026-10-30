@@ -1,19 +1,16 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { AuthPageShell } from '@/components/forms/auth-page-shell';
 import { LoginForm } from '@/components/forms/login-form';
+import { LoginScreen } from '@/components/forms/login-screen';
 
 export const metadata: Metadata = { title: 'Ingresar' };
 
 export default function IngresarPage() {
   return (
-    <AuthPageShell
-      title="Ingresar"
-      description="Ingrese con su teléfono y su contraseña. El inicio de sesión no envía SMS."
-    >
+    <LoginScreen>
       <Suspense fallback={null}>
         <LoginForm />
       </Suspense>
-    </AuthPageShell>
+    </LoginScreen>
   );
 }
