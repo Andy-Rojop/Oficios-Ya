@@ -1,100 +1,66 @@
 import Image from 'next/image';
+import { Star } from 'lucide-react';
 import { LoginAwareLink } from '@/components/auth/login-aware-link';
 import { AVAILABILITY_LABELS } from '@/lib/workers';
-import { formatCardPrice, type SearchWorkerCard } from '@/lib/search';
+import type { SearchWorkerCard } from '@/lib/search';
 
 export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
-  const zones = worker.zones
-    .map((z) => z.name)
-    .slice(0, 3)
-    .join(', ');
-  const extraZones = worker.zones.length > 3 ? ` +${worker.zones.length - 3}` : '';
+  const zone = worker.zones[0]?.name;
+  const category = worker.mainCategory?.name || worker.headline;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-surface transition hover:-translate-y-0.5 hover:border-accent/35 hover:shadow-md">
-      <div className="flex gap-3 p-3 sm:gap-4 sm:p-4">
+    <article className="rounded-2xl border border-[#e7eaf0] bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <div className="flex gap-3">
         <LoginAwareLink
           href={`/trabajador/${worker.id}`}
-          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-soft sm:h-24 sm:w-24"
+          className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-brand-soft"
         >
           {worker.photoUrl ? (
-            <Image src={worker.photoUrl} alt="" fill sizes="96px" className="object-cover" />
+            <Image src={worker.photoUrl} alt="" fill sizes="44px" className="object-cover" />
           ) : (
-            <div className="flex h-full items-center justify-center text-xs font-medium text-muted">
-              Sin foto
-            </div>
+            <span className="flex h-full items-center justify-center text-xs font-semibold text-[#1B2A4A]">
+              {worker.name.slice(0, 1)}
+            </span>
           )}
         </LoginAwareLink>
 
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
             <LoginAwareLink href={`/trabajador/${worker.id}`} className="min-w-0">
-              <h2 className="truncate text-base font-semibold text-foreground sm:text-lg">
-                {worker.name}
-              </h2>
-              <p className="truncate text-sm text-muted">
-                {worker.headline || worker.mainCategory?.name}
-              </p>
+              <h2 className="truncate text-sm font-semibold text-[#1B2A4A]">{worker.name}</h2>
+              <p className="truncate text-xs text-[#667085]">{category}</p>
             </LoginAwareLink>
             <span
               className={
                 worker.availability === 'AVAILABLE'
-                  ? 'inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700'
+                  ? 'shrink-0 rounded-full bg-[#fff4ec] px-2 py-0.5 text-[11px] font-semibold text-accent'
                   : worker.availability === 'BUSY'
-                    ? 'shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900'
-                    : 'shrink-0 rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-muted'
+                    ? 'shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-900'
+                    : 'shrink-0 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-muted'
               }
             >
-              {worker.availability === 'AVAILABLE' ? (
-                <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Disponible
-                </>
-              ) : (
-                AVAILABILITY_LABELS[worker.availability]
-              )}
+              {worker.availability === 'AVAILABLE' ? 'Disponible' : AVAILABILITY_LABELS[worker.availability]}
             </span>
           </div>
 
-          <p className="line-clamp-2 text-sm text-muted">{worker.description}</p>
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted sm:text-sm">
-            {worker.distanceKm != null ? (
-              <span className="rounded-full bg-[#e7f6ee] px-2 py-0.5 text-xs font-semibold text-[#1f6b4a]">
-                ~{worker.distanceKm.toFixed(1)} km
-              </span>
-            ) : null}
-            {worker.mainCategory ? <span>{worker.mainCategory.name}</span> : null}
-            <span>
-              ★ {worker.ratingAverage.toFixed(1)}
-              {worker.ratingCount > 0 ? ` (${worker.ratingCount})` : ''}
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-[#667085]">
+            <span className="inline-flex items-center gap-1 font-semibold text-[#1B2A4A]">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" aria-hidden />
+              {worker.ratingAverage.toFixed(1)}
             </span>
-            <span className="font-medium text-foreground">{formatCardPrice(worker)}</span>
-          </div>
-
-          {zones ? (
-            <p className="truncate text-xs text-muted">
-              {zones}
-              {extraZones}
-            </p>
-          ) : null}
-
-          <div className="flex flex-wrap gap-2 pt-1">
-            <LoginAwareLink
-              href={`/trabajador/${worker.id}`}
-              className="inline-flex h-9 items-center rounded-lg border border-border px-3 text-xs font-semibold text-foreground transition hover:bg-brand-soft"
-            >
-              Ver perfil
-            </LoginAwareLink>
-            <LoginAwareLink
-              href={`/trabajador/${worker.id}`}
-              className="inline-flex h-9 items-center rounded-lg bg-accent px-3 text-xs font-semibold text-white transition hover:bg-accent-dark"
-            >
-              Solicitar
-            </LoginAwareLink>
-          </div>
+            <span>({worker.ratingCount} reseña{worker.ratingCount === 1 ? '' : 's'})</span>
+            {zone ? <span>{zone}</span> : null}
+            {worker.distanceKm != null ? <span>~{worker.distanceKm.toFixed(1)} km</span> : null}
+          </p>
         </div>
       </div>
+
+      <LoginAwareLink
+        href={`/trabajador/${worker.id}`}
+        className="mt-3 flex h-10 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-white transition hover:bg-accent-dark"
+      >
+        Solicitar Servicio
+      </LoginAwareLink>
     </article>
   );
 }

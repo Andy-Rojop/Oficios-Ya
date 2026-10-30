@@ -397,9 +397,9 @@ export default function WorkersMap({
                   </p>
                   <Link
                     href={`/trabajador/${worker.id}`}
-                    className="inline-block pt-0.5 text-xs font-semibold text-brand underline"
+                    className="inline-block pt-1 text-xs font-semibold text-accent"
                   >
-                    Ver perfil de {worker.name.split(' ')[0]} →
+                    Ver perfil →
                   </Link>
                 </div>
               </Popup>

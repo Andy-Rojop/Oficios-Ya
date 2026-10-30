@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { SlidersHorizontal } from 'lucide-react';
+import { MapPin, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +34,10 @@ interface SearchFiltersFormProps {
   workers?: SearchWorkerCard[];
   /** En /categorias/[slug] la categoría ya viene fija en la ruta. */
   hideCategory?: boolean;
+  /** Controles compactos del prototipo de /buscar. */
+  appearance?: 'default' | 'discovery';
+  resultCount?: number;
+  hasMore?: boolean;
 }
 
 const RATING_OPTIONS = [
@@ -55,6 +59,9 @@ export function SearchFiltersForm({
   zones,
   workers = [],
   hideCategory = false,
+  appearance = 'default',
+  resultCount = 0,
+  hasMore = false,
 }: SearchFiltersFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -79,6 +86,7 @@ export function SearchFiltersForm({
       : null,
   );
   const [message, setMessage] = useState<string | null>(null);
+  const [browseBy, setBrowseBy] = useState<'category' | 'location'>('category');
 
   // El mapa escribe disponibilidad, orden y coordenadas en la URL. Se ajustan en el render
   // para que "Aplicar filtros" no borre el punto que acaba de elegir.
@@ -206,6 +214,214 @@ export function SearchFiltersForm({
     setCoords(null);
     setMessage(null);
     startTransition(() => router.push(basePath));
+  }
+
+  if (appearance === 'discovery') {
+    const chipClass = (active: boolean) =>
+      cn(
+        'rounded-full px-3 py-1.5 text-xs font-semibold transition',
+        active ? 'bg-accent text-white' : 'bg-white text-[#344054] shadow-sm ring-1 ring-[#e6e8ee]',
+      );
+
+    return (
+      <form onSubmit={onSubmit} className="space-y-3 px-4 pb-3 pt-4" aria-busy={pending}>
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-[#1B2A4A]">Encuentra Talentos Cerca</h1>
+          <p className="mt-0.5 text-sm text-[#667085]">Personas de tu comunidad, listas para ayudarte.</p>
+        </div>
+
+        <Label htmlFor="filter-q" className="sr-only">
+          ¿Qué necesitas resolver?
+        </Label>
+        <ContextualSearchInput
+          id="filter-q"
+          value={q}
+          onChange={setQ}
+          onSelectSuggestion={handleSelectSuggestion}
+          placeholder="¿Qué necesitas resolver?"
+          categories={categories}
+          zones={zones}
+          workers={workers}
+          activeCategoryId={categoryId || filters.categoryId}
+          activeZoneId={zoneId || filters.zoneId}
+          hideCategorySuggestions={hideCategory}
+        />
+
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <Label htmlFor="filter-zone" className="sr-only">
+              Zona
+            </Label>
+            <Select
+              id="filter-zone"
+              value={zoneId}
+              className="h-10 rounded-full bg-white text-sm"
+              onChange={(event) => {
+                const next = event.target.value;
+                setZoneId(next);
+                apply({ zoneId: next });
+              }}
+            >
+              <option value="">Retalhuleu, Guatemala</option>
+              {zones.map((zone) => (
+                <option key={zone.id} value={zone.id}>
+                  {zone.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <button
+            type="button"
+            onClick={() => onSortChange('near')}
+            disabled={pending}
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-xs font-semibold text-[#1B2A4A] shadow-sm ring-1 ring-[#e6e8ee]"
+          >
+            <MapPin className="h-3.5 w-3.5 text-accent" aria-hidden />
+            Buscar en esta zona
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 rounded-full bg-[#eef1f4] p-1">
+          <button
+            type="button"
+            onClick={() => setBrowseBy('category')}
+            className={cn(
+              'h-9 rounded-full text-sm font-semibold',
+              browseBy === 'category' ? 'bg-white text-[#1B2A4A] shadow-sm' : 'text-[#667085]',
+            )}
+          >
+            Por categoría
+          </button>
+          <button
+            type="button"
+            onClick={() => setBrowseBy('location')}
+            className={cn(
+              'h-9 rounded-full text-sm font-semibold',
+              browseBy === 'location' ? 'bg-white text-[#1B2A4A] shadow-sm' : 'text-[#667085]',
+            )}
+          >
+            Por ubicación
+          </button>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {browseBy === 'category' && !hideCategory ? (
+            <>
+              <button type="button" className={chipClass(!categoryId)} onClick={() => { setCategoryId(''); apply({ categoryId: '' }); }}>
+                Todos
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  className={cn(chipClass(categoryId === category.id), 'shrink-0')}
+                  onClick={() => {
+                    setCategoryId(category.id);
+                    apply({ categoryId: category.id });
+                  }}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </>
+          ) : (
+            <>
+              <button type="button" className={chipClass(!zoneId)} onClick={() => { setZoneId(''); apply({ zoneId: '' }); }}>
+                Todas
+              </button>
+              {zones.map((zone) => (
+                <button
+                  key={zone.id}
+                  type="button"
+                  className={cn(chipClass(zoneId === zone.id), 'shrink-0')}
+                  onClick={() => {
+                    setZoneId(zone.id);
+                    apply({ zoneId: zone.id });
+                  }}
+                >
+                  {zone.name}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm text-[#667085]">
+            {resultCount}
+            {hasMore ? '+' : ''} talento{resultCount === 1 ? '' : 's'} cerca de ti
+          </p>
+          <div className="w-36 shrink-0">
+            <Select
+              aria-label="Ordenar por"
+              value={sort}
+              className="h-8 rounded-full border-0 bg-transparent px-2 text-xs font-semibold shadow-none"
+              onChange={(event) => onSortChange(event.target.value as SearchSort)}
+            >
+              <option value="rating">Recomendados</option>
+              {SEARCH_SORTS.filter((value) => value !== 'rating').map((value) => (
+                <option key={value} value={value}>
+                  {SORT_LABELS[value]}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-[#667085]"
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
+          {open ? 'Ocultar filtros' : 'Más filtros'}
+        </button>
+
+        {open ? (
+          <div className="grid gap-2">
+            <Select aria-label="Calificación" value={minRating} onChange={(event) => setMinRating(event.target.value)}>
+              {RATING_OPTIONS.map((option) => (
+                <option key={option.value || 'any'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <Select aria-label="Disponibilidad" value={availability} onChange={(event) => setAvailability(event.target.value)}>
+              <option value="">Todas</option>
+              <option value="AVAILABLE">Disponibles</option>
+              <option value="BUSY">Ocupados</option>
+              <option value="UNAVAILABLE">No disponibles</option>
+            </Select>
+            <div className="flex gap-2">
+              <Input
+                aria-label="Precio mínimo en quetzales"
+                inputMode="decimal"
+                placeholder="Mín. Q"
+                value={priceMin}
+                onChange={(event) => setPriceMin(sanitizeMoneyInput(event.target.value))}
+              />
+              <Input
+                aria-label="Precio máximo en quetzales"
+                inputMode="decimal"
+                placeholder="Máx. Q"
+                value={priceMax}
+                onChange={(event) => setPriceMax(sanitizeMoneyInput(event.target.value))}
+              />
+            </div>
+            <Button type="submit" variant="accent" disabled={pending} className="h-10 rounded-xl">
+              Aplicar filtros
+            </Button>
+          </div>
+        ) : null}
+
+        {message ? (
+          <p role="status" className="text-sm text-muted">
+            {message}
+          </p>
+        ) : null}
+      </form>
+    );
   }
 
   return (

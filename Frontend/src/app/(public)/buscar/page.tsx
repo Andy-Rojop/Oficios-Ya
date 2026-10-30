@@ -53,35 +53,25 @@ export default async function BuscarPage({ searchParams }: PageProps) {
 
   return (
     <ProtectedDiscovery>
-      <section className="space-y-6">
-        <header className="space-y-2">
-          <h1
-            className="text-2xl font-semibold tracking-tight sm:text-3xl"
-            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
-          >
-            Búsqueda y mapa
-          </h1>
-          <p className="max-w-2xl text-sm text-muted sm:text-base">
-            Filtre por oficio, zona, disponibilidad o precio. Los pines del mapa son centros de zona,
-            nunca una dirección exacta.
-          </p>
-        </header>
-
-        <SearchFiltersForm
-          basePath="/buscar"
-          filters={filters}
-          categories={categories}
-          zones={zones}
-          workers={items}
-        />
-
-        <SearchMapPanel
-          filters={filters}
-          items={items}
-          nextCursor={nextCursor}
-          error={result.error}
-        />
-      </section>
+      <SearchMapPanel
+        layout="discovery"
+        filters={filters}
+        items={items}
+        nextCursor={nextCursor}
+        error={result.error}
+        header={
+          <SearchFiltersForm
+            appearance="discovery"
+            basePath="/buscar"
+            filters={filters}
+            categories={categories}
+            zones={zones}
+            workers={items}
+            resultCount={items.length}
+            hasMore={Boolean(nextCursor)}
+          />
+        }
+      />
     </ProtectedDiscovery>
   );
 }
