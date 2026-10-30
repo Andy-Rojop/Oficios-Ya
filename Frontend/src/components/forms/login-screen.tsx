@@ -42,14 +42,14 @@ export function LoginScreen({ children }: { children: ReactNode }) {
           </h1>
         </div>
 
-        <div className="mt-10 hidden px-2 lg:mt-14 lg:block">
+        <div className="mt-8 px-5 pb-8 lg:mt-14 lg:px-2 lg:pb-0">
           <Image
-            src="/login-taller.jpg"
+            src="/foto-login.png"
             alt="Carpintero en su taller."
-            width={973}
-            height={750}
+            width={947}
+            height={737}
             priority
-            className="h-auto max-h-[420px] w-full max-w-lg rounded-2xl object-cover object-center"
+            className="h-auto w-full max-w-lg rounded-2xl object-cover object-center"
           />
         </div>
 
