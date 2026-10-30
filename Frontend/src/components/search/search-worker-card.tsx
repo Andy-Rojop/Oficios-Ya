@@ -9,7 +9,7 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
   const category = worker.mainCategory?.name || worker.headline;
 
   return (
-    <article className="rounded-2xl border border-[#e7eaf0] bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+    <article className="rounded-2xl border border-[#e7eaf0] bg-white p-3 shadow-[0_8px_22px_rgba(16,24,40,0.1)]">
       <div className="flex gap-3">
         <LoginAwareLink
           href={`/trabajador/${worker.id}`}
