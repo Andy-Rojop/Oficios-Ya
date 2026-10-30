@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleHelp, MapPin } from 'lucide-react';
+import { CircleHelp } from 'lucide-react';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
@@ -40,9 +40,6 @@ export function LoginScreen({ children }: { children: ReactNode }) {
           <h1 className="mt-5 max-w-md text-[1.65rem] font-bold leading-[1.15] tracking-tight lg:mt-8 lg:text-4xl xl:text-[2.65rem]">
             El talento de tu comunidad, al alcance de todos
           </h1>
-          <p className="mt-4 hidden max-w-sm text-sm leading-relaxed text-white/70 lg:block">
-            Personas que saben hacer. Vecinos en quienes confiar.
-          </p>
         </div>
 
         <div className="hidden px-2 lg:block">
@@ -56,10 +53,6 @@ export function LoginScreen({ children }: { children: ReactNode }) {
           />
         </div>
 
-        <p className="hidden items-center gap-2 text-sm text-white/80 lg:flex">
-          <MapPin className="h-4 w-4 text-accent" aria-hidden />
-          Hecho para nuestra comunidad en Guatemala
-        </p>
       </aside>
 
       <section className="relative flex min-h-[70dvh] flex-col px-5 py-8 sm:px-8 lg:min-h-dvh lg:px-12 lg:py-8">
