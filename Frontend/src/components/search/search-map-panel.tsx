@@ -197,6 +197,11 @@ export function SearchMapPanel({
     <WorkersMapLazy
       workers={items}
       interactive
+      className={
+        layout === 'discovery'
+          ? 'lg:h-[calc(100dvh-var(--header-h)-7.5rem)] lg:min-h-[460px]'
+          : undefined
+      }
       selectedCenter={selectedCenter}
       userCenter={userCenter}
       onSelectPoint={(lat, lng) => goNear(lat, lng)}

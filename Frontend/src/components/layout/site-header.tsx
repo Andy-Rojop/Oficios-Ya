@@ -47,7 +47,7 @@ export function SiteHeader() {
       )}
     >
       {/* flex-nowrap: Salir nunca baja de línea; queda siempre a la derecha. */}
-      <div className="mx-auto flex h-12 w-full max-w-6xl flex-nowrap items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-6">
+      <div className="mx-auto flex h-12 w-full max-w-6xl flex-nowrap items-center gap-2 px-3 sm:h-14 sm:gap-3 sm:px-6 lg:max-w-none lg:px-5">
         <BrandLogo
           href={sessionUser?.activeMode === 'WORKER' ? '/panel' : '/'}
           inverted={sessionUser?.activeMode === 'WORKER'}
