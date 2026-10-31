@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, SlidersHorizontal } from 'lucide-react';
+import { LayoutGrid, MapPin, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -219,12 +219,12 @@ export function SearchFiltersForm({
   if (appearance === 'discovery') {
     const chipClass = (active: boolean) =>
       cn(
-        'rounded-full px-3 py-1.5 text-xs font-semibold transition',
+        'shrink-0 rounded-full px-3.5 py-2 text-xs font-semibold transition',
         active ? 'bg-accent text-white' : 'bg-white text-[#344054] shadow-sm ring-1 ring-[#e6e8ee]',
       );
 
     return (
-      <form onSubmit={onSubmit} className="space-y-3 px-4 pb-3 pt-4" aria-busy={pending}>
+      <form onSubmit={onSubmit} className="space-y-3.5 px-5 pb-4 pt-5" aria-busy={pending}>
         <div>
           <h1 className="text-xl font-bold tracking-tight text-[#1B2A4A]">Encuentra Talentos Cerca</h1>
           <p className="mt-0.5 text-sm text-[#667085]">Personas de tu comunidad, listas para ayudarte.</p>
@@ -247,7 +247,7 @@ export function SearchFiltersForm({
           hideCategorySuggestions={hideCategory}
         />
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center">
           <div className="min-w-0 flex-1">
             <Label htmlFor="filter-zone" className="sr-only">
               Zona
@@ -255,7 +255,7 @@ export function SearchFiltersForm({
             <Select
               id="filter-zone"
               value={zoneId}
-              className="h-10 rounded-full bg-white text-sm"
+              className="h-11 rounded-full bg-white text-sm"
               onChange={(event) => {
                 const next = event.target.value;
                 setZoneId(next);
@@ -274,9 +274,9 @@ export function SearchFiltersForm({
             type="button"
             onClick={() => onSortChange('near')}
             disabled={pending}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-xs font-semibold text-[#1B2A4A] shadow-sm ring-1 ring-[#e6e8ee]"
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-[#1B2A4A] shadow-sm ring-1 ring-[#e6e8ee]"
           >
-            <MapPin className="h-3.5 w-3.5 text-accent" aria-hidden />
+            <MapPin className="h-4 w-4 text-accent" aria-hidden />
             Buscar en esta zona
           </button>
         </div>
@@ -286,25 +286,27 @@ export function SearchFiltersForm({
             type="button"
             onClick={() => setBrowseBy('category')}
             className={cn(
-              'h-9 rounded-full text-sm font-semibold',
+              'inline-flex h-10 items-center justify-center gap-1.5 rounded-full text-sm font-semibold',
               browseBy === 'category' ? 'bg-white text-[#1B2A4A] shadow-sm' : 'text-[#667085]',
             )}
           >
+            <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
             Por categoría
           </button>
           <button
             type="button"
             onClick={() => setBrowseBy('location')}
             className={cn(
-              'h-9 rounded-full text-sm font-semibold',
+              'inline-flex h-10 items-center justify-center gap-1.5 rounded-full text-sm font-semibold',
               browseBy === 'location' ? 'bg-white text-[#1B2A4A] shadow-sm' : 'text-[#667085]',
             )}
           >
+            <MapPin className="h-3.5 w-3.5" aria-hidden />
             Por ubicación
           </button>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {browseBy === 'category' && !hideCategory ? (
             <>
               <button type="button" className={chipClass(!categoryId)} onClick={() => { setCategoryId(''); apply({ categoryId: '' }); }}>
@@ -590,7 +592,7 @@ export function SearchFiltersForm({
         className={cn(
           'flex flex-wrap gap-2',
           open &&
-            'sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 -mx-4 border-t border-border bg-surface px-4 py-3 shadow-[0_-6px_16px_rgba(26,35,50,0.06)] md:bottom-3 lg:static lg:z-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none',
+            'sticky bottom-[var(--bottom-nav-h)] z-10 -mx-4 border-t border-border bg-surface px-4 py-3 shadow-[0_-6px_16px_rgba(26,35,50,0.06)] md:bottom-3 lg:static lg:z-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none',
         )}
       >
         <Button type="submit" variant="accent" disabled={pending} className="min-h-11 flex-1 sm:flex-none">

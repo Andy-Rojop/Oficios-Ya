@@ -86,8 +86,8 @@ export function SiteBottomNav() {
       aria-label="Navegación principal"
       className={cn(
         // Oculta en landscape y desktop: en horizontal tapaba Teléfono/Sesión (QA).
-        'fixed inset-x-0 bottom-0 z-40 border-t landscape:hidden md:hidden',
-        'pb-[env(safe-area-inset-bottom)]',
+        'fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-2 landscape:hidden md:hidden',
+        'pb-[max(1.75rem,env(safe-area-inset-bottom))]',
         workerChrome
           ? 'border-[#1e3a5f]/40 bg-[#1e3a5f] text-white'
           : 'border-border bg-surface text-foreground',
@@ -111,7 +111,7 @@ export function SiteBottomNav() {
                     : undefined
                 }
                 className={cn(
-                  'flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 pt-1.5 text-[10px] font-semibold tracking-wide transition',
+                  'flex min-h-[3.25rem] flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold tracking-wide transition',
                   workerChrome
                     ? active
                       ? 'text-white'
