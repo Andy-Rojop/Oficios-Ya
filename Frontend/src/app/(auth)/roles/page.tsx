@@ -36,7 +36,7 @@ const ROLES = [
 
 export default function RolesPage() {
   return (
-    <section className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 -mt-6 overflow-hidden">
+    <section className="relative -mx-3 -mt-4 overflow-hidden sm:-mx-6 sm:-mt-6">
       <div className="absolute inset-0 bg-foreground" aria-hidden />
       <div
         className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_20%,rgba(30,58,95,0.4),transparent_42%),radial-gradient(ellipse_at_85%_10%,rgba(255,255,255,0.1),transparent_40%)]"

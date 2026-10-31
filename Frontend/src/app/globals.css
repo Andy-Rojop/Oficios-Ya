@@ -35,10 +35,18 @@
   --font-display: var(--font-jakarta), system-ui, sans-serif;
 }
 
-html,
-body {
-  /* `clip` en iOS Safari a veces congela el scroll; `hidden` es más seguro. */
+html {
+  /* overflow en html (no body) evita thrash con sticky + full-bleed en Safari. */
   overflow-x: hidden;
+}
+
+/* Hover real (mouse); evita :hover “pegado” tras tap en iPhone. */
+@custom-variant hover-fine {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
 }
 
 /* Safe areas iOS / PWA (notch + home indicator). */
@@ -47,6 +55,7 @@ body {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-h: 3rem;
   --bottom-nav-h: 4.5rem;
+  --shell-vh: 100svh;
 }
 
 @media (min-width: 640px) {
@@ -76,20 +85,16 @@ html[data-mode='worker'] {
 }
 
 body {
+  /* Un solo fondo; el modo solo cambia variables (evita flash al resolver sesión). */
   background:
-    radial-gradient(ellipse at top left, rgba(242, 101, 34, 0.06), transparent 42%),
+    radial-gradient(ellipse at top left, color-mix(in srgb, var(--accent) 8%, transparent), transparent 42%),
     radial-gradient(ellipse at top right, rgba(26, 35, 50, 0.04), transparent 38%),
     linear-gradient(180deg, #fafbfc 0%, var(--background) 55%, #eceef2 100%);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
-  min-height: 100dvh;
-}
-
-html[data-mode='worker'] body {
-  background:
-    radial-gradient(ellipse at top left, rgba(37, 99, 235, 0.12), transparent 42%),
-    radial-gradient(ellipse at top right, rgba(30, 58, 95, 0.08), transparent 38%),
-    linear-gradient(180deg, #eef4fb 0%, var(--background) 55%, #dce6f3 100%);
+  /* svh es estable en Safari; dvh salta al mostrar/ocultar la barra de URL. */
+  min-height: 100svh;
+  min-height: var(--shell-vh);
 }
 
 *:focus-visible {

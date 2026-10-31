@@ -18,13 +18,14 @@ function isAuthPath(pathname: string): boolean {
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { data: user, isLoading, isFetching } = useMe();
+  const { data: user, isLoading } = useMe();
   const logout = useLogout();
   const authScreen = isAuthPath(pathname);
   // En login/registro no mostrar chrome de sesión (evita Avisos/Salir sobre “Entrando…”).
   const sessionUser = authScreen ? undefined : user;
 
-  const showGuest = (!sessionUser && !isLoading && !isFetching) || authScreen;
+  // No usar isFetching: un refetch de fondo vaciaba el header y parpadeaba en Safari.
+  const showGuest = (!sessionUser && !isLoading) || authScreen;
   const workerChrome = sessionUser?.activeMode === 'WORKER';
   const desktopLinks = [
     ...(sessionUser

@@ -35,7 +35,8 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
 
   return (
     <div className="pb-12">
-      <section className="relative left-1/2 z-30 w-screen max-w-[100vw] -translate-x-1/2 -mt-6">
+      {/* Sin w-screen/-translate-x: en Safari con sticky header provocaba parpadeo. */}
+      <section className="relative z-30 -mx-3 -mt-4 sm:-mx-6 sm:-mt-6">
         <div className="relative min-h-[min(58vh,520px)] bg-[#1a2332] sm:min-h-[min(62vh,560px)]">
           <div className="absolute inset-0 overflow-hidden">
             <HomeCollage categories={categories} />
@@ -47,25 +48,23 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
 
           <div className="relative z-10 mx-auto flex min-h-[min(58vh,520px)] w-full max-w-6xl flex-col justify-end px-4 pb-9 pt-16 sm:min-h-[min(62vh,560px)] sm:px-6 sm:pb-12 sm:pt-20">
             <div className="max-w-xl">
-              <p className="animate-[home-fade-up_0.7s_ease-out_both] text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
                 El Asintal, Retalhuleu
               </p>
               <h1
-                className="mt-2 animate-[home-fade-up_0.7s_ease-out_0.08s_both] text-3xl font-semibold leading-tight tracking-tight text-white sm:text-5xl"
+                className="mt-2 text-3xl font-semibold leading-tight tracking-tight text-white sm:text-5xl"
                 style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
               >
                 Oficios de confianza cerca de usted
               </h1>
               {greeting ? (
-                <p className="mt-2 animate-[home-fade-up_0.7s_ease-out_0.12s_both] text-sm font-medium text-white/90">
-                  {greeting}
-                </p>
+                <p className="mt-2 text-sm font-medium text-white/90">{greeting}</p>
               ) : null}
-              <p className="mt-2 max-w-md animate-[home-fade-up_0.7s_ease-out_0.16s_both] text-sm text-white/80 sm:text-base">
+              <p className="mt-2 max-w-md text-sm text-white/80 sm:text-base">
                 Encuentre carpinteros, electricistas, plomeros y más cerca de su zona.
               </p>
 
-              <div className="relative z-30 mt-5 w-full max-w-lg animate-[home-fade-up_0.7s_ease-out_0.24s_both]">
+              <div className="relative z-30 mt-5 w-full max-w-lg">
                 <HomeSearchForm variant="hero" categories={categories} workers={workers} />
               </div>
             </div>
@@ -86,9 +85,9 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
               <li key={category.id}>
                 <LoginAwareLink
                   href={`/categorias/${category.slug}`}
-                  className="group flex h-full flex-col items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md"
+                  className="group flex h-full flex-col items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-5 text-center shadow-sm transition hover-fine:-translate-y-0.5 hover-fine:border-accent/40 hover-fine:shadow-md"
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-accent transition group-hover:bg-accent group-hover:text-white">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-accent">
                     <Icon aria-hidden className="h-6 w-6" strokeWidth={2} />
                   </span>
                   <span className="text-sm font-semibold leading-snug text-foreground">
@@ -134,7 +133,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
           <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {spotlight.map((worker, index) => (
               <li key={worker.id}>
-                <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-accent/35 hover:shadow-md">
+                <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition hover-fine:-translate-y-0.5 hover-fine:border-accent/35 hover-fine:shadow-md">
                   <LoginAwareLink
                     href={`/trabajador/${worker.id}`}
                     className="relative block aspect-[4/3] overflow-hidden bg-brand-soft"
@@ -219,7 +218,7 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
           <div className="mt-8 flex justify-center">
             <LoginAwareLink
               href="/buscar"
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-accent px-6 text-sm font-semibold text-white shadow-md shadow-accent/25 transition hover:-translate-y-0.5 hover:bg-accent-dark"
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-accent px-6 text-sm font-semibold text-white shadow-md shadow-accent/25 transition hover-fine:-translate-y-0.5 hover:bg-accent-dark"
             >
               Ver todos en el mapa
               <ChevronRight aria-hidden className="h-4 w-4" />

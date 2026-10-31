@@ -136,14 +136,16 @@ export function HomeCollage({ categories }: { categories: CatalogCategory[] }) {
             <img
               src={tile.image}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover transition duration-700 hover-fine:group-hover:scale-105"
             />
             <span
               className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10"
               aria-hidden
             />
             <span className="absolute bottom-3 left-3 right-3 flex items-center gap-2 text-white">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-black/45 md:bg-white/15 md:backdrop-blur-sm">
                 <Icon aria-hidden className="size-4" />
               </span>
               <span className="text-sm font-semibold drop-shadow-sm sm:text-base">{tile.name}</span>

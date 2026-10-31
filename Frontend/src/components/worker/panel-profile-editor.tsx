@@ -14,14 +14,14 @@ import { ZonesCard } from './zones-card';
 /** Edición del perfil de trabajador (ruta /panel/perfil). */
 export function PanelProfileEditor() {
   const router = useRouter();
-  const { data: user, isLoading, isFetching, error } = useMe();
+  const { data: user, isLoading, error } = useMe();
   const unauthorized = isUnauthorized(error);
 
   useEffect(() => {
-    if (!isLoading && !isFetching && unauthorized) {
+    if (!isLoading && unauthorized) {
       router.replace('/ingresar?mode=WORKER&next=/panel/perfil');
     }
-  }, [unauthorized, isLoading, isFetching, router]);
+  }, [unauthorized, isLoading, router]);
 
   const profileQuery = useQuery<OwnWorkerProfile, Error>({
     queryKey: WORKER_QUERY_KEYS.profile,
@@ -30,7 +30,7 @@ export function PanelProfileEditor() {
     refetchOnMount: 'always',
   });
 
-  if (isLoading || (isFetching && !user)) {
+  if (isLoading && !user) {
     return <p className="text-muted">Cargando su perfil…</p>;
   }
 

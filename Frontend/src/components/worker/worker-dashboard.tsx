@@ -19,17 +19,17 @@ import { ZonesCard } from './zones-card';
 /** Panel del trabajador (modo WORKER): perfil, zonas, servicios y portafolio. */
 export function WorkerDashboard() {
   const router = useRouter();
-  const { data: user, isLoading, isFetching, error } = useMe();
+  const { data: user, isLoading, error } = useMe();
   const unauthorized = isUnauthorized(error);
 
   useEffect(() => {
     // Esperar a que termine la carga: un 401 intermedio no debe empujar a /ingresar.
-    if (!isLoading && !isFetching && unauthorized) {
+    if (!isLoading && unauthorized) {
       router.replace('/ingresar?mode=WORKER&next=/panel');
     }
-  }, [unauthorized, isLoading, isFetching, router]);
+  }, [unauthorized, isLoading, router]);
 
-  if (isLoading || (isFetching && !user)) {
+  if (isLoading && !user) {
     return <p className="text-muted">Cargando su panel…</p>;
   }
   if (!user) {

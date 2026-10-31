@@ -287,7 +287,7 @@ export function ThreadView({ conversationId }: { conversationId: string }) {
   const canSend = summary?.canSend ?? false;
 
   return (
-    <section className="mx-auto flex h-[calc(100dvh-var(--header-h)-var(--safe-top)-var(--safe-bottom))] min-h-[22rem] w-full max-w-2xl flex-col overflow-hidden border-border bg-surface sm:h-[calc(100dvh-8.5rem)] sm:min-h-[26rem] sm:rounded-2xl sm:border sm:shadow-sm">
+    <section className="mx-auto flex h-[calc(100svh-var(--header-h)-var(--safe-top)-var(--safe-bottom))] min-h-[22rem] w-full max-w-2xl flex-col overflow-hidden border-border bg-surface sm:h-[calc(100svh-8.5rem)] sm:min-h-[26rem] sm:rounded-2xl sm:border sm:shadow-sm">
       <header className="relative flex items-center gap-1 border-b border-border bg-[#f0f2f5] px-2 py-2">
         <Link
           href="/mensajes"

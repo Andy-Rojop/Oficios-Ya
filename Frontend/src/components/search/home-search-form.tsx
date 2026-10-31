@@ -25,11 +25,11 @@ export function HomeSearchForm({
   workers = [],
 }: HomeSearchFormProps) {
   const router = useRouter();
-  const { data: user, isLoading, isFetching } = useMe();
+  const { data: user, isLoading, isFetched } = useMe();
   const [q, setQ] = useState('');
 
   function go(href: string) {
-    const needsLogin = !isLoading && !isFetching && !user;
+    const needsLogin = isFetched && !isLoading && !user;
     router.push(needsLogin ? `/ingresar?next=${encodeURIComponent(href)}` : href);
   }
 

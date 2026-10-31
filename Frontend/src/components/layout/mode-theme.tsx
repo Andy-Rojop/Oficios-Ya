@@ -9,10 +9,9 @@ export function ModeTheme() {
   const mode = user?.activeMode === 'WORKER' ? 'worker' : 'client';
 
   useEffect(() => {
+    // No borrar en cleanup: al remount (Strict Mode / navegación) Safari parpadeaba
+    // al quitar y volver a poner data-mode (repinta todo el body).
     document.documentElement.dataset.mode = mode;
-    return () => {
-      delete document.documentElement.dataset.mode;
-    };
   }, [mode]);
 
   return null;

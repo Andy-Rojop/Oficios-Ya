@@ -199,7 +199,7 @@ export function SearchMapPanel({
       interactive
       className={
         layout === 'discovery'
-          ? 'lg:h-[calc(100dvh-var(--header-h)-7.5rem)] lg:min-h-[460px]'
+            ? 'lg:h-[calc(100svh-var(--header-h)-7.5rem)] lg:min-h-[460px]'
           : undefined
       }
       selectedCenter={selectedCenter}

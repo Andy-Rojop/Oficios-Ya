@@ -26,17 +26,18 @@ export function RequireLogin({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { data: user, isLoading, isFetching, error } = useMe();
+  const { data: user, isLoading, error } = useMe();
   const unauthorized = isUnauthorized(error);
   const next = currentPathWithQuery(pathname, searchParams.toString());
 
   useEffect(() => {
-    if (!isLoading && !isFetching && (unauthorized || !user)) {
+    // Solo redirigir cuando la carga inicial terminó (ignorar refetch de fondo).
+    if (!isLoading && (unauthorized || !user)) {
       router.replace(`/ingresar?next=${encodeURIComponent(next)}`);
     }
-  }, [unauthorized, user, isLoading, isFetching, router, next]);
+  }, [unauthorized, user, isLoading, router, next]);
 
-  if (isLoading || (isFetching && !user)) {
+  if (isLoading && !user) {
     return <p className="text-muted">Cargando…</p>;
   }
 

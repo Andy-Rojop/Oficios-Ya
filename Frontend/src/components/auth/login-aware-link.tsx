@@ -14,10 +14,12 @@ type LinkProps = Omit<ComponentProps<typeof Link>, 'href'> & {
  * La landing puede mostrar contenido, pero usarlo requiere cuenta.
  */
 export function LoginAwareLink({ href, children, ...rest }: LinkProps) {
-  const { data: user, isLoading, isFetching } = useMe();
-  const waiting = isLoading || isFetching;
+  const { data: user, isLoading, isFetched } = useMe();
+  // Solo bloquear en la carga inicial; isFetching de fondo hacía parpadear href en Safari.
   const target =
-    !waiting && !user ? `/ingresar?next=${encodeURIComponent(href)}` : href;
+    isFetched && !isLoading && !user
+      ? `/ingresar?next=${encodeURIComponent(href)}`
+      : href;
 
   return (
     <Link href={target} {...rest}>
