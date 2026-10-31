@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface BrandLogoProps {
   href?: string;
-  /** En header trabajador (fondo navy) el logo va sobre una pastilla clara. */
+  /** En la barra de trabajador (fondo navy) se usa el logo blanco. */
   inverted?: boolean;
   className?: string;
 }
@@ -13,16 +13,12 @@ interface BrandLogoProps {
 export function BrandLogo({ href = '/', inverted = false, className }: BrandLogoProps) {
   const mark = (
     <Image
-      src="/logo-oficiosya.png"
+      src={inverted ? '/logo-oficiosya-blanco.png' : '/logo-oficiosya.png'}
       alt="OficiosYA"
       width={1400}
-      height={343}
+      height={inverted ? 345 : 343}
       priority
-      className={cn(
-        'h-8 w-auto sm:h-10',
-        inverted && 'rounded-md bg-white px-1.5 py-0.5',
-        className,
-      )}
+      className={cn('h-8 w-auto sm:h-10', className)}
     />
   );
 
