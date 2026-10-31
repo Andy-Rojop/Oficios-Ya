@@ -34,7 +34,7 @@ export function LoginScreen({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh bg-[#F7F8FA] lg:grid lg:grid-cols-2">
       <aside className="flex flex-col bg-[#1B2A4A] text-white lg:min-h-dvh lg:px-12 lg:py-10 xl:px-14">
-        <div className="px-5 pb-0 pt-6 lg:px-0 lg:pt-0">
+        <div className="px-5 pb-8 pt-6 lg:px-0 lg:pb-0 lg:pt-0">
           <LoginMark />
           <div className="mt-5 h-1 w-10 rounded-full bg-accent" />
           <h1 className="mt-5 max-w-xl text-[1.65rem] font-bold leading-[1.15] tracking-tight lg:mt-6 lg:text-4xl xl:text-5xl">
@@ -42,7 +42,7 @@ export function LoginScreen({ children }: { children: ReactNode }) {
           </h1>
         </div>
 
-        <div className="relative mx-5 mb-8 mt-8 aspect-[5/4] overflow-hidden rounded-2xl lg:mx-0 lg:mb-0 lg:mt-8 lg:aspect-auto lg:min-h-0 lg:flex-1">
+        <div className="relative mx-5 mb-8 mt-8 hidden aspect-[5/4] overflow-hidden rounded-2xl lg:mx-0 lg:mb-0 lg:mt-8 lg:block lg:aspect-auto lg:min-h-0 lg:flex-1">
           <Image
             src="/foto-login.png"
             alt="Carpintero en su taller."
