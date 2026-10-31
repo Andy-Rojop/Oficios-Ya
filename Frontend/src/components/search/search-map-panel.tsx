@@ -210,12 +210,12 @@ export function SearchMapPanel({
 
   if (layout === 'discovery') {
     return (
-      <div className="flex h-full min-h-0 flex-col lg:flex-row">
-        <div className="relative z-10 flex min-h-0 w-full flex-col bg-[#f4f6f8] shadow-[8px_0_28px_rgba(16,24,40,0.14)] lg:w-[400px] lg:shrink-0">
+      <div className="flex flex-col md:h-full md:min-h-0 md:overflow-hidden lg:flex-row">
+        <div className="relative z-10 flex w-full flex-col bg-[#f4f6f8] shadow-[8px_0_28px_rgba(16,24,40,0.14)] md:min-h-0 lg:w-[400px] lg:shrink-0">
           {header}
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">{results}</div>
+          <div className="px-5 pb-4 md:min-h-0 md:flex-1 md:overflow-y-auto md:px-4">{results}</div>
         </div>
-        <div className="relative min-h-[320px] flex-1 p-3 lg:p-4">
+        <div className="relative shrink-0 px-5 pb-6 md:min-h-[280px] md:flex-1 md:px-0 md:pb-0 lg:p-4">
           {map}
           <button
             type="button"

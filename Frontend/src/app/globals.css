@@ -54,8 +54,12 @@ html {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --header-h: 3rem;
+<<<<<<< HEAD
   --bottom-nav-h: 4.5rem;
   --shell-vh: 100svh;
+=======
+  --bottom-nav-h: calc(3.85rem + max(1.75rem, env(safe-area-inset-bottom, 0px)));
+>>>>>>> 4a7a441 (arreglando mapa para celular y recomendaciones)
 }
 
 @media (min-width: 640px) {
