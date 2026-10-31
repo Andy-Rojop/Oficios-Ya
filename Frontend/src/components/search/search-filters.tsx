@@ -349,7 +349,7 @@ export function SearchFiltersForm({
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm text-[#667085]">
+          <p className="text-sm text-[#667085] max-lg:sr-only">
             {resultCount}
             {hasMore ? '+' : ''} talento{resultCount === 1 ? '' : 's'} cerca de ti
           </p>

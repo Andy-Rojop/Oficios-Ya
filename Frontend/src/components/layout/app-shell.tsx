@@ -47,11 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main
         className={cn(
           discovery
-<<<<<<< HEAD
-            ? 'flex h-[calc(100svh-var(--header-h)-4.5rem)] w-full min-h-0 flex-1 flex-col overflow-hidden md:h-[calc(100svh-var(--header-h))]'
-=======
-            ? 'flex w-full min-h-0 flex-1 flex-col pb-[var(--bottom-nav-h)] landscape:pb-4 md:h-[calc(100dvh-var(--header-h))] md:overflow-hidden md:pb-0'
->>>>>>> 4a7a441 (arreglando mapa para celular y recomendaciones)
+            ? 'flex w-full min-h-0 flex-1 flex-col pb-[var(--bottom-nav-h)] landscape:pb-4 md:h-[calc(100svh-var(--header-h))] md:overflow-hidden md:pb-0'
             : 'mx-auto w-full max-w-6xl flex-1',
           !discovery &&
             (chatArea ? 'px-0 py-0 sm:px-6 sm:py-6' : 'px-3 py-4 sm:px-6 sm:py-6'),

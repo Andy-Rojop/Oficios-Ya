@@ -4,7 +4,13 @@ import { LoginAwareLink } from '@/components/auth/login-aware-link';
 import { AVAILABILITY_LABELS } from '@/lib/workers';
 import type { SearchWorkerCard } from '@/lib/search';
 
-export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
+export function SearchWorkerCardView({
+  worker,
+  onRequest,
+}: {
+  worker: SearchWorkerCard;
+  onRequest?: (worker: SearchWorkerCard) => void;
+}) {
   const zone = worker.zones[0]?.name;
   const category = worker.mainCategory?.name || worker.headline;
 
@@ -55,12 +61,22 @@ export function SearchWorkerCardView({ worker }: { worker: SearchWorkerCard }) {
         </div>
       </div>
 
-      <LoginAwareLink
-        href={`/trabajador/${worker.id}`}
-        className="mt-3 flex h-10 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-white transition hover:bg-accent-dark"
-      >
-        Solicitar Servicio
-      </LoginAwareLink>
+      {onRequest ? (
+        <button
+          type="button"
+          onClick={() => onRequest(worker)}
+          className="mt-3 flex h-10 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-white transition hover:bg-accent-dark"
+        >
+          Solicitar Servicio
+        </button>
+      ) : (
+        <LoginAwareLink
+          href={`/trabajador/${worker.id}`}
+          className="mt-3 flex h-10 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-white transition hover:bg-accent-dark"
+        >
+          Solicitar Servicio
+        </LoginAwareLink>
+      )}
     </article>
   );
 }

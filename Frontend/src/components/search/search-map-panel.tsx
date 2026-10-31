@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LocateFixed, MapPin } from 'lucide-react';
 import { WorkersMapLazy } from '@/components/map/workers-map-lazy';
+import { RequestFormDialog } from '@/components/requests/request-form-dialog';
 import { Button } from '@/components/ui/button';
 import { SearchLoadMore } from '@/components/search/search-load-more';
 import { SearchWorkerCardView } from '@/components/search/search-worker-card';
+import { useMe } from '@/lib/auth';
 import { toSearchParams, type SearchFilters, type SearchWorkerCard } from '@/lib/search';
 
 interface SearchMapPanelProps {
@@ -55,9 +57,11 @@ export function SearchMapPanel({
   header,
 }: SearchMapPanelProps) {
   const router = useRouter();
+  const me = useMe();
   const [pending, startTransition] = useTransition();
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [requestWorker, setRequestWorker] = useState<SearchWorkerCard | null>(null);
   /** Solo se marca cuando el usuario acepta geolocalización (no al tocar el mapa). */
   const [userCenter, setUserCenter] = useState<{ lat: number; lng: number } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -94,6 +98,14 @@ export function SearchMapPanel({
     });
   }
 
+  function openRequest(worker: SearchWorkerCard) {
+    if (!me.isLoading && !me.data) {
+      router.push(`/ingresar?next=${encodeURIComponent(`/trabajador/${worker.id}`)}`);
+      return;
+    }
+    setRequestWorker(worker);
+  }
+
   function useMyLocation() {
     setMessage(null);
     if (!('geolocation' in navigator)) {
@@ -126,6 +138,16 @@ export function SearchMapPanel({
 
   const results = (
     <div id="resultados-mapa" ref={resultsRef} className="scroll-mt-28 space-y-3">
+      {layout === 'discovery' ? (
+        <div className="mb-1 lg:hidden">
+          <h2 className="text-lg font-bold tracking-tight text-[#1B2A4A]">Talentos cerca de ti</h2>
+          <p className="text-sm text-[#667085]">
+            {items.length}
+            {nextCursor ? '+' : ''} persona{items.length === 1 ? '' : 's'} en esta zona
+          </p>
+        </div>
+      ) : null}
+
       {layout === 'stack' ? (
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
@@ -183,10 +205,19 @@ export function SearchMapPanel({
       {items.length > 0 ? (
         <div className={layout === 'discovery' ? 'space-y-3' : 'grid gap-3 md:grid-cols-2'}>
           {items.map((worker) => (
-            <SearchWorkerCardView key={worker.id} worker={worker} />
+            <SearchWorkerCardView
+              key={worker.id}
+              worker={worker}
+              onRequest={layout === 'discovery' ? openRequest : undefined}
+            />
           ))}
           <div className={layout === 'discovery' ? undefined : 'md:col-span-2'}>
-            <SearchLoadMore key={key} filters={filters} initialCursor={nextCursor} />
+            <SearchLoadMore
+              key={key}
+              filters={filters}
+              initialCursor={nextCursor}
+              onRequest={layout === 'discovery' ? openRequest : undefined}
+            />
           </div>
         </div>
       ) : null}
@@ -199,23 +230,44 @@ export function SearchMapPanel({
       interactive
       className={
         layout === 'discovery'
-            ? 'lg:h-[calc(100svh-var(--header-h)-7.5rem)] lg:min-h-[460px]'
+          ? 'h-[42vh] min-h-[260px] sm:h-[42vh] lg:h-[calc(100svh-var(--header-h)-7.5rem)] lg:min-h-[460px]'
           : undefined
       }
       selectedCenter={selectedCenter}
       userCenter={userCenter}
       onSelectPoint={(lat, lng) => goNear(lat, lng)}
+      onSelectWorker={
+        layout === 'discovery'
+          ? (workerId) => {
+              const worker = items.find((item) => item.id === workerId);
+              if (worker) openRequest(worker);
+            }
+          : undefined
+      }
     />
   );
+
+  const requestDialog = requestWorker ? (
+    <RequestFormDialog
+      workerProfileId={requestWorker.id}
+      workerName={requestWorker.name}
+      onClose={() => setRequestWorker(null)}
+      onUnauthorized={() => {
+        setRequestWorker(null);
+        router.push(`/ingresar?next=${encodeURIComponent(`/trabajador/${requestWorker.id}`)}`);
+      }}
+    />
+  ) : null;
 
   if (layout === 'discovery') {
     return (
       <div className="flex flex-col md:h-full md:min-h-0 md:overflow-hidden lg:flex-row">
-        <div className="relative z-10 flex w-full flex-col bg-[#f4f6f8] shadow-[8px_0_28px_rgba(16,24,40,0.14)] md:min-h-0 lg:w-[400px] lg:shrink-0">
-          {header}
-          <div className="px-5 pb-4 md:min-h-0 md:flex-1 md:overflow-y-auto md:px-4">{results}</div>
+        <div className="lg:hidden">{header}</div>
+        <div className="relative z-10 order-2 flex w-full flex-col bg-[#f4f6f8] md:min-h-0 lg:order-1 lg:w-[400px] lg:shrink-0 lg:shadow-[8px_0_28px_rgba(16,24,40,0.14)]">
+          <div className="hidden lg:block">{header}</div>
+          <div className="px-5 pb-6 md:min-h-0 md:flex-1 md:overflow-y-auto md:px-4 md:pb-4">{results}</div>
         </div>
-        <div className="relative shrink-0 px-5 pb-6 md:min-h-[280px] md:flex-1 md:px-0 md:pb-0 lg:p-4">
+        <div className="relative order-1 shrink-0 px-5 pb-2 md:min-h-[280px] md:flex-1 md:px-0 md:pb-0 lg:order-2 lg:p-4">
           {map}
           <button
             type="button"
@@ -236,6 +288,7 @@ export function SearchMapPanel({
             </p>
           ) : null}
         </div>
+        {requestDialog}
       </div>
     );
   }
@@ -281,6 +334,7 @@ export function SearchMapPanel({
       </div>
 
       {results}
+      {requestDialog}
     </div>
   );
 }

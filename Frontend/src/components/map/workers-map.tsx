@@ -57,6 +57,8 @@ export interface WorkersMapProps {
   selectedCenter?: MapCenter | null;
   userCenter?: MapCenter | null;
   onSelectPoint?: (lat: number, lng: number) => void;
+  /** En celular, tocar el pin de una persona abre su solicitud. */
+  onSelectWorker?: (workerId: string) => void;
   className?: string;
   hideCaption?: boolean;
 }
@@ -229,6 +231,7 @@ export default function WorkersMap({
   selectedCenter = null,
   userCenter = null,
   onSelectPoint,
+  onSelectWorker,
   className,
   hideCaption = false,
 }: WorkersMapProps) {
@@ -359,6 +362,13 @@ export default function WorkersMap({
               eventHandlers={{
                 click: (event) => {
                   event.originalEvent?.stopPropagation();
+                  const narrow =
+                    typeof window !== 'undefined' &&
+                    window.matchMedia('(max-width: 1023px)').matches;
+                  if (narrow && onSelectWorker) {
+                    onSelectWorker(worker.id);
+                    (event.target as { closePopup?: () => void }).closePopup?.();
+                  }
                 },
               }}
             >

@@ -9,9 +9,10 @@ import { SearchWorkerCardView } from './search-worker-card';
 interface SearchLoadMoreProps {
   filters: SearchFilters;
   initialCursor: string | null;
+  onRequest?: (worker: SearchWorkerCard) => void;
 }
 
-export function SearchLoadMore({ filters, initialCursor }: SearchLoadMoreProps) {
+export function SearchLoadMore({ filters, initialCursor, onRequest }: SearchLoadMoreProps) {
   const [extra, setExtra] = useState<SearchWorkerCard[]>([]);
   const [cursor, setCursor] = useState(initialCursor);
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ export function SearchLoadMore({ filters, initialCursor }: SearchLoadMoreProps) 
   return (
     <div className="space-y-3">
       {extra.map((worker) => (
-        <SearchWorkerCardView key={worker.id} worker={worker} />
+        <SearchWorkerCardView key={worker.id} worker={worker} onRequest={onRequest} />
       ))}
       {error ? (
         <p role="alert" className="text-sm text-red-700">
