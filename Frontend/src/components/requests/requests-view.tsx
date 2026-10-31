@@ -34,8 +34,10 @@ export function RequestsView() {
     queryKey: REQUEST_QUERY_KEYS.list(role),
     queryFn: () => requestsApi.list(role),
     enabled: Boolean(me.data),
-    refetchOnMount: 'always',
-    retry: false,
+    staleTime: 15_000,
+    retry: 1,
+    // Evita vaciar la lista en cada remount/refetch (parpadeo en Safari).
+    placeholderData: (previous) => previous,
   });
 
   useEffect(() => {
@@ -46,6 +48,8 @@ export function RequestsView() {
 
   const visible = requests.data ?? [];
   const emptyText = asWorker ? EMPTY_WORKER : EMPTY_CLIENT;
+  const showInitialLoading =
+    (me.isLoading && !me.data) || (requests.isPending && !requests.data);
 
   return (
     <section className="mx-auto w-full max-w-3xl space-y-5">
@@ -63,9 +67,9 @@ export function RequestsView() {
         </p>
       </header>
 
-      {requests.isLoading || me.isLoading ? (
+      {showInitialLoading ? (
         <p className="text-muted">Cargando sus solicitudes…</p>
-      ) : requests.isError && !isUnauthorized(requests.error) ? (
+      ) : requests.isError && !requests.data && !isUnauthorized(requests.error) ? (
         <Card className="space-y-3">
           <p role="alert" className="text-sm font-medium text-red-700">
             {getErrorMessage(requests.error)}
@@ -108,7 +112,7 @@ function RequestRow({ request }: { request: ServiceRequestDto }) {
     <li>
       <Link
         href={`/solicitudes/${request.id}`}
-        className="block rounded-2xl border border-border bg-surface p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-md"
+        className="block rounded-2xl border border-border bg-surface p-4 shadow-sm transition hover-fine:-translate-y-0.5 hover-fine:border-accent/30 hover-fine:shadow-md"
       >
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">

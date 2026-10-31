@@ -1,28 +1,25 @@
 'use client';
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { connectChatSocket, getChatSocket } from '@/lib/socket';
+import {
+  connectChatSocket,
+  getChatSocket,
+  isChatSocketConnected,
+  subscribeChatConnection,
+} from '@/lib/socket';
 
-function subscribeConnection(onChange: () => void): () => void {
-  const socket = getChatSocket();
-  socket.on('connect', onChange);
-  socket.on('disconnect', onChange);
-  socket.on('connect_error', onChange);
-  return () => {
-    socket.off('connect', onChange);
-    socket.off('disconnect', onChange);
-    socket.off('connect_error', onChange);
-  };
-}
-
-/** Conecta el socket del chat mientras el componente está montado y expone si hay conexión. */
+/**
+ * Conecta el socket del chat mientras el componente está montado y expone si hay conexión.
+ * El estado “Conectando…” no se reinicia en cada intento fallido (evita parpadeo en Safari).
+ */
 export function useChatSocket(): { connected: boolean; statusLabel: string } {
   const connected = useSyncExternalStore(
-    subscribeConnection,
-    () => getChatSocket().connected,
+    subscribeChatConnection,
+    isChatSocketConnected,
     () => false,
   );
   const [timedOut, setTimedOut] = useState(false);
+  const sawConnected = useRef(false);
 
   useEffect(() => {
     connectChatSocket();
@@ -30,10 +27,14 @@ export function useChatSocket(): { connected: boolean; statusLabel: string } {
 
   useEffect(() => {
     if (connected) {
+      sawConnected.current = true;
       setTimedOut(false);
       return;
     }
-    const timer = window.setTimeout(() => setTimedOut(true), 8_000);
+    // Si nunca llegó a conectar, tras 8s mostrar “sin conexión” (no quedarse en Conectando…).
+    // Si ya estuvo online y se cayó, marcar más rápido.
+    const delay = sawConnected.current ? 3_000 : 8_000;
+    const timer = window.setTimeout(() => setTimedOut(true), delay);
     return () => window.clearTimeout(timer);
   }, [connected]);
 

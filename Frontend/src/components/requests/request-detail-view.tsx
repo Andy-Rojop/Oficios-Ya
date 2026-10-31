@@ -32,8 +32,9 @@ export function RequestDetailView({ requestId }: { requestId: string }) {
   const query = useQuery<ServiceRequestDto, Error>({
     queryKey: REQUEST_QUERY_KEYS.detail(requestId),
     queryFn: () => requestsApi.get(requestId),
-    refetchOnMount: 'always',
-    retry: false,
+    staleTime: 15_000,
+    retry: 1,
+    placeholderData: (previous) => previous,
   });
 
   useEffect(() => {
@@ -61,10 +62,10 @@ export function RequestDetailView({ requestId }: { requestId: string }) {
       void queryClient.invalidateQueries({ queryKey: REQUEST_QUERY_KEYS.detail(requestId) }),
   });
 
-  if (query.isLoading) {
+  if (query.isPending && !query.data) {
     return <p className="text-center text-muted">Cargando la solicitud…</p>;
   }
-  if (query.isError) {
+  if (query.isError && !query.data) {
     if (isUnauthorized(query.error)) return null;
     const notFound = query.error instanceof ApiError && query.error.statusCode === 404;
     return (

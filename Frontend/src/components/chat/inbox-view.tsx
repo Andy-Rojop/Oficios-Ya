@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Search, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChatAvatar } from './chat-avatar';
 import { getErrorMessage, isUnauthorized, useMe } from '@/lib/auth';
@@ -28,7 +28,7 @@ export function InboxView() {
   const conversations = useQuery<ConversationSummary[], Error>({
     queryKey: CHAT_QUERY_KEYS.conversations,
     queryFn: chatApi.listConversations,
-    refetchOnMount: 'always',
+    staleTime: 15_000,
     retry: 1,
     // La bandeja no debe depender del WebSocket: si el socket falla, igual se listan por HTTP.
   });
@@ -40,11 +40,16 @@ export function InboxView() {
     );
   });
 
-  // Al (re)conectar se recupera lo que pudo llegar mientras no había conexión.
+  // Solo al pasar a conectado (no en cada intento fallido): sync en silencio.
+  const wasConnected = useRef(false);
   useEffect(() => {
-    if (connected) {
-      void queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.conversations });
+    if (connected && !wasConnected.current) {
+      void queryClient.invalidateQueries({
+        queryKey: CHAT_QUERY_KEYS.conversations,
+        refetchType: 'active',
+      });
     }
+    wasConnected.current = connected;
   }, [connected, queryClient]);
 
   useEffect(() => {
@@ -154,9 +159,9 @@ export function InboxView() {
       </header>
 
       <div>
-        {conversations.isLoading ? (
+        {conversations.isPending && !conversations.data ? (
           <p className="px-4 py-8 text-sm text-muted">Cargando sus conversaciones…</p>
-        ) : conversations.isError && !isUnauthorized(conversations.error) ? (
+        ) : conversations.isError && !conversations.data && !isUnauthorized(conversations.error) ? (
           <div className="space-y-3 px-4 py-8">
             <p role="alert" className="text-sm font-medium text-red-700">
               {getErrorMessage(conversations.error)}
