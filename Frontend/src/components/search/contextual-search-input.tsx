@@ -351,7 +351,7 @@ export function ContextualSearchInput({
   return (
     <div
       ref={containerRef}
-      className="relative min-w-0 flex-1"
+      className={cn('min-w-0 flex-1', variant === 'hero' ? 'static' : 'relative')}
       onBlur={(event) => {
         if (!containerRef.current?.contains(event.relatedTarget as Node | null)) {
           setOpen(false);
@@ -412,10 +412,15 @@ export function ContextualSearchInput({
           id={listboxId}
           role="listbox"
           aria-label={contextHeader}
-          className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-50 overflow-hidden rounded-2xl border border-border bg-surface text-foreground shadow-[0_14px_34px_rgba(22,32,51,0.16)]"
+          className={cn(
+            'absolute z-50 overflow-hidden rounded-2xl border border-border bg-surface text-foreground shadow-[0_14px_34px_rgba(22,32,51,0.16)]',
+            variant === 'hero'
+              ? 'left-0 right-0 top-[calc(100%+0.45rem)]'
+              : 'left-0 right-0 top-[calc(100%+0.4rem)]',
+          )}
         >
-          <div className="flex items-center justify-between border-b border-border/70 bg-brand-soft/45 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-            <span className="inline-flex items-center gap-1.5 truncate">
+          <div className="flex items-center justify-between gap-3 border-b border-border/70 bg-brand-soft/45 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+            <span className="inline-flex min-w-0 items-center gap-1.5">
               <Compass aria-hidden className="h-3.5 w-3.5 shrink-0 text-accent" />
               {contextHeader}
             </span>

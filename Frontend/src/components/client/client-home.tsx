@@ -35,13 +35,15 @@ export function ClientHome({ userName, categories, workers }: ClientHomeProps) {
 
   return (
     <div className="pb-12">
-      <section className="relative left-1/2 z-20 w-screen max-w-[100vw] -translate-x-1/2 -mt-6">
-        <div className="relative min-h-[min(58vh,520px)] overflow-hidden bg-[#1a2332] sm:min-h-[min(62vh,560px)]">
-          <HomeCollage categories={categories} />
-          <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#121820]/92 via-[#1a2332]/70 to-[#1a2332]/25"
-            aria-hidden
-          />
+      <section className="relative left-1/2 z-30 w-screen max-w-[100vw] -translate-x-1/2 -mt-6">
+        <div className="relative min-h-[min(58vh,520px)] bg-[#1a2332] sm:min-h-[min(62vh,560px)]">
+          <div className="absolute inset-0 overflow-hidden">
+            <HomeCollage categories={categories} />
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#121820]/92 via-[#1a2332]/70 to-[#1a2332]/25"
+              aria-hidden
+            />
+          </div>
 
           <div className="relative z-10 mx-auto flex min-h-[min(58vh,520px)] w-full max-w-6xl flex-col justify-end px-4 pb-9 pt-16 sm:min-h-[min(62vh,560px)] sm:px-6 sm:pb-12 sm:pt-20">
             <div className="max-w-xl">

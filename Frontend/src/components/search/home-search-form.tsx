@@ -60,7 +60,7 @@ export function HomeSearchForm({
     return (
       <form
         onSubmit={onSubmit}
-        className="flex w-full max-w-sm flex-col gap-2 rounded-xl bg-surface p-2 shadow-[0_8px_24px_rgba(0,0,0,0.22)] sm:flex-row sm:items-center sm:gap-1.5"
+        className="relative flex w-full max-w-lg flex-col gap-2 rounded-xl bg-surface p-2 shadow-[0_8px_24px_rgba(0,0,0,0.22)] sm:flex-row sm:items-center sm:gap-1.5"
         role="search"
       >
         <Label htmlFor="home-search-q" className="sr-only">
