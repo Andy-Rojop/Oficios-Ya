@@ -22,6 +22,19 @@ type Ack<T> = { ok: true; data: T } | { ok: false; statusCode: number; error: st
 let socket: Socket | null = null;
 let refreshing = false;
 
+/** Suscriptores de estado de conexión (sobreviven a recrear el socket). */
+const connectionListeners = new Set<() => void>();
+let notifyTimer: ReturnType<typeof setTimeout> | null = null;
+
+function notifyConnection(): void {
+  // Debounce: Safari dispara connect_error en ráfaga al fallar WS → parpadeo de UI.
+  if (notifyTimer) clearTimeout(notifyTimer);
+  notifyTimer = setTimeout(() => {
+    notifyTimer = null;
+    connectionListeners.forEach((listener) => listener());
+  }, 250);
+}
+
 /**
  * Origen del backend para Socket.IO.
  * Si falta `NEXT_PUBLIC_WS_URL` en Vercel, se deriva de `NEXT_PUBLIC_API_URL`
@@ -43,32 +56,45 @@ function getWsUrl(): string {
   return 'http://localhost:4000';
 }
 
+function attachLifecycle(instance: Socket): void {
+  instance.on('connect', notifyConnection);
+  instance.on('disconnect', notifyConnection);
+  instance.on('connect_error', (error) => {
+    notifyConnection();
+    // Un rechazo del handshake (access token vencido) no se reintenta solo: se renueva la sesión
+    // con el refresh token y se vuelve a conectar una vez.
+    if (error.message !== 'unauthorized' || refreshing) return;
+    refreshing = true;
+    apiFetch('/auth/refresh', { method: 'POST' })
+      .then(() => {
+        if (!instance.connected) instance.connect();
+      })
+      .catch(() => {
+        // sesión caducada: la UI redirige a /ingresar cuando una petición HTTP responde 401
+      })
+      .finally(() => {
+        refreshing = false;
+      });
+  });
+}
+
 /**
  * Socket singleton. `withCredentials` envía la cookie httpOnly `access_token` en el handshake;
  * el servidor valida el mismo JWT que la API HTTP.
  */
 export function getChatSocket(): Socket {
   if (!socket) {
+    // polling primero: en Safari/iOS el upgrade WS cross-origin falla a menudo y reintenta en loop.
     const instance = io(`${getWsUrl()}/chat`, {
       withCredentials: true,
       autoConnect: false,
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
+      reconnectionAttempts: 8,
+      reconnectionDelay: 1_500,
+      reconnectionDelayMax: 8_000,
+      timeout: 12_000,
     });
-
-    // Un rechazo del handshake (access token vencido) no se reintenta solo: se renueva la sesión
-    // con el refresh token y se vuelve a conectar una vez.
-    instance.on('connect_error', (error) => {
-      if (error.message !== 'unauthorized' || refreshing) return;
-      refreshing = true;
-      apiFetch('/auth/refresh', { method: 'POST' })
-        .then(() => instance.connect())
-        .catch(() => {
-          // sesión caducada: la UI redirige a /ingresar cuando una petición HTTP responde 401
-        })
-        .finally(() => {
-          refreshing = false;
-        });
-    });
+    attachLifecycle(instance);
     socket = instance;
   }
   return socket;
@@ -89,7 +115,30 @@ export function disconnectChatSocket(): void {
     socket.disconnect();
     socket.removeAllListeners();
     socket = null;
+    notifyConnection();
   }
+}
+
+/** Reconecta sin destruir el singleton (cambio de modo / refresh de sesión). */
+export function reconnectChatSocket(): void {
+  const instance = getChatSocket();
+  if (instance.connected || instance.active) {
+    instance.disconnect();
+  }
+  instance.connect();
+  notifyConnection();
+}
+
+/** Suscripción a cambios de conexión (connect / disconnect / error). */
+export function subscribeChatConnection(onChange: () => void): () => void {
+  connectionListeners.add(onChange);
+  return () => {
+    connectionListeners.delete(onChange);
+  };
+}
+
+export function isChatSocketConnected(): boolean {
+  return Boolean(socket?.connected);
 }
 
 /** Emite un evento y espera el ack del servidor `{ ok, data | error }`. */

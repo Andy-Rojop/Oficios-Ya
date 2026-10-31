@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { ApiError, apiFetch } from './api-client';
-import { connectChatSocket, disconnectChatSocket } from './socket';
+import { disconnectChatSocket, reconnectChatSocket } from './socket';
 
 export type ActiveMode = 'CLIENT' | 'WORKER';
 export type UserRole = 'USER' | 'ADMIN' | 'MUNICIPAL';
@@ -31,7 +31,8 @@ export interface UserDto {
 export function uploadAvatar(file: File): Promise<UserDto> {
   const form = new FormData();
   form.append('file', file);
-  return apiFetch<UserDto>('/users/me/avatar', { method: 'POST', body: form });
+  // Misma ruta que GET /auth/me (el 404 en /users/me/avatar solía ser backend sin redeploy).
+  return apiFetch<UserDto>('/auth/me/avatar', { method: 'POST', body: form });
 }
 
 export interface LoginInput {
@@ -111,10 +112,12 @@ export function useMe() {
     staleTime: 60_000,
   });
 
-  // TanStack Query conserva `data` tras un error. Si el 401 dejara el usuario viejo,
-  // iOS entra en bucle: /cuenta → /ingresar (“Entrando…”) → /cuenta.
+  // Solo limpia sesión cuando el 401 ya quedó definitivo (no a mitad de un refetch).
+  // Si se limpia en cada error transitorio, Solicitudes/Mensajes parpadean “Cargando…”.
   const data =
-    query.isError && isUnauthorized(query.error) ? undefined : query.data;
+    query.isError && isUnauthorized(query.error) && query.fetchStatus === 'idle'
+      ? undefined
+      : query.data;
 
   return { ...query, data };
 }
@@ -142,8 +145,7 @@ export async function applyAuthenticatedUser(
     queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   ]);
   if (options?.reconnectSocket !== false) {
-    disconnectChatSocket();
-    connectChatSocket();
+    reconnectChatSocket();
   }
 }
 
@@ -188,6 +190,13 @@ export function isUnauthorized(error: unknown): boolean {
 /** Mensaje legible en español para mostrar en formularios. */
 export function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
+    if (
+      error.statusCode === 404 &&
+      /avatar/i.test(error.message) &&
+      /cannot post/i.test(error.message)
+    ) {
+      return 'No se pudo subir la foto: el servidor aún no tiene esta función. Vuelva a desplegar el Backend y reintente.';
+    }
     return error.message;
   }
   if (error instanceof TypeError) {

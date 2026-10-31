@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
 import { isChatThreadPath, linksForMode, type NavLink } from '@/components/layout/nav-links';
 import { useMe } from '@/lib/auth';
 import {
@@ -23,7 +22,7 @@ import {
 } from '@/lib/chat';
 import { CHAT_EVENTS } from '@/lib/socket';
 import { cn } from '@/lib/utils';
-import { useChatEvent, useChatSocket } from '@/components/chat/use-chat-socket';
+import { useChatEvent } from '@/components/chat/use-chat-socket';
 
 const ICONS: Record<NavLink['icon'], LucideIcon> = {
   home: Search,
@@ -42,7 +41,6 @@ export function SiteBottomNav() {
   const pathname = usePathname();
   const { data: user } = useMe();
   const queryClient = useQueryClient();
-  const { connected } = useChatSocket();
 
   const conversations = useQuery({
     queryKey: CHAT_QUERY_KEYS.conversations,
@@ -57,11 +55,8 @@ export function SiteBottomNav() {
     );
   });
 
-  useEffect(() => {
-    if (connected) {
-      void queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.conversations });
-    }
-  }, [connected, queryClient]);
+  // No invalidar al (re)conectar aquí: InboxView ya hace un sync y este efecto
+  // duplicado + socket inestable en Safari provocaba parpadeo “Cargando…”.
 
   // AppShell ya evita montarlo en login; doble guarda por si se usa solo.
   if (!user || isChatThreadPath(pathname)) return null;

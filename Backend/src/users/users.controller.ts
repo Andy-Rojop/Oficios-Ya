@@ -10,7 +10,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthCookieService } from '../auth/auth-cookie.service';
 import { TokenService } from '../auth/token.service';
@@ -53,6 +53,7 @@ export class UsersController {
   }
 
   @Post('me/avatar')
+  @ApiConsumes('multipart/form-data')
   @UseInterceptors(ImageUploadInterceptor)
   @ApiOperation({ summary: 'QA2: subir foto de perfil (queda pendiente de aprobación admin)' })
   async uploadAvatar(

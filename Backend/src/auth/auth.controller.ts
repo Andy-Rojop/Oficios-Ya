@@ -1,10 +1,22 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiConsumes, ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import type { AuthenticatedUser } from '../common/types/authenticated-user';
+import { ImageUploadInterceptor, type UploadedImage } from '../storage/image-upload.interceptor';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { REFRESH_TOKEN_COOKIE } from './auth.constants';
 import { AuthCookieService } from './auth-cookie.service';
@@ -129,5 +141,17 @@ export class AuthController {
   @ApiOperation({ summary: 'Usuario autenticado (sin datos sensibles)' })
   me(@CurrentUser() user: AuthenticatedUser): Promise<UserResponseDto> {
     return this.authService.getMe(user.id);
+  }
+
+  @ApiCookieAuth('access_token')
+  @Post('me/avatar')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(ImageUploadInterceptor)
+  @ApiOperation({ summary: 'Subir foto de perfil (pendiente de aprobación admin)' })
+  uploadAvatar(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file: UploadedImage | undefined,
+  ): Promise<UserResponseDto> {
+    return this.authService.uploadAvatar(user.id, file);
   }
 }

@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { SessionIdleGuard } from '@/components/auth/session-idle-guard';
 import { isChatThreadPath } from '@/components/layout/nav-links';
 import { ModeTheme } from '@/components/layout/mode-theme';
 import { SiteBottomNav } from '@/components/layout/site-bottom-nav';
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       {loggedIn ? <SiteBottomNav /> : null}
+      <SessionIdleGuard />
     </>
   );
 }

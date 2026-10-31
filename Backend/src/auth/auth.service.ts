@@ -12,9 +12,10 @@ import {
 import { LIMITS } from '../shared';
 import * as bcrypt from 'bcryptjs';
 import type { User } from '../generated/prisma/client';
-import { AccountStatus, ActiveMode, VerificationPurpose } from '../generated/prisma/enums';
+import { AccountStatus, ActiveMode, AvatarStatus, VerificationPurpose } from '../generated/prisma/enums';
 import { OtpService } from '../otp/otp.service';
 import { PrismaService } from '../prisma/prisma.service';
+import type { UploadedImage } from '../storage/image-upload.interceptor';
 import { StorageService } from '../storage/storage.service';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { ensureWorkerProfileStub } from '../users/worker-profile.stub';
@@ -336,6 +337,22 @@ export class AuthService {
     if (!user || user.status !== AccountStatus.ACTIVE) {
       throw new UnauthorizedException(INVALID_SESSION);
     }
+    return this.toUserDto(user);
+  }
+
+  /** Foto de perfil → PENDING hasta aprobación admin (también en /users/me/avatar). */
+  async uploadAvatar(userId: string, file: UploadedImage | undefined): Promise<UserResponseDto> {
+    if (!file) {
+      throw new BadRequestException('Elija una imagen de perfil');
+    }
+    const path = await this.storage.uploadPublic(
+      file.buffer,
+      `avatars/${userId}/${Date.now()}.webp`,
+    );
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarPath: path, avatarStatus: AvatarStatus.PENDING },
+    });
     return this.toUserDto(user);
   }
 
