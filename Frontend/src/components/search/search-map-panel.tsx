@@ -197,8 +197,6 @@ export function SearchMapPanel({
     <WorkersMapLazy
       workers={items}
       interactive
-      fill={layout === 'discovery'}
-      hideCaption={layout === 'discovery'}
       selectedCenter={selectedCenter}
       userCenter={userCenter}
       onSelectPoint={(lat, lng) => goNear(lat, lng)}
@@ -212,7 +210,7 @@ export function SearchMapPanel({
           {header}
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">{results}</div>
         </div>
-        <div className="relative min-h-[42vh] flex-1 lg:min-h-0">
+        <div className="relative min-h-[320px] flex-1 p-3 lg:p-4">
           {map}
           <button
             type="button"

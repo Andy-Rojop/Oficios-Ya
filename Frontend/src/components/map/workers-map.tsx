@@ -249,7 +249,7 @@ export default function WorkersMap({
         scrollWheelZoom={interactive}
         dragging={interactive || !fill}
         zoomControl={interactive || !fill}
-        attributionControl
+        attributionControl={!fill}
         className={cn(
           'z-0 w-full',
           fill
@@ -264,9 +264,8 @@ export default function WorkersMap({
         aria-label="Mapa de ubicaciones aproximadas de trabajadores"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-          subdomains="abcd"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {!fill ? (
           <FitToView
