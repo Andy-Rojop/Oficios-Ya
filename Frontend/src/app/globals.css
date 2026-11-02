@@ -38,6 +38,8 @@
 html {
   /* overflow en html (no body) evita thrash con sticky + full-bleed en Safari. */
   overflow-x: hidden;
+  /* Evita que el rubber-band de iOS dispare layouts en cadena. */
+  overscroll-behavior-y: none;
 }
 
 /* Hover real (mouse); evita :hover “pegado” tras tap en iPhone. */
@@ -100,6 +102,13 @@ body {
 *:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* Leaflet: menos jank táctil en WebKit */
+.leaflet-container {
+  -webkit-transform: translateZ(0);
+  touch-action: pan-x pan-y;
+  background: #e8ebf0;
 }
 
 /* Leaflet popups alineados al sistema */
@@ -184,6 +193,16 @@ body {
   .animate-\[home-fade-up_0\.7s_ease-out_0\.16s_both\],
   .animate-\[home-fade-up_0\.7s_ease-out_0\.24s_both\],
   .animate-\[home-fade-up_0\.7s_ease-out_0\.32s_both\],
+  .animate-\[home-map-drift_18s_ease-in-out_infinite_alternate\],
+  .animate-\[home-live-ping_1\.6s_cubic-bezier\(0\,0\,0\.2\,1\)_infinite\],
+  .animate-\[home-live-ping_1\.6s_ease-out_infinite\],
+  .animate-\[home-swipe-hint_1\.4s_ease-in-out_infinite\] {
+    animation: none !important;
+  }
+}
+
+/* En teléfono, apagar loops infinitos del hero (CPU/GPU de Safari). */
+@media (pointer: coarse) {
   .animate-\[home-map-drift_18s_ease-in-out_infinite_alternate\],
   .animate-\[home-live-ping_1\.6s_cubic-bezier\(0\,0\,0\.2\,1\)_infinite\],
   .animate-\[home-live-ping_1\.6s_ease-out_infinite\],

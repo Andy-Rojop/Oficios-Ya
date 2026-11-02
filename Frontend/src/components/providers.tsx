@@ -11,7 +11,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           queries: {
             staleTime: 30_000,
             retry: 1,
+            // Safari iOS dispara focus al abrir teclado / cambiar app → cascada de refetch.
             refetchOnWindowFocus: false,
+            refetchOnReconnect: true,
           },
         },
       }),

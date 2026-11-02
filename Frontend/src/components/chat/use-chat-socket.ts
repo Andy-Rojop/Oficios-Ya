@@ -19,24 +19,30 @@ export function useChatSocket(): { connected: boolean; statusLabel: string } {
     () => false,
   );
   const [timedOut, setTimedOut] = useState(false);
-  const sawConnected = useRef(false);
+  const [sawConnected, setSawConnected] = useState(false);
+  const [wasConnected, setWasConnected] = useState(connected);
+
+  // Al recuperar conexión, limpia el timeout en render (patrón React válido).
+  if (connected !== wasConnected) {
+    setWasConnected(connected);
+    if (connected) {
+      if (!sawConnected) setSawConnected(true);
+      if (timedOut) setTimedOut(false);
+    }
+  }
 
   useEffect(() => {
     connectChatSocket();
   }, []);
 
   useEffect(() => {
-    if (connected) {
-      sawConnected.current = true;
-      setTimedOut(false);
-      return;
-    }
+    if (connected) return;
     // Si nunca llegó a conectar, tras 8s mostrar “sin conexión” (no quedarse en Conectando…).
     // Si ya estuvo online y se cayó, marcar más rápido.
-    const delay = sawConnected.current ? 3_000 : 8_000;
+    const delay = sawConnected ? 3_000 : 8_000;
     const timer = window.setTimeout(() => setTimedOut(true), delay);
     return () => window.clearTimeout(timer);
-  }, [connected]);
+  }, [connected, sawConnected]);
 
   const statusLabel = connected
     ? 'En línea'

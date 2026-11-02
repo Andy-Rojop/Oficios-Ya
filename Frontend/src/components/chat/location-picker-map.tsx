@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { isSafariLike } from '@/lib/safari';
 import 'leaflet/dist/leaflet.css';
 
 export interface LocationCoords {
@@ -49,12 +50,19 @@ export default function LocationPickerMap({
     ? [coords.latitude, coords.longitude]
     : DEFAULT_CENTER;
 
+  const softMap = typeof window !== 'undefined' && isSafariLike();
+
   return (
     <div className="relative h-52 w-full overflow-hidden rounded-xl border border-border">
       <MapContainer
         center={center}
         zoom={coords ? 16 : 14}
         scrollWheelZoom
+        preferCanvas={softMap}
+        fadeAnimation={!softMap}
+        zoomAnimation={!softMap}
+        markerZoomAnimation={!softMap}
+        bounceAtZoomLimits={false}
         className="z-0 h-full w-full cursor-crosshair"
         aria-label="Mapa para elegir ubicación"
       >

@@ -1,5 +1,6 @@
 import { io, type Socket } from 'socket.io-client';
 import { apiFetch } from './api-client';
+import { isSafariLike } from './safari';
 
 /** Cliente Socket.IO del chat privado (namespace /chat) — Fase 4. */
 
@@ -84,14 +85,17 @@ function attachLifecycle(instance: Socket): void {
  */
 export function getChatSocket(): Socket {
   if (!socket) {
-    // polling primero: en Safari/iOS el upgrade WS cross-origin falla a menudo y reintenta en loop.
+    // Safari/iOS: solo polling. El upgrade a WebSocket cross-origin (Vercel→Railway)
+    // falla en ráfaga, deja “Conectando…” eterno y congela la UI.
+    const safari = isSafariLike();
     const instance = io(`${getWsUrl()}/chat`, {
       withCredentials: true,
       autoConnect: false,
-      transports: ['polling', 'websocket'],
-      reconnectionAttempts: 8,
-      reconnectionDelay: 1_500,
-      reconnectionDelayMax: 8_000,
+      transports: safari ? ['polling'] : ['polling', 'websocket'],
+      upgrade: !safari,
+      reconnectionAttempts: safari ? 5 : 8,
+      reconnectionDelay: safari ? 2_000 : 1_500,
+      reconnectionDelayMax: safari ? 12_000 : 8_000,
       timeout: 12_000,
     });
     attachLifecycle(instance);

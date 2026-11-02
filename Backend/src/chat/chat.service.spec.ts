@@ -76,6 +76,12 @@ function buildFixture(fixture: Fixture = {}) {
   });
 
   const prisma = {
+    user: {
+      findUnique: async ({ where }: { where: Row }) => {
+        const found = users[where.id as string];
+        return found ? { id: found.id, name: found.name as string } : null;
+      },
+    },
     workerProfile: {
       findFirst: async ({ where }: { where: Row }) => {
         if (where.id === PROFILE || where.userId === WORKER) {
@@ -208,7 +214,17 @@ function buildFixture(fixture: Fixture = {}) {
       emitted.push({ userId, event, payload }),
   } as unknown as ChatRealtimeService;
 
-  const service = new ChatService(prisma, new ConversationAccessService(prisma), storage, realtime);
+  const notifications = {
+    notifyChatMessage: async () => undefined,
+  } as unknown as import('../notifications/notifications.service').NotificationsService;
+
+  const service = new ChatService(
+    prisma,
+    new ConversationAccessService(prisma),
+    storage,
+    realtime,
+    notifications,
+  );
   return { service, state, calls, emitted };
 }
 

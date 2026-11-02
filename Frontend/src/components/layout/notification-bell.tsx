@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -21,12 +21,6 @@ import { cn } from '@/lib/utils';
  * (antes eso reactivaba scroll+setState y congelaba Safari).
  * Tampoco se bloquea `body.overflow`.
  */
-function isFinePointerDesktop(): boolean {
-  if (typeof window === 'undefined') return false;
-  // hover+fine = mouse real. En iPhone/iPad (incluso landscape ancho) es false.
-  return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-}
-
 export function NotificationBell({
   enabled,
   workerChrome = false,
@@ -35,7 +29,11 @@ export function NotificationBell({
   workerChrome?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
   const [desktopPos, setDesktopPos] = useState<{ top: number; right: number } | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -44,10 +42,6 @@ export function NotificationBell({
   const { data, isLoading } = useNotifications(enabled);
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!enabled) return;
@@ -83,26 +77,22 @@ export function NotificationBell({
       );
     }
 
+    // Touch / iPhone: panel a pantalla completa (sin coords desktop).
+    if (!pointerMedia.matches) {
+      place();
+      pointerMedia.addEventListener('change', place);
+      return () => pointerMedia.removeEventListener('change', place);
+    }
+
     place();
     pointerMedia.addEventListener('change', place);
     window.addEventListener('resize', place);
-    // Scroll+setState solo con puntero fino (nunca en iPhone).
-    if (pointerMedia.matches) {
-      window.addEventListener('scroll', place, true);
-    }
+    window.addEventListener('scroll', place, true);
     return () => {
       pointerMedia.removeEventListener('change', place);
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
-  }, [open]);
-
-  // Al abrir en touch, forzar panel móvil aunque quede un desktopPos viejo.
-  useEffect(() => {
-    if (!open) return;
-    if (!isFinePointerDesktop()) {
-      setDesktopPos(null);
-    }
   }, [open]);
 
   useEffect(() => {

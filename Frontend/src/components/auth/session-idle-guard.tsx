@@ -25,8 +25,21 @@ export function SessionIdleGuard() {
   const [error, setError] = useState<string | null>(null);
   const expiredHandled = useRef(false);
   const keepAliveBtnRef = useRef<HTMLButtonElement>(null);
-  const busyRef = useRef(false);
-  const keepAliveActionRef = useRef<() => Promise<void>>(async () => undefined);
+
+  const [prevPhase, setPrevPhase] = useState(phase);
+  if (phase !== prevPhase) {
+    setPrevPhase(phase);
+    if (phase === 'active') {
+      if (error !== null) setError(null);
+      if (busy) setBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    if (phase === 'active') {
+      expiredHandled.current = false;
+    }
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== 'expired' || !enabled || expiredHandled.current) return;
@@ -34,18 +47,8 @@ export function SessionIdleGuard() {
     logout.mutate();
   }, [phase, enabled, logout]);
 
-  useEffect(() => {
-    if (phase === 'active') {
-      expiredHandled.current = false;
-      setError(null);
-      setBusy(false);
-      busyRef.current = false;
-    }
-  }, [phase]);
-
-  keepAliveActionRef.current = async () => {
-    if (busyRef.current) return;
-    busyRef.current = true;
+  async function onKeepAlive() {
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -54,10 +57,9 @@ export function SessionIdleGuard() {
     } catch {
       setError('No se pudo renovar la sesión. Intente de nuevo o vuelva a iniciar sesión.');
     } finally {
-      busyRef.current = false;
       setBusy(false);
     }
-  };
+  }
 
   useEffect(() => {
     if (phase !== 'warning') return;
@@ -66,11 +68,13 @@ export function SessionIdleGuard() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        void keepAliveActionRef.current();
+        void onKeepAlive();
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
+    // Esc solo al abrir el aviso; onKeepAlive usa el closure actual vía listener fresco.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- focus + Esc al abrir
   }, [phase]);
 
   if (!enabled || phase !== 'warning') return null;
@@ -117,7 +121,7 @@ export function SessionIdleGuard() {
             ref={keepAliveBtnRef}
             type="button"
             disabled={busy || logout.isPending}
-            onClick={() => void keepAliveActionRef.current()}
+            onClick={() => void onKeepAlive()}
           >
             {busy ? 'Renovando…' : 'Mantener sesión activa'}
           </Button>

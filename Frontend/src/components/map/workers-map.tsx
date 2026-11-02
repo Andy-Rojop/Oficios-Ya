@@ -14,6 +14,7 @@ import {
 } from 'react-leaflet';
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { isSafariLike } from '@/lib/safari';
 import { cn } from '@/lib/utils';
 import { formatCardPrice, type SearchWorkerCard } from '@/lib/search';
 import { AVAILABILITY_LABELS } from '@/lib/workers';
@@ -243,6 +244,8 @@ export default function WorkersMap({
   const initialCenter: LatLngExpression = selectedCenter
     ? [selectedCenter.lat, selectedCenter.lng]
     : (workerPoints[0]?.position ?? DEFAULT_MAP_CENTER);
+  // Leaflet + WebKit: animaciones de fade/zoom causan freeze al panear en iPhone.
+  const softMap = typeof window !== 'undefined' && isSafariLike();
 
   return (
     <div className={cn(fill ? 'h-full w-full' : 'space-y-2')}>
@@ -253,6 +256,11 @@ export default function WorkersMap({
         dragging={interactive || !fill}
         zoomControl={interactive || !fill}
         attributionControl={!fill}
+        preferCanvas={softMap}
+        fadeAnimation={!softMap}
+        zoomAnimation={!softMap}
+        markerZoomAnimation={!softMap}
+        bounceAtZoomLimits={false}
         className={cn(
           'z-0 w-full',
           fill
