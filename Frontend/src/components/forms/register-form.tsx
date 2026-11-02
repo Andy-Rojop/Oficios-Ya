@@ -486,7 +486,21 @@ export function RegisterForm({ initialMode = null }: RegisterFormProps) {
               aria-describedby={errors.acceptTerms ? 'acceptTerms-error' : undefined}
               {...register('acceptTerms')}
             />
-            <span>Acepto los términos y condiciones y el aviso de privacidad de OficiosYa.</span>
+            <span>
+              Acepto los{' '}
+              <Link href="/terminos" className="font-semibold text-brand underline" target="_blank">
+                términos y condiciones
+              </Link>{' '}
+              y el{' '}
+              <Link
+                href="/privacidad"
+                className="font-semibold text-brand underline"
+                target="_blank"
+              >
+                aviso de privacidad
+              </Link>{' '}
+              de OficiosYa.
+            </span>
           </label>
           {errors.acceptTerms ? (
             <p

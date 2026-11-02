@@ -2,6 +2,7 @@
 
 import { CircleHelp } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 function LoginMark() {
@@ -17,15 +18,11 @@ function LoginMark() {
   );
 }
 
-function QuietLink({ children }: { children: ReactNode }) {
+function QuietLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <a
-      href="#contenido"
-      onClick={(event) => event.preventDefault()}
-      className="transition hover:text-foreground"
-    >
+    <Link href={href} className="transition hover:text-foreground">
       {children}
-    </a>
+    </Link>
   );
 }
 
@@ -90,8 +87,8 @@ export function LoginScreen({ children }: { children: ReactNode }) {
         <footer className="mx-auto mt-auto hidden w-full max-w-3xl items-center justify-between pt-8 text-xs text-[#98A2B3] lg:flex">
           <p>© {new Date().getFullYear()} OficiosYA</p>
           <p className="flex gap-4">
-            <QuietLink>Privacidad</QuietLink>
-            <QuietLink>Términos y condiciones</QuietLink>
+            <QuietLink href="/privacidad">Privacidad</QuietLink>
+            <QuietLink href="/terminos">Términos y condiciones</QuietLink>
           </p>
         </footer>
       </section>
