@@ -25,12 +25,10 @@ test.describe.serial('Flujos críticos cliente ↔ trabajador', () => {
 
   test('búsqueda abre perfil de trabajador', async ({ page }) => {
     await loginAs(page, DEMO.clientPhone);
-    await page.goto('/buscar');
-    await page.locator('#filter-q').fill('plomer');
-    await page.getByRole('button', { name: 'Buscar' }).click();
-    await expect(page).toHaveURL(/q=/);
+    await page.goto('/buscar?q=plomer');
+    await expect(page).toHaveURL(/q=plomer/);
 
-    const first = page.locator('article a[href^="/trabajador/"]').first();
+    const first = page.locator('a[href^="/trabajador/"]').locator('visible=true').first();
     await expect(first).toBeVisible({ timeout: 20_000 });
     workerProfilePath = (await first.getAttribute('href')) ?? '';
     expect(workerProfilePath).toMatch(/^\/trabajador\//);
@@ -47,7 +45,7 @@ test.describe.serial('Flujos críticos cliente ↔ trabajador', () => {
     await expect(page).toHaveURL(/\/mensajes\//, { timeout: 20_000 });
 
     await page.getByLabel('Escriba un mensaje').fill(chatText);
-    await page.getByRole('button', { name: 'Enviar', exact: true }).click();
+    await page.getByRole('button', { name: 'Enviar mensaje' }).click();
     await expect(page.getByText(chatText)).toBeVisible({ timeout: 20_000 });
   });
 

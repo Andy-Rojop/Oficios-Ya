@@ -11,8 +11,8 @@ export const API_URL = process.env.PLAYWRIGHT_API_URL ?? 'http://localhost:4000/
 /** Login por UI (teléfono nacional 8 dígitos + contraseña). */
 export async function loginAs(page: Page, phoneNational: string, password = DEMO.password) {
   await page.goto('/ingresar');
-  await page.getByLabel('Teléfono').fill(phoneNational);
-  await page.getByLabel('Contraseña').fill(password);
+  await page.locator('#phone').fill(phoneNational);
+  await page.locator('#password').fill(password);
   await page.getByRole('button', { name: 'Ingresar' }).click();
   await expect(page).not.toHaveURL(/\/ingresar/, { timeout: 20_000 });
 }
