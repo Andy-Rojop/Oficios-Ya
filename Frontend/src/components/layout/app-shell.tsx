@@ -55,8 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const chatArea = pathname === '/mensajes' || isChatThreadPath(pathname);
   const inThread = isChatThreadPath(pathname);
-  const discovery = pathname === '/buscar';
-  const showBottomPad = loggedIn && !inThread && !discovery;
+  const showBottomPad = loggedIn && !inThread;
 
   return (
     <>
@@ -64,11 +63,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <SiteHeader />
       <main
         className={cn(
-          discovery
-            ? 'flex w-full min-h-0 flex-1 flex-col pb-[var(--bottom-nav-h)] landscape:pb-4 md:h-[calc(100svh-var(--header-h))] md:overflow-hidden md:pb-0'
-            : 'mx-auto w-full max-w-6xl flex-1',
-          !discovery &&
-            (chatArea ? 'px-0 py-0 sm:px-6 sm:py-6' : 'px-3 py-4 sm:px-6 sm:py-6'),
+          'mx-auto w-full max-w-6xl flex-1',
+          chatArea ? 'px-0 py-0 sm:px-6 sm:py-6' : 'px-3 py-4 sm:px-6 sm:py-6',
           showBottomPad &&
             // Portrait: hueco para la barra. Landscape: la barra se oculta (ver SiteBottomNav).
             'pb-[var(--bottom-nav-h)] landscape:pb-4 md:pb-6',

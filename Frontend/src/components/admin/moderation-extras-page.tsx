@@ -11,11 +11,13 @@ import {
   type AvatarModerationRow,
   type CategoryRequestRow,
 } from '@/lib/admin';
-import { getErrorMessage } from '@/lib/auth';
+import { getErrorMessage, useMe } from '@/lib/auth';
 
 /** Colas QA Johan: oficios nuevos y fotos de perfil. */
 export function ModerationExtrasPage() {
   const queryClient = useQueryClient();
+  const me = useMe();
+  const isAdmin = me.data?.role === 'ADMIN';
   const [page, setPage] = useState(1);
 
   const oficios = useQuery({
@@ -52,7 +54,11 @@ export function ModerationExtrasPage() {
         >
           Aprobaciones
         </h1>
-        <p className="text-sm text-muted">Oficios nuevos y fotos de perfil pendientes.</p>
+        <p className="text-sm text-muted">
+          {isAdmin
+            ? 'Oficios nuevos y fotos de perfil pendientes.'
+            : 'Puede consultar oficios nuevos y fotos pendientes. Solo un administrador puede aprobarlos o rechazarlos.'}
+        </p>
       </header>
 
       <Card className="space-y-4">
@@ -76,23 +82,25 @@ export function ModerationExtrasPage() {
                   {item.requestedBy.name} · {item.requestedBy.phone}
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  disabled={decideOficio.isPending}
-                  onClick={() => decideOficio.mutate({ id: item.id, decision: 'VERIFIED' })}
-                >
-                  Aprobar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={decideOficio.isPending}
-                  onClick={() => decideOficio.mutate({ id: item.id, decision: 'REJECTED' })}
-                >
-                  Rechazar
-                </Button>
-              </div>
+              {isAdmin ? (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    disabled={decideOficio.isPending}
+                    onClick={() => decideOficio.mutate({ id: item.id, decision: 'VERIFIED' })}
+                  >
+                    Aprobar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={decideOficio.isPending}
+                    onClick={() => decideOficio.mutate({ id: item.id, decision: 'REJECTED' })}
+                  >
+                    Rechazar
+                  </Button>
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -104,7 +112,11 @@ export function ModerationExtrasPage() {
       <Card className="space-y-4">
         <div className="space-y-1">
           <CardTitle>Fotos de perfil</CardTitle>
-          <CardDescription>Apruebe o rechace la foto antes de que sea pública.</CardDescription>
+          <CardDescription>
+            {isAdmin
+              ? 'Apruebe o rechace la foto antes de que sea pública.'
+              : 'Fotos pendientes. Solo un administrador puede aprobarlas o rechazarlas.'}
+          </CardDescription>
         </div>
         {avatars.isError ? (
           <FormMessage tone="error">{getErrorMessage(avatars.error)}</FormMessage>
@@ -128,23 +140,25 @@ export function ModerationExtrasPage() {
                   <p className="text-sm text-muted">{item.phone}</p>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  disabled={decideAvatar.isPending}
-                  onClick={() => decideAvatar.mutate({ id: item.id, decision: 'VERIFIED' })}
-                >
-                  Aprobar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={decideAvatar.isPending}
-                  onClick={() => decideAvatar.mutate({ id: item.id, decision: 'REJECTED' })}
-                >
-                  Rechazar
-                </Button>
-              </div>
+              {isAdmin ? (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    disabled={decideAvatar.isPending}
+                    onClick={() => decideAvatar.mutate({ id: item.id, decision: 'VERIFIED' })}
+                  >
+                    Aprobar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={decideAvatar.isPending}
+                    onClick={() => decideAvatar.mutate({ id: item.id, decision: 'REJECTED' })}
+                  >
+                    Rechazar
+                  </Button>
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>

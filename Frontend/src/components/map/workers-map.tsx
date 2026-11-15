@@ -252,7 +252,7 @@ export default function WorkersMap({
       <MapContainer
         center={initialCenter}
         zoom={fill ? 14 : 13}
-        scrollWheelZoom={interactive}
+        scrollWheelZoom={false}
         dragging={interactive || !fill}
         zoomControl={interactive || !fill}
         attributionControl={!fill}
