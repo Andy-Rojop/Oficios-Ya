@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -61,6 +61,26 @@ export class UpdateUserStatusDto {
     message: 'El estado debe ser ACTIVE o SUSPENDED',
   })
   status: 'ACTIVE' | 'SUSPENDED';
+
+  @ApiPropertyOptional({
+    description:
+      'Días de ban (1–365). Solo aplica si status=SUSPENDED. Si se omite, el ban es permanente.',
+    minimum: 1,
+    maximum: 365,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'Los días de ban deben ser un número entero' })
+  @Min(1, { message: 'El ban temporal debe ser de al menos 1 día' })
+  @Max(365, { message: 'El ban temporal no puede superar 365 días' })
+  banDays?: number;
+
+  @ApiPropertyOptional({ description: 'Motivo opcional del ban o reactivación' })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 }
 
 export class DecideVerificationDto {

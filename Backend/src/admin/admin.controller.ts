@@ -64,7 +64,9 @@ export class AdminController {
 
   @Patch('users/:id/status')
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Suspender o reactivar un usuario (solo ADMIN)' })
+  @ApiOperation({
+    summary: 'Banear (temporal o permanente) o reactivar un usuario (solo ADMIN)',
+  })
   updateUserStatus(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', UUID_PIPE) id: string,

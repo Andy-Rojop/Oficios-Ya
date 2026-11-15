@@ -123,6 +123,8 @@ model User {
   role                Role          @default(USER)
   activeMode          ActiveMode    @default(CLIENT)
   status              AccountStatus @default(ACTIVE)
+  /** Si status=SUSPENDED y hay fecha: ban temporal. Null = suspensión permanente. */
+  bannedUntil         DateTime?
   zoneId              String?
   avatarPath          String?
   avatarStatus        AvatarStatus  @default(NOT_SET)

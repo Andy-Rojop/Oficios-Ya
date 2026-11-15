@@ -29,10 +29,20 @@ export interface AdminUserRow {
   email: string | null;
   role: UserRole;
   status: AccountStatus;
+  /** ISO date si el ban es temporal; null = permanente o cuenta activa. */
+  bannedUntil: string | null;
   activeMode: 'CLIENT' | 'WORKER';
   createdAt: string;
   workerProfile: { id: string; headline: string; identityStatus: IdentityStatus } | null;
 }
+
+export type SetUserStatusInput = {
+  id: string;
+  status: 'ACTIVE' | 'SUSPENDED';
+  /** Solo con SUSPENDED: días de ban. Sin valor = permanente. */
+  banDays?: number;
+  reason?: string;
+};
 
 export interface VerificationRow {
   id: string;
@@ -153,10 +163,14 @@ export const adminApi = {
   stats: () => apiFetch<AdminStats>('/admin/stats'),
   users: (page = 1, pageSize = 20, q?: string) =>
     apiFetch<Paginated<AdminUserRow>>(`/admin/users${qs({ page, pageSize, q })}`),
-  setUserStatus: (id: string, status: 'ACTIVE' | 'SUSPENDED') =>
-    apiFetch<AdminUserRow>(`/admin/users/${id}/status`, {
+  setUserStatus: (input: SetUserStatusInput) =>
+    apiFetch<AdminUserRow>(`/admin/users/${input.id}/status`, {
       method: 'PATCH',
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({
+        status: input.status,
+        ...(input.banDays ? { banDays: input.banDays } : {}),
+        ...(input.reason ? { reason: input.reason } : {}),
+      }),
     }),
   verifications: (page = 1) =>
     apiFetch<Paginated<VerificationRow>>(`/admin/verifications${qs({ page, pageSize: 20 })}`),

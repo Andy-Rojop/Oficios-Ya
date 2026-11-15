@@ -7,6 +7,7 @@ import type { AccessTokenPayload, AuthenticatedUser } from '../../common/types/a
 import type { EnvConfig } from '../../config/env.validation';
 import { AccountStatus } from '../../generated/prisma/enums';
 import { PrismaService } from '../../prisma/prisma.service';
+import { clearExpiredBanIfNeeded } from '../../users/account-access.util';
 import { ACCESS_TOKEN_COOKIE } from '../auth.constants';
 
 const cookieExtractor = (req: Request): string | null => {
@@ -41,16 +42,20 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       !session ||
       session.revokedAt ||
       session.expiresAt <= new Date() ||
-      session.userId !== payload.sub ||
-      session.user.status !== AccountStatus.ACTIVE
+      session.userId !== payload.sub
     ) {
       throw new UnauthorizedException('Su sesión ya no es válida. Inicie sesión de nuevo');
     }
 
+    const account = await clearExpiredBanIfNeeded(this.prisma, session.user);
+    if (account.status !== AccountStatus.ACTIVE) {
+      throw new UnauthorizedException('Su sesión ya no es válida. Inicie sesión de nuevo');
+    }
+
     return {
-      id: session.user.id,
-      role: session.user.role,
-      activeMode: session.user.activeMode,
+      id: account.id,
+      role: account.role,
+      activeMode: account.activeMode,
       sessionId: session.id,
     };
   }

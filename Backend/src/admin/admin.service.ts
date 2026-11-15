@@ -10,6 +10,8 @@ import {
   AvatarStatus,
   CategoryRequestStatus,
   IdentityStatus,
+  PriceMode,
+  PriceUnit,
   ReportStatus,
   ReportTarget,
   RequestStatus,
@@ -117,6 +119,7 @@ export class AdminService {
           email: true,
           role: true,
           status: true,
+          bannedUntil: true,
           activeMode: true,
           createdAt: true,
           workerProfile: { select: { id: true, headline: true, identityStatus: true } },
@@ -138,7 +141,7 @@ export class AdminService {
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, role: true, status: true },
+      select: { id: true, role: true, status: true, bannedUntil: true },
     });
     if (!user || user.status === AccountStatus.DELETED) {
       throw new NotFoundException('Usuario no encontrado');
@@ -147,27 +150,57 @@ export class AdminService {
       throw new ForbiddenException('No se puede suspender a otro administrador');
     }
 
-    const updated = await this.prisma.user.update({
-      where: { id: userId },
-      data: { status: dto.status },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        status: true,
-        activeMode: true,
-        createdAt: true,
-      },
+    const bannedUntil =
+      dto.status === AccountStatus.ACTIVE
+        ? null
+        : dto.banDays
+          ? new Date(Date.now() + dto.banDays * 24 * 60 * 60 * 1000)
+          : null;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const next = await tx.user.update({
+        where: { id: userId },
+        data: { status: dto.status, bannedUntil },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          role: true,
+          status: true,
+          bannedUntil: true,
+          activeMode: true,
+          createdAt: true,
+          workerProfile: { select: { id: true, headline: true, identityStatus: true } },
+        },
+      });
+      if (dto.status === AccountStatus.SUSPENDED) {
+        await tx.session.updateMany({
+          where: { userId, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+      }
+      return next;
     });
 
     await this.audit.log({
       actorId,
-      action: dto.status === AccountStatus.SUSPENDED ? 'USER_SUSPEND' : 'USER_ACTIVATE',
+      action:
+        dto.status === AccountStatus.SUSPENDED
+          ? dto.banDays
+            ? 'USER_BAN_TEMPORARY'
+            : 'USER_BAN_PERMANENT'
+          : 'USER_ACTIVATE',
       resource: 'User',
       resourceId: userId,
-      metadata: { previousStatus: user.status, status: dto.status },
+      metadata: {
+        previousStatus: user.status,
+        previousBannedUntil: user.bannedUntil,
+        status: dto.status,
+        bannedUntil,
+        banDays: dto.banDays ?? null,
+        reason: dto.reason ?? null,
+      },
       ip,
     });
 
@@ -718,12 +751,13 @@ export class AdminService {
         email: true,
         role: true,
         status: true,
+        bannedUntil: true,
         activeMode: true,
         createdAt: true,
       },
     });
 
-    const header = 'id,name,phone,email,role,status,activeMode,createdAt';
+    const header = 'id,name,phone,email,role,status,bannedUntil,activeMode,createdAt';
     const escape = (value: string | null | undefined) => {
       const raw = value ?? '';
       if (/[",\n]/.test(raw)) {
@@ -740,6 +774,7 @@ export class AdminService {
         escape(u.email),
         u.role,
         u.status,
+        u.bannedUntil?.toISOString() ?? '',
         u.activeMode,
         u.createdAt.toISOString(),
       ].join(','),
@@ -793,14 +828,40 @@ export class AdminService {
           adminNote: dto.note ?? null,
         },
       });
-      await this.prisma.workerProfile.updateMany({
-        where: {
-          userId: request.requestedByUserId,
-          headline: { equals: request.name, mode: 'insensitive' },
-          mainCategoryId: null,
-        },
-        data: { mainCategoryId: category.id, headline: category.name },
+      // Al aprobar: asocia el oficio al perfil del solicitante (categoría principal si faltaba).
+      const profile = await this.prisma.workerProfile.findUnique({
+        where: { userId: request.requestedByUserId },
+        select: { id: true, mainCategoryId: true, headline: true },
       });
+      if (profile) {
+        await this.prisma.workerProfile.update({
+          where: { id: profile.id },
+          data: {
+            mainCategoryId: profile.mainCategoryId ?? category.id,
+            headline:
+              !profile.headline.trim() ||
+              profile.headline.trim().toLowerCase() === request.name.trim().toLowerCase()
+                ? category.name
+                : profile.headline,
+          },
+        });
+        const hasService = await this.prisma.service.findFirst({
+          where: { workerProfileId: profile.id, categoryId: category.id },
+          select: { id: true },
+        });
+        if (!hasService) {
+          await this.prisma.service.create({
+            data: {
+              workerProfileId: profile.id,
+              categoryId: category.id,
+              name: category.name,
+              description: `Servicio de ${category.name}`,
+              priceMode: PriceMode.NEGOTIABLE,
+              priceUnit: PriceUnit.JOB,
+            },
+          });
+        }
+      }
       await this.audit.log({
         actorId,
         action: 'CATEGORY_REQUEST_APPROVE',

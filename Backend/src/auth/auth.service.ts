@@ -17,6 +17,10 @@ import { OtpService } from '../otp/otp.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { UploadedImage } from '../storage/image-upload.interceptor';
 import { StorageService } from '../storage/storage.service';
+import {
+  clearExpiredBanIfNeeded,
+  suspendedAccountMessage,
+} from '../users/account-access.util';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { ensureWorkerProfileStub } from '../users/worker-profile.stub';
 import { LOGIN_LOCK_MINUTES } from './auth.constants';
@@ -143,14 +147,14 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_CREDENTIALS);
     }
 
-    if (user.status === AccountStatus.SUSPENDED) {
-      throw new ForbiddenException('Tu cuenta está suspendida. Contacta a soporte');
+    let current = await clearExpiredBanIfNeeded(this.prisma, user);
+    if (current.status === AccountStatus.SUSPENDED) {
+      throw new ForbiddenException(suspendedAccountMessage(current.bannedUntil));
     }
 
-    let current = user;
-    if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+    if (current.failedLoginAttempts > 0 || current.lockedUntil) {
       current = await this.prisma.user.update({
-        where: { id: user.id },
+        where: { id: current.id },
         data: { failedLoginAttempts: 0, lockedUntil: null },
       });
     }
@@ -194,7 +198,8 @@ export class AuthService {
       throw new UnauthorizedException(INVALID_SESSION);
     }
 
-    if (session.user.status !== AccountStatus.ACTIVE) {
+    const account = await clearExpiredBanIfNeeded(this.prisma, session.user);
+    if (account.status !== AccountStatus.ACTIVE) {
       throw new UnauthorizedException(INVALID_SESSION);
     }
 

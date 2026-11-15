@@ -5,8 +5,17 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ADMIN_QUERY_KEYS, adminApi } from '@/lib/admin';
+import { ADMIN_QUERY_KEYS, adminApi, type AdminUserRow } from '@/lib/admin';
 import { getErrorMessage, useMe } from '@/lib/auth';
+
+function formatBanLabel(user: AdminUserRow): string {
+  if (user.status !== 'SUSPENDED') return user.status;
+  if (!user.bannedUntil) return 'SUSPENDED · permanente';
+  const until = new Date(user.bannedUntil);
+  if (Number.isNaN(until.getTime())) return 'SUSPENDED';
+  if (until.getTime() <= Date.now()) return 'SUSPENDED · vencido';
+  return `SUSPENDED · hasta ${until.toLocaleDateString('es-GT')}`;
+}
 
 export function UsersPage() {
   const me = useMe();
@@ -15,6 +24,10 @@ export function UsersPage() {
   const [q, setQ] = useState('');
   const [search, setSearch] = useState('');
   const [focused, setFocused] = useState(false);
+  const [banTarget, setBanTarget] = useState<AdminUserRow | null>(null);
+  const [banMode, setBanMode] = useState<'temporary' | 'permanent'>('temporary');
+  const [banDays, setBanDays] = useState('7');
+  const [banReason, setBanReason] = useState('');
   const qc = useQueryClient();
   const list = useQuery({
     queryKey: [...ADMIN_QUERY_KEYS.users(page), search],
@@ -34,14 +47,33 @@ export function UsersPage() {
   })();
 
   const setStatus = useMutation({
-    mutationFn: (input: { id: string; status: 'ACTIVE' | 'SUSPENDED' }) =>
-      adminApi.setUserStatus(input.id, input.status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
+    mutationFn: adminApi.setUserStatus,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+      setBanTarget(null);
+      setBanReason('');
+      setBanDays('7');
+      setBanMode('temporary');
+    },
   });
 
   const exportCsv = useMutation({
     mutationFn: () => adminApi.exportUsersCsv(),
   });
+
+  function submitBan() {
+    if (!banTarget) return;
+    const days = Number(banDays);
+    if (banMode === 'temporary' && (!Number.isInteger(days) || days < 1 || days > 365)) {
+      return;
+    }
+    setStatus.mutate({
+      id: banTarget.id,
+      status: 'SUSPENDED',
+      ...(banMode === 'temporary' ? { banDays: days } : {}),
+      ...(banReason.trim() ? { reason: banReason.trim() } : {}),
+    });
+  }
 
   return (
     <section className="space-y-4">
@@ -49,7 +81,7 @@ export function UsersPage() {
         <div>
           <h1 className="text-2xl font-semibold">Usuarios</h1>
           <p className="text-sm text-muted">
-            Listado y suspensión (solo ADMIN puede cambiar estado).
+            Ban temporal (días), ban permanente o reactivación. Solo ADMIN.
           </p>
         </div>
         {isAdmin ? (
@@ -155,27 +187,52 @@ export function UsersPage() {
                   </td>
                   <td className="px-3 py-2 font-mono text-xs">{u.phone}</td>
                   <td className="px-3 py-2">{u.role}</td>
-                  <td className="px-3 py-2">{u.status}</td>
+                  <td className="px-3 py-2 text-xs font-medium">{formatBanLabel(u)}</td>
                   <td className="px-3 py-2">
                     {isAdmin && u.role !== 'ADMIN' ? (
-                      u.status === 'ACTIVE' ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={setStatus.isPending}
-                          onClick={() => setStatus.mutate({ id: u.id, status: 'SUSPENDED' })}
-                        >
-                          Suspender
-                        </Button>
-                      ) : u.status === 'SUSPENDED' ? (
-                        <Button
-                          size="sm"
-                          disabled={setStatus.isPending}
-                          onClick={() => setStatus.mutate({ id: u.id, status: 'ACTIVE' })}
-                        >
-                          Reactivar
-                        </Button>
-                      ) : null
+                      <div className="flex flex-wrap gap-2">
+                        {u.status === 'ACTIVE' ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={setStatus.isPending}
+                            onClick={() => {
+                              setBanTarget(u);
+                              setBanMode('temporary');
+                              setBanDays('7');
+                              setBanReason('');
+                            }}
+                          >
+                            Banear
+                          </Button>
+                        ) : null}
+                        {u.status === 'SUSPENDED' ? (
+                          <>
+                            <Button
+                              size="sm"
+                              disabled={setStatus.isPending}
+                              onClick={() =>
+                                setStatus.mutate({ id: u.id, status: 'ACTIVE' })
+                              }
+                            >
+                              Reactivar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={setStatus.isPending}
+                              onClick={() => {
+                                setBanTarget(u);
+                                setBanMode(u.bannedUntil ? 'temporary' : 'permanent');
+                                setBanDays('7');
+                                setBanReason('');
+                              }}
+                            >
+                              Cambiar ban
+                            </Button>
+                          </>
+                        ) : null}
+                      </div>
                     ) : (
                       <span className="text-xs text-muted">—</span>
                     )}
@@ -212,6 +269,79 @@ export function UsersPage() {
         <p role="alert" className="text-sm text-red-700">
           {getErrorMessage(setStatus.error ?? exportCsv.error)}
         </p>
+      ) : null}
+
+      {banTarget ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 p-4 sm:items-center"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ban-user-title"
+            className="w-full max-w-md rounded-2xl border border-border bg-surface p-5 shadow-xl sm:p-6"
+          >
+            <h2 id="ban-user-title" className="text-lg font-semibold">
+              Banear a {banTarget.name}
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Elija ban por días o permanente. Se cerrarán sus sesiones activas.
+            </p>
+
+            <div className="mt-4 space-y-3">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="ban-mode"
+                  checked={banMode === 'temporary'}
+                  onChange={() => setBanMode('temporary')}
+                />
+                Por días
+              </label>
+              {banMode === 'temporary' ? (
+                <Input
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={banDays}
+                  onChange={(e) => setBanDays(e.target.value)}
+                  aria-label="Días de ban"
+                  placeholder="Ej. 7"
+                />
+              ) : null}
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="ban-mode"
+                  checked={banMode === 'permanent'}
+                  onChange={() => setBanMode('permanent')}
+                />
+                Permanente
+              </label>
+              <Input
+                value={banReason}
+                onChange={(e) => setBanReason(e.target.value)}
+                placeholder="Motivo (opcional)"
+                maxLength={500}
+              />
+            </div>
+
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={setStatus.isPending}
+                onClick={() => setBanTarget(null)}
+              >
+                Cancelar
+              </Button>
+              <Button type="button" disabled={setStatus.isPending} onClick={submitBan}>
+                {setStatus.isPending ? 'Aplicando…' : 'Confirmar ban'}
+              </Button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </section>
   );
