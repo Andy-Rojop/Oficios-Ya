@@ -7,13 +7,14 @@ import {
   LayoutDashboard,
   MessageSquare,
   Search,
+  Shield,
   UserRound,
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { isChatThreadPath, linksForMode, type NavLink } from '@/components/layout/nav-links';
-import { useMe } from '@/lib/auth';
+import { isChatThreadPath, linksForUser, type NavLink } from '@/components/layout/nav-links';
+import { isStaffRole, useMe } from '@/lib/auth';
 import {
   CHAT_QUERY_KEYS,
   chatApi,
@@ -31,32 +32,32 @@ const ICONS: Record<NavLink['icon'], LucideIcon> = {
   requests: ClipboardList,
   account: UserRound,
   panel: LayoutDashboard,
+  admin: Shield,
 };
 
 /**
  * Barra inferior fija para pulgar (solo con sesión, solo en viewport móvil portrait).
- * En hilo de chat / landscape se oculta.
+ * En hilo de chat / landscape / admin se oculta.
  */
 export function SiteBottomNav() {
   const pathname = usePathname();
   const { data: user } = useMe();
   const queryClient = useQueryClient();
+  const staff = isStaffRole(user?.role);
 
   const conversations = useQuery({
     queryKey: CHAT_QUERY_KEYS.conversations,
     queryFn: chatApi.listConversations,
-    enabled: Boolean(user),
+    enabled: Boolean(user) && !staff,
     staleTime: 30_000,
   });
 
   useChatEvent<ConversationSummary>(CHAT_EVENTS.CONVERSATION_UPDATED, (summary) => {
+    if (staff) return;
     queryClient.setQueryData<ConversationSummary[]>(CHAT_QUERY_KEYS.conversations, (current) =>
       upsertConversation(current, summary),
     );
   });
-
-  // No invalidar al (re)conectar aquí: InboxView ya hace un sync y este efecto
-  // duplicado + socket inestable en Safari provocaba parpadeo “Cargando…”.
 
   // AppShell ya evita montarlo en login; doble guarda por si se usa solo.
   if (!user || isChatThreadPath(pathname)) return null;
@@ -64,17 +65,18 @@ export function SiteBottomNav() {
     pathname.startsWith('/ingresar') ||
     pathname.startsWith('/registro') ||
     pathname.startsWith('/recuperar') ||
-    pathname.startsWith('/roles')
+    pathname.startsWith('/roles') ||
+    pathname.startsWith('/admin')
   ) {
     return null;
   }
 
-  const workerChrome = user.activeMode === 'WORKER';
-  const links = linksForMode(user.activeMode);
-  const unreadMessages = (conversations.data ?? []).reduce(
-    (sum, item) => sum + (item.unreadCount ?? 0),
-    0,
-  );
+  const previewWorker = staff && pathname.startsWith('/panel');
+  const workerChrome = (!staff && user.activeMode === 'WORKER') || previewWorker;
+  const links = linksForUser(user);
+  const unreadMessages = staff
+    ? 0
+    : (conversations.data ?? []).reduce((sum, item) => sum + (item.unreadCount ?? 0), 0);
 
   return (
     <nav
@@ -88,13 +90,21 @@ export function SiteBottomNav() {
           : 'border-border bg-surface text-foreground',
       )}
     >
-      <ul className="mx-auto grid max-w-lg grid-cols-4">
+      <ul
+        className={cn(
+          'mx-auto grid max-w-lg',
+          staff ? 'grid-cols-3' : 'grid-cols-4',
+        )}
+      >
         {links.map((link) => {
-          const Icon = workerChrome && link.icon === 'panel' ? Briefcase : ICONS[link.icon];
+          const Icon =
+            workerChrome && link.icon === 'panel' ? Briefcase : ICONS[link.icon];
           const active =
-            pathname === link.href ||
-            (link.href !== '/' && pathname.startsWith(`${link.href}/`));
-          const showBadge = link.icon === 'messages' && unreadMessages > 0;
+            link.href === '/admin'
+              ? pathname === '/admin' || pathname.startsWith('/admin/')
+              : pathname === link.href ||
+                (link.href !== '/' && pathname.startsWith(`${link.href}/`));
+          const showBadge = !staff && link.icon === 'messages' && unreadMessages > 0;
           return (
             <li key={link.href}>
               <Link

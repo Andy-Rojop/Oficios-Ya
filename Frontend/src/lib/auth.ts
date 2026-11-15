@@ -217,21 +217,37 @@ export function safeNextPath(next: string | null | undefined, fallback = '/panel
   return next;
 }
 
-/** Home del módulo según el modo activo. */
+/** Home del módulo según el modo activo (solo usuarios normales). */
 export function homePathForMode(mode: ActiveMode): string {
   return mode === 'WORKER' ? '/panel' : '/';
 }
 
+/** Admin/Municipal no usan modo Cliente/Trabajador: su home es el panel. */
+export function isStaffRole(role: UserRole | undefined): boolean {
+  return role === 'ADMIN' || role === 'MUNICIPAL';
+}
+
+/** Destino de inicio según rol (staff → /admin). */
+export function homePathForUser(user: Pick<UserDto, 'role' | 'activeMode'>): string {
+  return isStaffRole(user.role) ? '/admin' : homePathForMode(user.activeMode);
+}
+
 /**
  * Destino tras login/registro.
- * Respeta `next` solo si encaja con el modo; si no, manda al módulo correcto
- * (cliente → `/`, trabajador → `/panel`).
+ * Staff → `/admin` (respeta `next` solo si es ruta de admin).
+ * Usuario: respeta `next` solo si encaja con el modo; si no, módulo correcto.
  */
 export function resolvePostAuthPath(options: {
   activeMode: ActiveMode;
+  role?: UserRole;
   requestedMode?: ActiveMode | null;
   next?: string | null;
 }): string {
+  if (isStaffRole(options.role)) {
+    const next = options.next ? safeNextPath(options.next, '/admin') : '/admin';
+    return next.startsWith('/admin') ? next : '/admin';
+  }
+
   const mode = options.requestedMode ?? options.activeMode;
   const home = homePathForMode(mode);
   const next = options.next ? safeNextPath(options.next, home) : home;

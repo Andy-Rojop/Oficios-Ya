@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import {
   getErrorMessage,
+  isStaffRole,
   isUnauthorized,
   useMe,
   useSwitchMode,
@@ -57,6 +58,11 @@ export function RequireClientMode({ children }: { children: ReactNode }) {
   const mutation = useSwitchMode({ navigate: false });
 
   if (!user) return null;
+
+  // Staff consulta la app de clientes sin modo Cliente/Trabajador.
+  if (isStaffRole(user.role)) {
+    return <>{children}</>;
+  }
 
   if (user.activeMode === 'WORKER') {
     return (

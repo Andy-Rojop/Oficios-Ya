@@ -1,12 +1,21 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { useMe } from '@/lib/auth';
+import { isStaffRole, useMe } from '@/lib/auth';
 
-/** Marca el documento según el modo activo para distinguir cliente y trabajador. */
+/** Marca el documento según el modo activo (o la vista que consulta el staff). */
 export function ModeTheme() {
+  const pathname = usePathname();
   const { data: user } = useMe();
-  const mode = user?.activeMode === 'WORKER' ? 'worker' : 'client';
+  const staff = isStaffRole(user?.role);
+
+  let mode: 'worker' | 'client' = 'client';
+  if (staff) {
+    mode = pathname.startsWith('/panel') ? 'worker' : 'client';
+  } else if (user?.activeMode === 'WORKER') {
+    mode = 'worker';
+  }
 
   useEffect(() => {
     // No borrar en cleanup: al remount (Strict Mode / navegación) Safari parpadeaba

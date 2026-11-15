@@ -5,10 +5,17 @@ import { ExternalLink, Inbox, MessageSquare, Wrench } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { StaffWorkerPreview } from '@/components/admin/staff-worker-preview';
 import { FormMessage } from '@/components/forms/form-field';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
-import { getErrorMessage, isUnauthorized, useMe, useSwitchMode } from '@/lib/auth';
+import {
+  getErrorMessage,
+  isStaffRole,
+  isUnauthorized,
+  useMe,
+  useSwitchMode,
+} from '@/lib/auth';
 import { WORKER_QUERY_KEYS, workersApi, type OwnWorkerProfile } from '@/lib/workers';
 import { CompletenessCard } from './completeness-card';
 import { PortfolioCard } from './portfolio-card';
@@ -40,6 +47,10 @@ export function WorkerDashboard() {
         {error ? getErrorMessage(error) : 'No se pudo cargar su panel.'}
       </FormMessage>
     );
+  }
+
+  if (isStaffRole(user.role)) {
+    return <StaffWorkerPreview />;
   }
 
   if (user.activeMode !== 'WORKER') {

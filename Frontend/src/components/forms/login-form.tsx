@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import {
   ME_QUERY_KEY,
   getErrorMessage,
+  isStaffRole,
   login,
   resolvePostAuthPath,
   switchMode,
@@ -75,14 +76,15 @@ export function LoginForm() {
         return;
       }
       try {
-        if (mode && current.activeMode !== mode) {
+        if (mode && !isStaffRole(current.role) && current.activeMode !== mode) {
           current = await switchMode(mode);
           queryClient.setQueryData(ME_QUERY_KEY, current);
         }
         router.replace(
           resolvePostAuthPath({
             activeMode: current.activeMode,
-            requestedMode: mode,
+            role: current.role,
+            requestedMode: isStaffRole(current.role) ? null : mode,
             next: nextParam,
           }),
         );
@@ -103,7 +105,7 @@ export function LoginForm() {
     }
     try {
       let user = await login({ phone, password: values.password });
-      if (mode && user.activeMode !== mode) {
+      if (mode && !isStaffRole(user.role) && user.activeMode !== mode) {
         user = await switchMode(mode);
       }
       // El effect redirige cuando `me.data` queda en caché.

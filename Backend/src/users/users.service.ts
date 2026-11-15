@@ -1,11 +1,12 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { User } from '../generated/prisma/client';
-import { AccountStatus, ActiveMode, AvatarStatus } from '../generated/prisma/enums';
+import { AccountStatus, ActiveMode, AvatarStatus, Role } from '../generated/prisma/enums';
 import { PrismaService } from '../prisma/prisma.service';
 import type { UploadedImage } from '../storage/image-upload.interceptor';
 import { StorageService } from '../storage/storage.service';
@@ -60,6 +61,16 @@ export class UsersService {
 
   /** RF-007: cambiar entre modo cliente y trabajador (crea el perfil de trabajador la primera vez). */
   async switchMode(userId: string, dto: SwitchModeDto): Promise<User> {
+    const current = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!current) {
+      throw new UnauthorizedException('Su sesión ya no es válida. Inicie sesión de nuevo');
+    }
+    if (current.role === Role.ADMIN || current.role === Role.MUNICIPAL) {
+      throw new ForbiddenException(
+        'Las cuentas de administración no usan modo cliente ni trabajador',
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
       if (dto.mode === ActiveMode.WORKER) {
         await ensureWorkerProfileStub(tx, userId);

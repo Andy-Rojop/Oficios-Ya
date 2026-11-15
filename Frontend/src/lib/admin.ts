@@ -1,5 +1,8 @@
 import { apiFetch, apiFetchBlob } from './api-client';
-import type { AccountStatus, UserRole } from './auth';
+import { isStaffRole as isStaffRoleFromAuth, type AccountStatus, type UserRole } from './auth';
+
+/** Reexport para imports existentes desde `@/lib/admin`. */
+export const isStaffRole = isStaffRoleFromAuth;
 
 export type IdentityStatus = 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
 export type ReportStatus = 'OPEN' | 'IN_REVIEW' | 'RESOLVED' | 'DISMISSED';
@@ -242,7 +245,3 @@ export const adminApi = {
   auditLog: (page = 1) =>
     apiFetch<Paginated<AuditRow>>(`/admin/audit-log${qs({ page, pageSize: 30 })}`),
 };
-
-export function isStaffRole(role: UserRole | undefined): boolean {
-  return role === 'ADMIN' || role === 'MUNICIPAL';
-}

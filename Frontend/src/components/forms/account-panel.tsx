@@ -2,7 +2,16 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { Briefcase, Check, LogOut, Mail, MapPin, Phone, Search, UserRound } from 'lucide-react';
+import {
+  Briefcase,
+  Check,
+  LogOut,
+  Mail,
+  MapPin,
+  Phone,
+  Search,
+  UserRound,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -17,6 +26,7 @@ import {
   ME_QUERY_KEY,
   changePhone,
   getErrorMessage,
+  isStaffRole,
   isUnauthorized,
   updateEmail,
   updateProfile,
@@ -65,6 +75,12 @@ export function AccountPanel() {
     }
   }, [unauthorized, isLoading, router]);
 
+  useEffect(() => {
+    if (user && isStaffRole(user.role)) {
+      router.replace('/admin');
+    }
+  }, [user, router]);
+
   if (isLoading && !user) {
     return <p className="text-muted">Cargando su cuenta…</p>;
   }
@@ -78,6 +94,10 @@ export function AccountPanel() {
         {error ? getErrorMessage(error) : 'No se pudo cargar su cuenta.'}
       </FormMessage>
     );
+  }
+
+  if (isStaffRole(user.role)) {
+    return <p className="text-muted">Redirigiendo al panel de administración…</p>;
   }
 
   const firstName = user.name.split(' ')[0] ?? 'Usuario';

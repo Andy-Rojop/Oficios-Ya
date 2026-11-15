@@ -1,12 +1,13 @@
 'use client';
 
+import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import { BrandLogo } from '@/components/layout/brand-logo';
 import { Card } from '@/components/ui/card';
-import { isStaffRole } from '@/lib/admin';
-import { getErrorMessage, isUnauthorized, useMe } from '@/lib/auth';
+import { isStaffRole } from '@/lib/auth';
+import { getErrorMessage, isUnauthorized, useLogout, useMe } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 
 const ADMIN_NAV = [
@@ -19,11 +20,17 @@ const ADMIN_NAV = [
   { href: '/admin/bitacora', label: 'Bitácora', adminOnly: true },
 ] as const;
 
+const APP_VIEWS = [
+  { href: '/buscar', label: 'Ver app clientes' },
+  { href: '/panel', label: 'Ver app trabajadores' },
+] as const;
+
 /** Redirige si el rol no es ADMIN/MUNICIPAL; muestra navegación del panel. */
 export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const me = useMe();
+  const logout = useLogout();
 
   useEffect(() => {
     if (isUnauthorized(me.error)) {
@@ -31,7 +38,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       return;
     }
     if (me.data && !isStaffRole(me.data.role)) {
-      router.replace('/cuenta');
+      router.replace('/');
     }
   }, [me.data, me.error, router]);
 
@@ -60,13 +67,22 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <aside className="space-y-4 lg:sticky lg:top-[calc(var(--header-h)+1rem)] lg:self-start">
+      <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
         <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
           <BrandLogo href="/admin" className="h-9 sm:h-9" />
           <p className="mt-1 truncate text-sm font-semibold text-foreground">{user.name}</p>
           <p className="text-xs text-muted">
             {user.role === 'ADMIN' ? 'Administrador' : 'Municipal'}
           </p>
+          <button
+            type="button"
+            disabled={logout.isPending}
+            onClick={() => logout.mutate()}
+            className="mt-3 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-border text-sm font-medium text-muted transition hover:bg-brand-soft hover:text-foreground disabled:opacity-60"
+          >
+            <LogOut aria-hidden className="h-3.5 w-3.5" />
+            {logout.isPending ? 'Cerrando…' : 'Cerrar sesión'}
+          </button>
         </div>
         <nav
           aria-label="Administración"
@@ -91,6 +107,23 @@ export function AdminShell({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+        </nav>
+        <nav
+          aria-label="Vistas de la app"
+          className="flex flex-wrap gap-1 rounded-2xl border border-border bg-surface p-2 shadow-sm lg:flex-col"
+        >
+          <p className="px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
+            Consultar apps
+          </p>
+          {APP_VIEWS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-xl px-3 py-2.5 text-sm font-medium text-muted transition hover:bg-brand-soft hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
       </aside>
       <div className="min-w-0">{children}</div>

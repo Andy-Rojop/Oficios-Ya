@@ -7,11 +7,14 @@ import { ADMIN_QUERY_KEYS, adminApi } from '@/lib/admin';
 import { getErrorMessage } from '@/lib/auth';
 
 const LINKS = [
+  { href: '/admin/aprobaciones', label: 'Aprobaciones', hint: 'Fotos de perfil y oficios nuevos' },
   { href: '/admin/verificaciones', label: 'Verificaciones', hint: 'Identidades pendientes' },
   { href: '/admin/reportes', label: 'Reportes', hint: 'Moderación de chat y reseñas' },
   { href: '/admin/catalogos', label: 'Catálogos', hint: 'Categorías y zonas' },
   { href: '/admin/usuarios', label: 'Usuarios', hint: 'Suspender o reactivar' },
   { href: '/admin/bitacora', label: 'Bitácora', hint: 'Auditoría de acciones' },
+  { href: '/buscar', label: 'Ver app clientes', hint: 'Cómo buscan y solicitan oficios' },
+  { href: '/panel', label: 'Ver app trabajadores', hint: 'Cómo gestionan su panel' },
 ];
 
 export function AdminDashboard() {
@@ -26,7 +29,10 @@ export function AdminDashboard() {
         >
           Dashboard
         </h1>
-        <p className="text-sm text-muted">Resumen de moderación y catálogos de OficiosYa.</p>
+        <p className="text-sm text-muted">
+          Moderación y catálogos. Esta cuenta no es cliente ni trabajador: use las vistas de
+          consulta si necesita recorrer esas apps.
+        </p>
       </div>
 
       {stats.isLoading ? (
