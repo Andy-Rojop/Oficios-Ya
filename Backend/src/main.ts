@@ -30,7 +30,10 @@ async function bootstrap() {
   // Normaliza barra final: Vercel a veces manda Origin sin `/` y FRONTEND_URL con ella (o al revés).
   const allowedOrigin = frontendUrl.replace(/\/+$/, '');
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (
+      origin: string | undefined,
+      callback: (error: Error | null, allow?: boolean) => void,
+    ) => {
       if (!origin) {
         callback(null, true);
         return;
