@@ -8,8 +8,12 @@ export const MAX_UPLOAD_MB = 10;
 
 /** Valida tipo y tamaño en el navegador (la API vuelve a validarlo). Devuelve un mensaje o null. */
 export function validateImageFile(file: File): string | null {
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return 'Usa una imagen JPG, PNG o WebP.';
+  const typeOk =
+    ALLOWED_TYPES.includes(file.type) ||
+    // iOS a veces manda type vacío con nombre .jpg
+    (!file.type && /\.(jpe?g|png|webp)$/i.test(file.name));
+  if (!typeOk) {
+    return 'Usa una imagen JPG, PNG o WebP (no HEIC).';
   }
   if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
     return `La imagen supera el máximo de ${MAX_UPLOAD_MB} MB.`;
@@ -36,7 +40,7 @@ export function ImagePicker({ id, label, file, onChange, disabled }: ImagePicker
         ref={inputRef}
         id={id}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,image/*"
         className="sr-only"
         disabled={disabled}
         onChange={(event) => {

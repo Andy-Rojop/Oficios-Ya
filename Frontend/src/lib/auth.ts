@@ -28,10 +28,11 @@ export interface UserDto {
   createdAt: string;
 }
 
-export function uploadAvatar(file: File): Promise<UserDto> {
+export async function uploadAvatar(file: File): Promise<UserDto> {
+  const { prepareImageForUpload } = await import('./prepare-image-upload');
+  const ready = await prepareImageForUpload(file);
   const form = new FormData();
-  form.append('file', file);
-  // Misma ruta que GET /auth/me (el 404 en /users/me/avatar solía ser backend sin redeploy).
+  form.append('file', ready);
   return apiFetch<UserDto>('/auth/me/avatar', { method: 'POST', body: form });
 }
 
@@ -200,7 +201,7 @@ export function getErrorMessage(error: unknown): string {
     return error.message;
   }
   if (error instanceof TypeError) {
-    return 'No se pudo conectar con el servidor. Revise su conexión e inténtelo de nuevo.';
+    return 'No se pudo completar la solicitud (red o archivo muy pesado). Pruebe con una foto más liviana o otra conexión.';
   }
   if (error instanceof Error) {
     return error.message;

@@ -27,12 +27,20 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
   app.use(helmet());
   app.use(cookieParser());
+  // Normaliza barra final: Vercel a veces manda Origin sin `/` y FRONTEND_URL con ella (o al revés).
+  const allowedOrigin = frontendUrl.replace(/\/+$/, '');
   app.enableCors({
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      callback(null, origin.replace(/\/+$/, '') === allowedOrigin);
+    },
     credentials: true,
   });
   // Socket.IO (/chat): CORS con credenciales para que el navegador envíe las cookies httpOnly.
-  app.useWebSocketAdapter(new ChatIoAdapter(app, frontendUrl));
+  app.useWebSocketAdapter(new ChatIoAdapter(app, allowedOrigin));
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
