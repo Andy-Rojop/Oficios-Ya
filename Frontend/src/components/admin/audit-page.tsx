@@ -7,6 +7,11 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ADMIN_QUERY_KEYS, adminApi } from '@/lib/admin';
+import {
+  auditActionLabel,
+  auditMetadataLabel,
+  auditResourceLabel,
+} from '@/lib/audit-labels';
 import { getErrorMessage, useMe } from '@/lib/auth';
 
 export function AuditPage() {
@@ -62,13 +67,15 @@ export function AuditPage() {
                     {format(new Date(row.createdAt), 'd MMM yyyy HH:mm', { locale: es })}
                   </td>
                   <td className="px-3 py-2">{row.actor?.name ?? '—'}</td>
-                  <td className="px-3 py-2 font-medium">{row.action}</td>
+                  <td className="px-3 py-2 font-medium">{auditActionLabel(row.action)}</td>
                   <td className="px-3 py-2">
-                    <p>{row.resource}</p>
-                    <p className="font-mono text-[11px] text-muted">{row.resourceId ?? ''}</p>
+                    <p>{auditResourceLabel(row.resource)}</p>
+                    {row.resourceId ? (
+                      <p className="font-mono text-[11px] text-muted">{row.resourceId}</p>
+                    ) : null}
                   </td>
-                  <td className="max-w-xs px-3 py-2 font-mono text-[11px] text-muted">
-                    {row.metadata ? JSON.stringify(row.metadata) : '—'}
+                  <td className="max-w-sm px-3 py-2 text-xs text-muted">
+                    {auditMetadataLabel(row.metadata)}
                   </td>
                 </tr>
               ))}

@@ -36,7 +36,14 @@ export interface AdminUserRow {
   bannedUntil: string | null;
   activeMode: 'CLIENT' | 'WORKER';
   createdAt: string;
-  workerProfile: { id: string; headline: string; identityStatus: IdentityStatus } | null;
+  zone: { id: string; name: string } | null;
+  workerProfile: {
+    id: string;
+    headline: string;
+    identityStatus: IdentityStatus;
+    mainCategory: { id: string; name: string } | null;
+    baseZone: { id: string; name: string } | null;
+  } | null;
 }
 
 export type SetUserStatusInput = {

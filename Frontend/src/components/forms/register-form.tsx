@@ -37,7 +37,10 @@ const registerSchema = z
       z.literal(''),
       z
         .email('Ingrese un correo válido, por ejemplo nombre@correo.com')
-        .max(80, 'El correo no puede superar 80 caracteres'),
+        .max(80, 'El correo no puede superar 80 caracteres')
+        .refine((value) => !/\d{4,}/.test(value), {
+          message: 'El correo no puede tener más de 3 dígitos seguidos',
+        }),
     ]),
     acceptTerms: z.boolean().refine((value) => value, 'Debe aceptar los términos y condiciones'),
     startAsWorker: z.boolean(),

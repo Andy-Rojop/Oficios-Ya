@@ -52,7 +52,7 @@ export function LoginScreen({ children }: { children: ReactNode }) {
 
       </aside>
 
-      <section className="relative flex min-h-[70dvh] flex-col px-5 py-8 sm:px-8 lg:min-h-dvh lg:px-12 lg:py-8">
+      <section className="relative flex min-h-[70dvh] flex-col px-5 py-8 sm:px-10 lg:min-h-dvh lg:px-14 lg:py-10 xl:px-16">
         <a
           href="#ayuda"
           onClick={(event) => event.preventDefault()}
@@ -62,17 +62,17 @@ export function LoginScreen({ children }: { children: ReactNode }) {
           ¿Necesitas ayuda?
         </a>
 
-        <div className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center">
-          <p className="text-[11px] font-semibold tracking-[0.18em] text-accent">
+        <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col justify-center">
+          <p className="text-[11px] font-semibold tracking-[0.18em] text-accent sm:text-xs">
             TU COMUNIDAD TE ESPERA
           </p>
-          <h2 className="mt-2 text-[1.85rem] font-bold leading-tight tracking-tight text-[#1B2A4A] sm:text-4xl">
+          <h2 className="mt-2 text-[2rem] font-bold leading-tight tracking-tight text-[#1B2A4A] sm:text-[2.5rem]">
             ¡Bienvenido de nuevo!
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-[#667085]">
+          <p className="mt-3 text-base leading-relaxed text-[#667085] sm:text-lg">
             Ingresa con tu teléfono y contraseña para seguir conectando.
           </p>
-          <div className="mt-8">{children}</div>
+          <div className="mt-10">{children}</div>
         </div>
 
         <a

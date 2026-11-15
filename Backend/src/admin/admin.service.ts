@@ -122,7 +122,16 @@ export class AdminService {
           bannedUntil: true,
           activeMode: true,
           createdAt: true,
-          workerProfile: { select: { id: true, headline: true, identityStatus: true } },
+          zone: { select: { id: true, name: true } },
+          workerProfile: {
+            select: {
+              id: true,
+              headline: true,
+              identityStatus: true,
+              mainCategory: { select: { id: true, name: true } },
+              baseZone: { select: { id: true, name: true } },
+            },
+          },
         },
       }),
       this.prisma.user.count({ where }),
@@ -171,7 +180,16 @@ export class AdminService {
           bannedUntil: true,
           activeMode: true,
           createdAt: true,
-          workerProfile: { select: { id: true, headline: true, identityStatus: true } },
+          zone: { select: { id: true, name: true } },
+          workerProfile: {
+            select: {
+              id: true,
+              headline: true,
+              identityStatus: true,
+              mainCategory: { select: { id: true, name: true } },
+              baseZone: { select: { id: true, name: true } },
+            },
+          },
         },
       });
       if (dto.status === AccountStatus.SUSPENDED) {

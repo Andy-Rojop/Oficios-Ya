@@ -64,15 +64,15 @@ export class UpdateUserStatusDto {
 
   @ApiPropertyOptional({
     description:
-      'Días de ban (1–365). Solo aplica si status=SUSPENDED. Si se omite, el ban es permanente.',
+      'Días de ban (1–99). Solo aplica si status=SUSPENDED. Si se omite, el ban es permanente.',
     minimum: 1,
-    maximum: 365,
+    maximum: 99,
   })
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'Los días de ban deben ser un número entero' })
   @Min(1, { message: 'El ban temporal debe ser de al menos 1 día' })
-  @Max(365, { message: 'El ban temporal no puede superar 365 días' })
+  @Max(99, { message: 'El ban temporal no puede superar 99 días' })
   banDays?: number;
 
   @ApiPropertyOptional({ description: 'Motivo opcional del ban o reactivación' })

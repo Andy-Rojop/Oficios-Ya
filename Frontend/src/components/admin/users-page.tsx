@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ADMIN_QUERY_KEYS, adminApi, type AdminUserRow } from '@/lib/admin';
 import { getErrorMessage, useMe } from '@/lib/auth';
+import { sanitizeDigitsInput } from '@/lib/numeric-input';
 
 function formatBanLabel(user: AdminUserRow): string {
   if (user.status !== 'SUSPENDED') return user.status;
@@ -64,7 +65,7 @@ export function UsersPage() {
   function submitBan() {
     if (!banTarget) return;
     const days = Number(banDays);
-    if (banMode === 'temporary' && (!Number.isInteger(days) || days < 1 || days > 365)) {
+    if (banMode === 'temporary' && (!Number.isInteger(days) || days < 1 || days > 99)) {
       return;
     }
     setStatus.mutate({
@@ -173,6 +174,8 @@ export function UsersPage() {
               <tr>
                 <th className="px-3 py-2">Nombre</th>
                 <th className="px-3 py-2">Teléfono</th>
+                <th className="px-3 py-2">Oficio</th>
+                <th className="px-3 py-2">Ubicación</th>
                 <th className="px-3 py-2">Rol</th>
                 <th className="px-3 py-2">Estado</th>
                 <th className="px-3 py-2">Acciones</th>
@@ -186,6 +189,14 @@ export function UsersPage() {
                     {u.email ? <p className="text-xs text-muted">{u.email}</p> : null}
                   </td>
                   <td className="px-3 py-2 font-mono text-xs">{u.phone}</td>
+                  <td className="px-3 py-2 text-xs">
+                    {u.workerProfile?.mainCategory?.name ??
+                      u.workerProfile?.headline ??
+                      '—'}
+                  </td>
+                  <td className="px-3 py-2 text-xs">
+                    {u.zone?.name ?? u.workerProfile?.baseZone?.name ?? '—'}
+                  </td>
                   <td className="px-3 py-2">{u.role}</td>
                   <td className="px-3 py-2 text-xs font-medium">{formatBanLabel(u)}</td>
                   <td className="px-3 py-2">
@@ -301,13 +312,12 @@ export function UsersPage() {
               </label>
               {banMode === 'temporary' ? (
                 <Input
-                  type="number"
-                  min={1}
-                  max={365}
+                  inputMode="numeric"
+                  maxLength={2}
                   value={banDays}
-                  onChange={(e) => setBanDays(e.target.value)}
-                  aria-label="Días de ban"
-                  placeholder="Ej. 7"
+                  onChange={(e) => setBanDays(sanitizeDigitsInput(e.target.value, 2))}
+                  aria-label="Días de ban (1 a 99)"
+                  placeholder="Ej. 7 (máx. 99)"
                 />
               ) : null}
               <label className="flex items-center gap-2 text-sm">

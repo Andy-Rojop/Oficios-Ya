@@ -53,25 +53,38 @@ export default async function BuscarPage({ searchParams }: PageProps) {
 
   return (
     <ProtectedDiscovery>
-      <SearchMapPanel
-        layout="discovery"
-        filters={filters}
-        items={items}
-        nextCursor={nextCursor}
-        error={result.error}
-        header={
-          <SearchFiltersForm
-            appearance="discovery"
-            basePath="/buscar"
-            filters={filters}
-            categories={categories}
-            zones={zones}
-            workers={items}
-            resultCount={items.length}
-            hasMore={Boolean(nextCursor)}
-          />
-        }
-      />
+      <section className="space-y-6">
+        <header className="space-y-2">
+          <h1
+            className="text-2xl font-semibold tracking-tight sm:text-3xl"
+            style={{ fontFamily: 'var(--font-display), system-ui, sans-serif' }}
+          >
+            Buscar trabajadores
+          </h1>
+          <p className="max-w-2xl text-sm text-muted sm:text-base">
+            Use los filtros y el mapa para ver a las personas disponibles, de la más cercana a la
+            más lejana. Los pines son centros de zona, nunca una dirección exacta. En cada tarjeta
+            puede solicitar un servicio.
+          </p>
+        </header>
+
+        <SearchFiltersForm
+          basePath="/buscar"
+          filters={filters}
+          categories={categories}
+          zones={zones}
+          workers={items}
+          resultCount={items.length}
+          hasMore={Boolean(nextCursor)}
+        />
+
+        <SearchMapPanel
+          filters={filters}
+          items={items}
+          nextCursor={nextCursor}
+          error={result.error}
+        />
+      </section>
     </ProtectedDiscovery>
   );
 }

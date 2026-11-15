@@ -57,9 +57,13 @@ export function sanitizeDigitsInput(raw: string, maxLength: number): string {
   return raw.replace(/\D/g, '').slice(0, maxLength);
 }
 
-/** Solo caracteres habituales de un correo, con tope de 80. */
+/**
+ * Solo caracteres habituales de un correo, con tope de 80.
+ * Limita corridas de dígitos a 3 caracteres (evita pegar 111111… en Correo).
+ */
 export function sanitizeEmailInput(raw: string): string {
-  return raw.replace(/[^a-zA-Z0-9.@_+-]/g, '').slice(0, 80);
+  const cleaned = raw.replace(/[^a-zA-Z0-9.@_+-]/g, '').slice(0, 80);
+  return cleaned.replace(/\d{4,}/g, (digits) => digits.slice(0, 3));
 }
 
 /** NIT de Guatemala: 9 dígitos seguidos, sin guiones ni espacios. */

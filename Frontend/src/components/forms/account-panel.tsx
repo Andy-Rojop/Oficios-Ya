@@ -493,7 +493,12 @@ function ModeCard({ user }: { user: UserDto }) {
 const emailSchema = z.object({
   email: z.union([
     z.literal(''),
-    z.email('Ingrese un correo válido, por ejemplo nombre@correo.com').max(80),
+    z
+      .email('Ingrese un correo válido, por ejemplo nombre@correo.com')
+      .max(80)
+      .refine((value) => !/\d{4,}/.test(value), {
+        message: 'El correo no puede tener más de 3 dígitos seguidos',
+      }),
   ]),
 });
 type EmailValues = z.infer<typeof emailSchema>;

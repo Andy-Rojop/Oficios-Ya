@@ -10,7 +10,7 @@ export interface NavLink {
 }
 
 export const GUEST_LINKS: NavLink[] = [
-  { href: '/ingresar', label: 'Iniciar sesión', shortLabel: 'Entrar', icon: 'account' },
+  { href: '/ingresar', label: 'Iniciar sesión', shortLabel: 'Iniciar sesión', icon: 'account' },
   { href: '/registro', label: 'Registrarse', icon: 'account' },
 ];
 

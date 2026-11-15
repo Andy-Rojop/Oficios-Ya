@@ -103,7 +103,7 @@ export function SiteHeader() {
             })}
           </nav>
 
-          {/* Invitados en móvil: Entrar / Registrarse visibles arriba. */}
+          {/* Invitados en móvil: Iniciar sesión / Registrarse visibles arriba. */}
           {showGuest ? (
             <nav aria-label="Acceso" className="flex items-center gap-0.5 landscape:hidden md:hidden">
               {GUEST_LINKS.map((link) => (
